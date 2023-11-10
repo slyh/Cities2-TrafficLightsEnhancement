@@ -4,7 +4,10 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 ## Mods
 
-Traffic Light Improvements: Converts all traffic lights in the city to a [split-phase system](http://www.apsguide.org/chapter6_phasing.cfm) (Compatible with version 1.0.13f1)
+* Traffic Light Improvements
+   * Converts all traffic lights in the city to a [split phasing system](https://ops.fhwa.dot.gov/publications/fhwahop08024/chapter4.htm#4.3)
+   * Please toggle existing traffic lights after installing the mod
+   * Compatible with version 1.0.13f1
 
 ## Installation
 
