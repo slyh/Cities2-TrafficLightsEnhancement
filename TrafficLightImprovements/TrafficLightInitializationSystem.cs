@@ -22,7 +22,7 @@ namespace TrafficLightImprovements;
 [CompilerGenerated]
 public class TrafficLightInitializationSystem : GameSystemBase
 {
-    private struct LaneGroup
+    public struct LaneGroup
     {
         public float2 m_StartDirection;
 
@@ -41,6 +41,10 @@ public class TrafficLightInitializationSystem : GameSystemBase
         public bool m_IsUnsafe;
 
         public bool m_IsTrack;
+
+        public bool m_IsTurnLeft;
+
+        public bool m_IsTurnRight;
     }
 
     [BurstCompile]
@@ -138,6 +142,8 @@ public class TrafficLightInitializationSystem : GameSystemBase
                         CarLane carLane = m_CarLaneData[subLane];
                         value2.m_IsStraight = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
                         value2.m_IsUnsafe = (carLane.m_Flags & CarLaneFlags.Unsafe) != 0;
+                        value2.m_IsTurnLeft = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0;
+                        value2.m_IsTurnRight = (carLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnRight)) != 0;
                     }
                     else
                     {
@@ -184,7 +190,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 while (num < vehicleLanes.Length)
                 {
                     LaneGroup value2 = vehicleLanes[num];
-                    if ((!isLevelCrossing | (value.m_IsTrack == value2.m_IsTrack)) && math.dot(value.m_StartDirection, value2.m_StartDirection) > 0.999f)
+                      if ((!isLevelCrossing | (value.m_IsTrack == value2.m_IsTrack)) && math.dot(value.m_StartDirection, value2.m_StartDirection) > 0.999f)
                     {
                         value2.m_GroupIndex = value.m_GroupIndex;
                         groups.Add(in value2);
