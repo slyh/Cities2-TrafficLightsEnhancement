@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace TrafficLightImprovements;
+namespace TrafficLightsEnhancement;
 
 [HarmonyPatch]
 class Patches
@@ -9,8 +9,8 @@ class Patches
     [HarmonyPrefix]
     static bool OnCreate(Game.Net.TrafficLightInitializationSystem __instance)
     {
-        __instance.World.GetOrCreateSystemManaged<TrafficLightImprovements.TrafficLightInitializationSystem>();
-        __instance.World.GetOrCreateSystemManaged<Game.UpdateSystem>().UpdateAt<TrafficLightImprovements.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.GameSimulation);
+        __instance.World.GetOrCreateSystemManaged<PatchedClasses.TrafficLightInitializationSystem>();
+        __instance.World.GetOrCreateSystemManaged<Game.UpdateSystem>().UpdateAt<PatchedClasses.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.GameSimulation);
         return true; // Allow the original method to run so that we only receive update requests when necessary
     }
 
@@ -27,7 +27,7 @@ class Patches
     {
         // For some reason, the cloned TrafficLightInitializationSystem never receives calls to update. So we have to do it manually.
         // Could be something with the EntityQuery. I'm not able to find out the reason behind it.
-        __instance.World.GetOrCreateSystemManaged<TrafficLightImprovements.TrafficLightInitializationSystem>().Update();
+        __instance.World.GetOrCreateSystemManaged<PatchedClasses.TrafficLightInitializationSystem>().Update();
         return false;
     }
 }

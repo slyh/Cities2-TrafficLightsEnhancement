@@ -17,7 +17,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
 
-namespace TrafficLightImprovements;
+namespace TrafficLightsEnhancement.PatchedClasses;
 
 [CompilerGenerated]
 public class TrafficLightInitializationSystem : GameSystemBase
@@ -319,6 +319,9 @@ public class TrafficLightInitializationSystem : GameSystemBase
                     }
                 }
             }
+
+            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount);
+            return;
 
             for (int l = 0; l < groups.Length; l++)
             {
