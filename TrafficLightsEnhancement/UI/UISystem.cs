@@ -1,0 +1,34 @@
+using System;
+using cohtml.Net;
+using Game;
+using Game.SceneFlow;
+
+namespace TrafficLightsEnhancement.UI;
+
+public class UISystem : GameSystemBase
+{
+    public int m_SelectedPattern;
+    protected override void OnCreate()
+    {
+        base.OnCreate();
+
+        m_SelectedPattern = 0;
+
+        View view = GameManager.instance.userInterface.view.View;
+        view.BindCall("TrafficLightsEnhancementOnPatternChanged", OnPatternChanged);
+        view.ExecuteScript("""
+            if(!document.querySelector("div.traffic-lights-enhancement-panel")){const n=document.createElement("div");n.innerHTML='\n <div class="traffic-lights-enhancement-panel">\n <div class="traffic-lights-enhancement-panel-header">\n <div class="traffic-lights-enhancement-panel-title-bar">\n Traffic Lights Enhancement\n </div>\n </div>\n <div class="traffic-lights-enhancement-panel-content">\n <div>\n Selected Pattern: <div class="traffic-lights-enhancement-panel-selected-pattern">Undefined</div>\n </div>\n <div class="traffic-lights-enhancement-panel-subcontent">\n <a\n class="traffic-lights-enhancement-panel-item"\n data-pattern="0"\n >\n Vanilla\n <div class="traffic-lights-enhancement-panel-radio">\n <div class="traffic-lights-enhancement-panel-radio-bullet traffic-lights-enhancement-panel-radio-bullet-checked"></div>\n </div>\n </a>\n <a\n class="traffic-lights-enhancement-panel-item"\n data-pattern="2"\n >\n Split Phasing\n <div class="traffic-lights-enhancement-panel-radio">\n <div class="traffic-lights-enhancement-panel-radio-bullet"></div>\n </div>\n </a>\n <a\n class="traffic-lights-enhancement-panel-item"\n data-pattern="4"\n >\n Some Weird Mode\n <div class="traffic-lights-enhancement-panel-radio">\n <div class="traffic-lights-enhancement-panel-radio-bullet traffic-lights-enhancement-panel-radio-bullet-checked"></div>\n </div>\n </a>\n </div>\n </div>\n </div>\n <style>\n .traffic-lights-enhancement-panel {\n width: 200px;\n height: 200px;\n position: absolute;\n left: 50px;\n top: 300px;\n background-color: white;\n }\n /*\n .traffic-lights-enhancement-panel-header {\n border-top-left-radius: var(--panelRadius) ;\n border-top-right-radius: var(--panelRadius) ;\n background-color: var(--panelColorDark) ;\n backdrop-filter: var(--panelBlur) ;\n color: var(--accentColorNormal) ;\n }\n .traffic-lights-enhancement-panel-title-bar {\n font-size: var(--fontSizeS) ;\n padding-top: 6.000000rem;\n padding-left: 10.000000rem;\n padding-right: 10.000000rem;\n padding-bottom: 6.000000rem;\n min-height: 36.000000rem;\n display: flex;\n flex-direction: row;\n align-items: center;\n }\n .traffic-lights-enhancement-panel-content {\n border-bottom-left-radius: var(--panelRadius) ;\n border-bottom-right-radius: var(--panelRadius) ;\n background-color: var(--panelColorNormal) ;\n backdrop-filter: var(--panelBlur) ;\n color: rgba(255, 255, 255, 1.000000);\n flex: 1.000000;\n position: relative;\n padding-top: 6.000000rem;\n padding-left: 10.000000rem;\n padding-right: 10.000000rem;\n padding-bottom: 6.000000rem;\n }\n .traffic-lights-enhancement-panel-subcontent {\n --hoverColorNormal: var(--hoverColorBright);\n --activeColorNormal: var(--activeColorBright);\n overflow-x: hidden;\n overflow-y: hidden;\n padding-top: 6.000000rem;\n padding-left: 6.000000rem;\n padding-right: 6.000000rem;\n padding-bottom: 6.000000rem;\n display: flex;\n flex-direction: column;\n align-items: stretch;\n background-color: rgba(255, 255, 255, 0.100000);\n border-top-left-radius: var(--panelRadiusInnerSIP) ;\n border-top-right-radius: var(--panelRadiusInnerSIP) ;\n border-bottom-left-radius: var(--panelRadiusInnerSIP) ;\n border-bottom-right-radius: var(--panelRadiusInnerSIP) ;\n color: var(--textColorDim) ;\n text-align: left;\n }\n .traffic-lights-enhancement-panel-radio {\n border-top-color: rgba(32, 164, 255, 1.000000);\n border-left-color: rgba(32, 164, 255, 1.000000);\n border-right-color: rgba(32, 164, 255, 1.000000);\n border-bottom-color: rgba(32, 164, 255, 1.000000);\n margin-top: 0.000000px;\n margin-left: 0.000000px;\n margin-right: 10.000000rem;\n margin-bottom: 0.000000px;\n width: 20.000000rem;\n height: 20.000000rem;\n --bulletColor: white;\n padding-top: var(--gap3) ;\n padding-right: var(--gap3) ;\n padding-bottom: var(--gap3) ;\n padding-left: var(--gap3) ;\n width: 18.000000rem;\n height: 18.000000rem;\n border-top-style: solid;\n border-left-style: solid;\n border-right-style: solid;\n border-bottom-style: solid;\n border-top-width: var(--stroke2) ;\n border-left-width: var(--stroke2) ;\n border-bottom-width: var(--stroke2) ;\n border-right-width: var(--stroke2) ;\n border-top-color: rgba(255, 255, 255, 1.000000);\n border-left-color: rgba(255, 255, 255, 1.000000);\n border-right-color: rgba(255, 255, 255, 1.000000);\n border-bottom-color: rgba(255, 255, 255, 1.000000);\n border-top-left-radius: 50.000000% 50.000000%;\n border-top-right-radius: 50.000000% 50.000000%;\n border-bottom-left-radius: 50.000000% 50.000000%;\n border-bottom-right-radius: 50.000000% 50.000000%;\n }\n .traffic-lights-enhancement-panel-radio-bullet {\n width: 100.000000%;\n height: 100.000000%;\n background-color: var(--bulletColor) ;\n opacity: 0.000000;\n border-top-left-radius: 50.000000% 50.000000%;\n border-top-right-radius: 50.000000% 50.000000%;\n border-bottom-left-radius: 50.000000% 50.000000%;\n border-bottom-right-radius: 50.000000% 50.000000%;\n transition-property: opacity;\n transition-duration: 0.150000s;\n transition-delay: 0.000000s;\n transition-timing-function: ease;\n }\n .traffic-lights-enhancement-panel-radio-bullet-checked {\n opacity: 1.000000;\n }\n */\n </style>\n ',document.querySelector("body").appendChild(n);const e=n=>{console.log("TrafficLightsEnhancementOnPatternChanged result "+n);document.querySelector(".traffic-lights-enhancement-panel-selected-pattern").innerHTML=n};engine.call("TrafficLightsEnhancementOnPatternChanged",0).then(e);const t=n=>{void 0!==n.target.dataset.pattern&&(console.log(n.target,n.target.dataset,n.target.dataset.ways),engine.call("TrafficLightsEnhancementOnPatternChanged",parseInt(n.target.dataset.pattern)).then(e))},r=document.querySelectorAll(".traffic-lights-enhancement-panel-item");for(const n of r)n.onclick=t;const a=document.querySelector("body"),i={attributes:!0,childList:!0,subtree:!0};new MutationObserver(((n,e)=>{const t=document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img"),r=document.querySelector("div.traffic-lights-enhancement-panel");r&&(r.style.display=t&&"Media/Game/Icons/TrafficLights.svg"==t.src?"block":"none")})).observe(a,i)}
+        """);
+    }
+
+    protected override void OnUpdate()
+    {
+    }
+
+    int OnPatternChanged(int pattern)
+    {
+        m_SelectedPattern = pattern;
+        Console.WriteLine($"UISystem OnPatternChanged {m_SelectedPattern}");
+        return m_SelectedPattern;
+    }
+}

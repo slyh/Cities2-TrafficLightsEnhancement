@@ -4,8 +4,27 @@ using Unity.Mathematics;
 namespace TrafficLightsEnhancement.PatchedClasses;
 
 class TrafficLightPatterns {
-    public static void ProcessVehicleLaneGroups(ref NativeList<TrafficLightInitializationSystem.LaneGroup> vehicleLanes, ref NativeList<TrafficLightInitializationSystem.LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount)
+    public enum Pattern : int {
+        Vanilla = 0,
+        VanillaWithExclusivePedestrian = 1,
+        SplitPhasing = 2,
+        SplitPhasingWithExclusivePedestrian = 3,
+        DoesThisExistInRealWorld = 4
+    }
+
+    public static void ProcessVehicleLaneGroups(ref NativeList<TrafficLightInitializationSystem.LaneGroup> vehicleLanes, ref NativeList<TrafficLightInitializationSystem.LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int pattern)
     {
+        if (pattern == (int) Pattern.SplitPhasing)
+        {
+            for (int i = 0; i < groups.Length; i++)
+            {
+                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                group.m_GroupMask = (ushort)(1 << (group.m_GroupIndex & 0xF));
+                groups[i] = group;
+            }
+            return;
+        }
+
         for (int i = 0; i < groups.Length; i++)
         {
             TrafficLightInitializationSystem.LaneGroup group = groups[i];
@@ -35,69 +54,72 @@ class TrafficLightPatterns {
             System.Console.WriteLine($"{i} {straightWith[i]}");
         }
 
-        for (int currentGroupIndex = 0; currentGroupIndex < groupCount; currentGroupIndex++) {
-            bool modfied = false;
-            for (int i = 0; i < groups.Length; i++)
-            {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+        if (pattern == (int) Pattern.DoesThisExistInRealWorld)
+        {
+            for (int currentGroupIndex = 0; currentGroupIndex < groupCount; currentGroupIndex++) {
+                bool modfied = false;
+                for (int i = 0; i < groups.Length; i++)
+                {
+                    TrafficLightInitializationSystem.LaneGroup group = groups[i];
 
-                if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
-                    continue;
-                }
-
-                if (group.m_IsTurnLeft || group.m_IsStraight) {
-                    for (int j = 0; j < groups.Length; j++)
-                    {
-                        TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
-                        if (group2.m_GroupIndex == straightWith[group.m_GroupIndex] && (group2.m_IsTurnLeft || group2.m_IsStraight))
-                        {
-                            group.m_IsCombined = true;
-                            group2.m_IsCombined = true;
-                            group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
-                            groups[j] = group2;
-                        }
+                    if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
+                        continue;
                     }
-                    group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
-                    groups[i] = group;
-                    modfied = true;
-                }
-            }
 
-            if (modfied)
-            {
-                groupCount++;
-                modfied = false;
-            }
-
-            for (int i = 0; i < groups.Length; i++)
-            {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
-
-                if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
-                    continue;
-                }
-
-                if (group.m_IsTurnRight) {
-                    for (int j = 0; j < groups.Length; j++)
-                    {
-                        TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
-                        if (group2.m_GroupIndex ==  straightWith[group.m_GroupIndex] && group2.m_IsTurnRight)
+                    if (group.m_IsTurnLeft || group.m_IsStraight) {
+                        for (int j = 0; j < groups.Length; j++)
                         {
-                            group.m_IsCombined = true;
-                            group2.m_IsCombined = true;
-                            group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
-                            groups[j] = group2;
+                            TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
+                            if (group2.m_GroupIndex == straightWith[group.m_GroupIndex] && (group2.m_IsTurnLeft || group2.m_IsStraight))
+                            {
+                                group.m_IsCombined = true;
+                                group2.m_IsCombined = true;
+                                group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                                groups[j] = group2;
+                            }
                         }
+                        group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                        groups[i] = group;
+                        modfied = true;
                     }
-                    group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
-                    groups[i] = group;
-                    modfied = true;
                 }
-            }
 
-            if (modfied)
-            {
-                groupCount++;
+                if (modfied)
+                {
+                    groupCount++;
+                    modfied = false;
+                }
+
+                for (int i = 0; i < groups.Length; i++)
+                {
+                    TrafficLightInitializationSystem.LaneGroup group = groups[i];
+
+                    if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
+                        continue;
+                    }
+
+                    if (group.m_IsTurnRight) {
+                        for (int j = 0; j < groups.Length; j++)
+                        {
+                            TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
+                            if (group2.m_GroupIndex ==  straightWith[group.m_GroupIndex] && group2.m_IsTurnRight)
+                            {
+                                group.m_IsCombined = true;
+                                group2.m_IsCombined = true;
+                                group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                                groups[j] = group2;
+                            }
+                        }
+                        group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                        groups[i] = group;
+                        modfied = true;
+                    }
+                }
+
+                if (modfied)
+                {
+                    groupCount++;
+                }
             }
         }
 

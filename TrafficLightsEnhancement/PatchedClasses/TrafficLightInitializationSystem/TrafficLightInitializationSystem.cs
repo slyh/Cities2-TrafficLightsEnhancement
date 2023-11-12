@@ -79,6 +79,10 @@ public class TrafficLightInitializationSystem : GameSystemBase
         [NativeDisableParallelForRestriction]
         public ComponentLookup<LaneSignal> m_LaneSignalData;
 
+        public ComponentTypeHandle<PatchedClasses.TrafficLightsData> m_TrafficLightsDataType;
+
+        public bool m_LeftHandTraffic;
+
         public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
             NativeList<LaneGroup> groups = new NativeList<LaneGroup>(16, Allocator.Temp);
@@ -86,13 +90,15 @@ public class TrafficLightInitializationSystem : GameSystemBase
             NativeList<LaneGroup> pedestrianLanes = new NativeList<LaneGroup>(16, Allocator.Temp);
             NativeArray<TrafficLights> nativeArray = chunk.GetNativeArray(ref m_TrafficLightsType);
             BufferAccessor<SubLane> bufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
+            NativeArray<TrafficLightsData> trafficLightsData = chunk.GetNativeArray(ref m_TrafficLightsDataType);
             for (int i = 0; i < nativeArray.Length; i++)
             {
+                System.Console.WriteLine($"TrafficLightsData m_Pattern {trafficLightsData[i].m_Pattern}");
                 TrafficLights trafficLights = nativeArray[i];
                 DynamicBuffer<SubLane> subLanes = bufferAccessor[i];
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
-                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount);
+                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, trafficLightsData[i].m_Pattern);
                 ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount);
                 InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
                 nativeArray[i] = trafficLights;
@@ -177,7 +183,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount)
+        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, int pattern)
         {
             groupCount = 0;
             while (vehicleLanes.Length > 0)
@@ -292,8 +298,10 @@ public class TrafficLightInitializationSystem : GameSystemBase
                         num6 = num4++;
                     }
 
-                    // MODIFIED
-                    flag = false;
+                    if (pattern != (int) TrafficLightPatterns.Pattern.Vanilla)
+                    {
+                        flag = false;
+                    }
 
                     if (!flag)
                     {
@@ -320,15 +328,19 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 }
             }
 
-            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount);
-            return;
-
-            for (int l = 0; l < groups.Length; l++)
+            if (pattern == (int) TrafficLightPatterns.Pattern.Vanilla)
             {
-                LaneGroup value3 = groups[l];
-                value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
-                groups[l] = value3;
+                for (int l = 0; l < groups.Length; l++)
+                {
+                    LaneGroup value3 = groups[l];
+                    value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
+                    groups[l] = value3;
+                }
+                return;
             }
+
+            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount, m_LeftHandTraffic, pattern);
+            return;
         }
 
         private void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount)
@@ -483,6 +495,8 @@ public class TrafficLightInitializationSystem : GameSystemBase
 
         public ComponentLookup<LaneSignal> __Game_Net_LaneSignal_RW_ComponentLookup;
 
+        public ComponentTypeHandle<PatchedClasses.TrafficLightsData> __TrafficLightsData_RW_ComponentTypeHandle;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void __AssignHandles(ref SystemState state)
         {
@@ -496,6 +510,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
             __Game_Net_Curve_RO_ComponentLookup = state.GetComponentLookup<Curve>(isReadOnly: true);
             __Game_Net_LaneOverlap_RO_BufferLookup = state.GetBufferLookup<LaneOverlap>(isReadOnly: true);
             __Game_Net_LaneSignal_RW_ComponentLookup = state.GetComponentLookup<LaneSignal>();
+            __TrafficLightsData_RW_ComponentTypeHandle = state.GetComponentTypeHandle<TrafficLightsData>();
         }
     }
 
@@ -503,13 +518,16 @@ public class TrafficLightInitializationSystem : GameSystemBase
 
     private TypeHandle __TypeHandle;
 
+    private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
+
     [Preserve]
     protected override void OnCreate()
     {
         base.OnCreate();
+        m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_TrafficLightsQuery = GetEntityQuery(new EntityQueryDesc
         {
-            All = new ComponentType[1] { ComponentType.ReadOnly<TrafficLights>() },
+            All = new ComponentType[2] { ComponentType.ReadOnly<TrafficLights>(), ComponentType.ReadOnly<TrafficLightsData>() },
             Any = new ComponentType[1] { ComponentType.ReadOnly<Updated>() }
         });
         RequireForUpdate(m_TrafficLightsQuery);
@@ -528,7 +546,11 @@ public class TrafficLightInitializationSystem : GameSystemBase
         __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
-        InitializeTrafficLightsJob jobData = default(InitializeTrafficLightsJob);
+        __TypeHandle.__TrafficLightsData_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
+        InitializeTrafficLightsJob jobData = new InitializeTrafficLightsJob{
+            m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic,
+            m_TrafficLightsDataType = __TypeHandle.__TrafficLightsData_RW_ComponentTypeHandle
+        };
         jobData.m_SubLaneType = __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle;
         jobData.m_TrafficLightsType = __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle;
         jobData.m_MasterLaneData = __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup;
