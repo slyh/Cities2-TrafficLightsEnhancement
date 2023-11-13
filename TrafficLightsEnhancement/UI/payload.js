@@ -3,150 +3,118 @@ if (!document.querySelector("div.traffic-lights-enhancement-panel")) {
     panelDiv.innerHTML = `
         <div class="traffic-lights-enhancement-panel">
             <div class="traffic-lights-enhancement-panel-header">
-                <div class="traffic-lights-enhancement-panel-title-bar">
-                    Traffic Lights Enhancement
-                </div>
+                <img class="traffic-lights-enhancement-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />
+                <div class="traffic-lights-enhancement-panel-header-title">Traffic Lights Enhancement</div>
             </div>
             <div class="traffic-lights-enhancement-panel-content">
-                <div>
-                    Selected Pattern: <div class="traffic-lights-enhancement-panel-selected-pattern">Undefined</div>
+                <div class="traffic-lights-enhancement-panel-row">
+                    Three-Way Junction
                 </div>
-                <div class="traffic-lights-enhancement-panel-subcontent">
-                    <a
-                        class="traffic-lights-enhancement-panel-item"
-                        data-pattern="0"
-                    >
-                        Vanilla
-                        <div class="traffic-lights-enhancement-panel-radio">
-                            <div class="traffic-lights-enhancement-panel-radio-bullet traffic-lights-enhancement-panel-radio-bullet-checked"></div>
-                        </div>
-                    </a>
-                    <a
-                        class="traffic-lights-enhancement-panel-item"
-                        data-pattern="2"
-                    >
-                        Split Phasing
-                        <div class="traffic-lights-enhancement-panel-radio">
-                            <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
-                        </div>
-                    </a>
-                    <a
-                        class="traffic-lights-enhancement-panel-item"
-                        data-pattern="4"
-                    >
-                        Some Weird Mode
-                        <div class="traffic-lights-enhancement-panel-radio">
-                            <div class="traffic-lights-enhancement-panel-radio-bullet traffic-lights-enhancement-panel-radio-bullet-checked"></div>
-                        </div>
-                    </a>
+                <div class="traffic-lights-enhancement-panel-row" data-ways="3" data-pattern="0">
+                    <div class="traffic-lights-enhancement-panel-radio">
+                        <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
+                    </div>
+                    <span class="traffic-lights-enhancement-panel-secondary-text">Vanilla</span>
+                </div>
+                <div class="traffic-lights-enhancement-panel-row" data-ways="3" data-pattern="2">
+                    <div class="traffic-lights-enhancement-panel-radio">
+                        <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
+                    </div>
+                    <span class="traffic-lights-enhancement-panel-secondary-text">Split Phasing</span>
+                </div>
+                <div class="traffic-lights-enhancement-panel-row-divider"></div>
+                <div class="traffic-lights-enhancement-panel-row">
+                    Four-Way Junction
+                </div>
+                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="0">
+                    <div class="traffic-lights-enhancement-panel-radio">
+                        <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
+                    </div>
+                    <span class="traffic-lights-enhancement-panel-secondary-text">Vanilla</span>
+                </div>
+                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="2">
+                    <div class="traffic-lights-enhancement-panel-radio">
+                        <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
+                    </div>
+                    <span class="traffic-lights-enhancement-panel-secondary-text">Split Phasing</span>
+                </div>
+                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="4">
+                    <div class="traffic-lights-enhancement-panel-radio">
+                        <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
+                    </div>
+                    <span class="traffic-lights-enhancement-panel-secondary-text">Some Weird Mode</span>
                 </div>
             </div>
         </div>
         <style>
             .traffic-lights-enhancement-panel {
-                width: 200px;
-                height: 200px;
+                width: 300rem;
                 position: absolute;
-                left: 50px;
-                top: 300px;
-                background-color: white;
+                top: calc(10rem+ var(--floatingToggleSize) +6rem);
+                left: 10rem;
             }
-            /*
             .traffic-lights-enhancement-panel-header {
-                border-top-left-radius:  var(--panelRadius) ;
-                border-top-right-radius:  var(--panelRadius) ;
-                background-color:  var(--panelColorDark) ;
-                backdrop-filter:  var(--panelBlur) ;
-                color:  var(--accentColorNormal) ;
-            }
-            .traffic-lights-enhancement-panel-title-bar {
-                font-size:  var(--fontSizeS) ;
-                padding-top: 6.000000rem;
-                padding-left: 10.000000rem;
-                padding-right: 10.000000rem;
-                padding-bottom: 6.000000rem;
-                min-height: 36.000000rem;
+                border-radius: 4rem 4rem 0rem 0rem;
+                background-color: rgba(24, 33, 51, 0.6);
+                backdrop-filter: blur(5px);
+                color: rgba(75, 195, 241, 1);
+                font-size: 14rem;
+                padding: 6rem 10rem;
+                min-height: 36rem;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
             }
+            .traffic-lights-enhancement-panel-header-image {
+                width: 24rem;
+                height: 24rem;
+            }
+            .traffic-lights-enhancement-panel-header > .traffic-lights-enhancement-panel-header-title {
+                text-transform: uppercase;
+                flex: 1;
+                text-align: center;
+                overflow-x: hidden;
+                overflow-y: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
             .traffic-lights-enhancement-panel-content {
-                border-bottom-left-radius:  var(--panelRadius) ;
-                border-bottom-right-radius:  var(--panelRadius) ;
-                background-color:  var(--panelColorNormal) ;
-                backdrop-filter:  var(--panelBlur) ;
+                border-radius: 0rem 0rem 4rem 4rem;
+                background-color: rgba(42, 55, 83, 0.437500);
+                backdrop-filter: blur(5.000000px);
                 color: rgba(255, 255, 255, 1.000000);
                 flex: 1.000000;
                 position: relative;
-                padding-top: 6.000000rem;
-                padding-left: 10.000000rem;
-                padding-right: 10.000000rem;
-                padding-bottom: 6.000000rem;
+                padding: 6rem;
             }
-            .traffic-lights-enhancement-panel-subcontent {
-                --hoverColorNormal: var(--hoverColorBright);
-                --activeColorNormal: var(--activeColorBright);
-                overflow-x: hidden;
-                overflow-y: hidden;
-                padding-top: 6.000000rem;
-                padding-left: 6.000000rem;
-                padding-right: 6.000000rem;
-                padding-bottom: 6.000000rem;
+            .traffic-lights-enhancement-panel-row {
+                padding: 3rem 8rem;
+                width: 100%;
                 display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                background-color: rgba(255, 255, 255, 0.100000);
-                border-top-left-radius:  var(--panelRadiusInnerSIP) ;
-                border-top-right-radius:  var(--panelRadiusInnerSIP) ;
-                border-bottom-left-radius:  var(--panelRadiusInnerSIP) ;
-                border-bottom-right-radius:  var(--panelRadiusInnerSIP) ;
-                color:  var(--textColorDim) ;
-                text-align: left;
+            }
+            .traffic-lights-enhancement-panel-row-divider {
+                height: 2px;
+                width: auto;
+                border: 2px solid rgba(255, 255, 255, 0.100000);
+                margin: 6rem -6rem;
+            }
+            .traffic-lights-enhancement-panel-secondary-text {
+                color: rgba(217, 217, 217, 1.000000);
             }
             .traffic-lights-enhancement-panel-radio {
-                border-top-color: rgba(32, 164, 255, 1.000000);
-                border-left-color: rgba(32, 164, 255, 1.000000);
-                border-right-color: rgba(32, 164, 255, 1.000000);
-                border-bottom-color: rgba(32, 164, 255, 1.000000);
-                margin-top: 0.000000px;
-                margin-left: 0.000000px;
-                margin-right: 10.000000rem;
-                margin-bottom: 0.000000px;
+                border: 2px solid rgba(32, 164, 255, 1.000000);
+                margin: 0 10rem 0 0;
                 width: 20.000000rem;
                 height: 20.000000rem;
-                --bulletColor: white;
-                padding-top:  var(--gap3) ;
-                padding-right:  var(--gap3) ;
-                padding-bottom:  var(--gap3) ;
-                padding-left:  var(--gap3) ;
-                width: 18.000000rem;
-                height: 18.000000rem;
-                border-top-style: solid;
-                border-left-style: solid;
-                border-right-style: solid;
-                border-bottom-style: solid;
-                border-top-width:  var(--stroke2) ;
-                border-left-width:  var(--stroke2) ;
-                border-bottom-width:  var(--stroke2) ;
-                border-right-width:  var(--stroke2) ;
-                border-top-color: rgba(255, 255, 255, 1.000000);
-                border-left-color: rgba(255, 255, 255, 1.000000);
-                border-right-color: rgba(255, 255, 255, 1.000000);
-                border-bottom-color: rgba(255, 255, 255, 1.000000);
-                border-top-left-radius: 50.000000% 50.000000%;
-                border-top-right-radius: 50.000000% 50.000000%;
-                border-bottom-left-radius: 50.000000% 50.000000%;
-                border-bottom-right-radius: 50.000000% 50.000000%;
+                padding: 3px;
+                border-radius: 50.000000%;
             }
             .traffic-lights-enhancement-panel-radio-bullet {
                 width: 100.000000%;
                 height: 100.000000%;
-                background-color:  var(--bulletColor) ;
+                background-color:  white;
                 opacity: 0.000000;
-                border-top-left-radius: 50.000000% 50.000000%;
-                border-top-right-radius: 50.000000% 50.000000%;
-                border-bottom-left-radius: 50.000000% 50.000000%;
-                border-bottom-right-radius: 50.000000% 50.000000%;
+                border-radius: 50.000000%;
                 transition-property: opacity;
                 transition-duration: 0.150000s;
                 transition-delay: 0.000000s;
@@ -155,29 +123,44 @@ if (!document.querySelector("div.traffic-lights-enhancement-panel")) {
             .traffic-lights-enhancement-panel-radio-bullet-checked {
                 opacity: 1.000000;
             }
-            */
         </style>
     `;
-    document.querySelector("body").appendChild(panelDiv);
+    const container = document.querySelector("body");
+    container.appendChild(panelDiv);
 
     const engineCallback = (result) => {
-        console.log("TrafficLightsEnhancementOnPatternChanged result " + result);
-        const patternDiv = document.querySelector(".traffic-lights-enhancement-panel-selected-pattern");
-        patternDiv.innerHTML = result;
+        const buttons = document.querySelectorAll(".traffic-lights-enhancement-panel-radio-bullet");
+        for (const button of buttons) {
+            button.classList.remove("traffic-lights-enhancement-panel-radio-bullet-checked");
+        }
+        const m_SelectedPattern = JSON.parse(result);
+        console.log(`TrafficLightsEnhancementOnPatternChanged result ${result} m_SelectedPattern ${m_SelectedPattern}`);
+        for (const ways in m_SelectedPattern) {
+            const pattern = m_SelectedPattern[ways];
+            const button = document.querySelector(`.traffic-lights-enhancement-panel-row[data-ways="${ways}"][data-pattern="${pattern}"] .traffic-lights-enhancement-panel-radio-bullet`);
+            if (button) {
+                button.classList.add("traffic-lights-enhancement-panel-radio-bullet-checked");
+            }
+        }
     };
-    engine.call('TrafficLightsEnhancementOnPatternChanged', 0).then(engineCallback);
+    engine.call('TrafficLightsEnhancementOnPatternChanged', "3_0").then(engineCallback);
+    engine.call('TrafficLightsEnhancementOnPatternChanged', "4_0").then(engineCallback);
 
     const listener = (event) => {
-        if (event.target.dataset.pattern === undefined) {
-            return;
+        const dataset = event.currentTarget.dataset;
+        const buttons = document.querySelectorAll(".traffic-lights-enhancement-panel-radio-bullet");
+        for (const button of buttons) {
+            button.classList.remove("traffic-lights-enhancement-panel-radio-bullet-checked");
         }
-        console.log(event.target, event.target.dataset, event.target.dataset.ways);
-        engine.call('TrafficLightsEnhancementOnPatternChanged', parseInt(event.target.dataset.pattern)).then(engineCallback);
+        console.log(event.currentTarget, dataset, dataset.ways, dataset.pattern);
+        engine.call('TrafficLightsEnhancementOnPatternChanged', `${dataset.ways}_${dataset.pattern}`).then(engineCallback);
     };
     
-    const items = document.querySelectorAll(".traffic-lights-enhancement-panel-item");
+    const items = document.querySelectorAll(".traffic-lights-enhancement-panel-row");
     for (const item of items) {
-        item.onclick = listener;
+        if (item.dataset.ways > 0) {
+            item.onclick = listener;
+        }
     }
 
     const body = document.querySelector("body");

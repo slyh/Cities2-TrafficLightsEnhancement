@@ -50,19 +50,17 @@ class Patches
 
             if (!trafficLightsDataLookup.HasComponent(entity))
             {
-                System.Console.WriteLine($"SetAppliedUpgrade HarmonyPostfix entity {entity.ToString()} pattern {uiSystem.m_SelectedPattern}");
-                bool result = __instance.EntityManager.AddComponentData(entity, new PatchedClasses.TrafficLightsData{m_Pattern = uiSystem.m_SelectedPattern});
+                bool result = __instance.EntityManager.AddComponentData(entity, new PatchedClasses.TrafficLightsData(uiSystem.m_SelectedPattern));
                 if (!result)
                 {
-                    System.Console.WriteLine($"Failed to add TrafficLightsData to entity {entity.ToString()} in SetAppliedUpgrade.");
+                    System.Console.WriteLine($"[SetAppliedUpgrade] Failed to add TrafficLightsData to entity {entity.ToString()}.");
                 }
             }
             else
             {
                 PatchedClasses.TrafficLightsData trafficLightsData = trafficLightsDataLookup[entity];
-                trafficLightsData.m_Pattern = uiSystem.m_SelectedPattern;
+                trafficLightsData.SetPatterns(uiSystem.m_SelectedPattern);
                 trafficLightsDataLookup[entity] = trafficLightsData;
-                System.Console.WriteLine($"SetAppliedUpgrade HarmonyPostfix existing trafficLightsData pattern {trafficLightsData.m_Pattern}");
             }
         }
 
