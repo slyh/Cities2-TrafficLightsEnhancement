@@ -6,10 +6,9 @@ namespace TrafficLightsEnhancement.PatchedClasses;
 class TrafficLightPatterns {
     public enum Pattern : int {
         Vanilla = 0,
-        VanillaWithExclusivePedestrian = 1,
-        SplitPhasing = 2,
-        SplitPhasingWithExclusivePedestrian = 3,
-        DoesThisExistInRealWorld = 4
+        SplitPhasing = 1,
+        DoesThisExistInRealWorld = 2,
+        ExclusivePedestrian = 1 << 16
     }
 
     public static void ProcessVehicleLaneGroups(ref NativeList<TrafficLightInitializationSystem.LaneGroup> vehicleLanes, ref NativeList<TrafficLightInitializationSystem.LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int pattern)
@@ -66,11 +65,17 @@ class TrafficLightPatterns {
                         continue;
                     }
 
-                    if (group.m_IsTurnLeft || group.m_IsStraight) {
+                    if (
+                        (leftHandTraffic && group.m_IsTurnRight) ||
+                        (!leftHandTraffic && group.m_IsTurnLeft)
+                    ) {
                         for (int j = 0; j < groups.Length; j++)
                         {
                             TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
-                            if (group2.m_GroupIndex == straightWith[group.m_GroupIndex] && (group2.m_IsTurnLeft || group2.m_IsStraight))
+                            if (
+                                (group2.m_GroupIndex ==  straightWith[group.m_GroupIndex]) &&
+                                ((leftHandTraffic && group2.m_IsTurnRight) || (!leftHandTraffic && group2.m_IsTurnLeft))
+                            )
                             {
                                 group.m_IsCombined = true;
                                 group2.m_IsCombined = true;
@@ -89,7 +94,7 @@ class TrafficLightPatterns {
                     groupCount++;
                     modfied = false;
                 }
-
+                
                 for (int i = 0; i < groups.Length; i++)
                 {
                     TrafficLightInitializationSystem.LaneGroup group = groups[i];
@@ -98,11 +103,17 @@ class TrafficLightPatterns {
                         continue;
                     }
 
-                    if (group.m_IsTurnRight) {
+                    if (
+                        (leftHandTraffic && !group.m_IsTurnRight) ||
+                        (!leftHandTraffic && !group.m_IsTurnLeft)
+                    ) {
                         for (int j = 0; j < groups.Length; j++)
                         {
                             TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
-                            if (group2.m_GroupIndex ==  straightWith[group.m_GroupIndex] && group2.m_IsTurnRight)
+                            if (
+                                (group2.m_GroupIndex == straightWith[group.m_GroupIndex]) && 
+                                ((leftHandTraffic && !group2.m_IsTurnRight) || (!leftHandTraffic && !group2.m_IsTurnLeft))
+                            )
                             {
                                 group.m_IsCombined = true;
                                 group2.m_IsCombined = true;

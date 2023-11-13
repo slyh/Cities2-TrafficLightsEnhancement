@@ -16,7 +16,7 @@ if (!document.querySelector("div.traffic-lights-enhancement-panel")) {
                     </div>
                     <span class="traffic-lights-enhancement-panel-secondary-text">Vanilla</span>
                 </div>
-                <div class="traffic-lights-enhancement-panel-row" data-ways="3" data-pattern="2">
+                <div class="traffic-lights-enhancement-panel-row" data-ways="3" data-pattern="1">
                     <div class="traffic-lights-enhancement-panel-radio">
                         <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
                     </div>
@@ -32,13 +32,13 @@ if (!document.querySelector("div.traffic-lights-enhancement-panel")) {
                     </div>
                     <span class="traffic-lights-enhancement-panel-secondary-text">Vanilla</span>
                 </div>
-                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="2">
+                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="1">
                     <div class="traffic-lights-enhancement-panel-radio">
                         <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
                     </div>
                     <span class="traffic-lights-enhancement-panel-secondary-text">Split Phasing</span>
                 </div>
-                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="4">
+                <div class="traffic-lights-enhancement-panel-row" data-ways="4" data-pattern="2">
                     <div class="traffic-lights-enhancement-panel-radio">
                         <div class="traffic-lights-enhancement-panel-radio-bullet"></div>
                     </div>
