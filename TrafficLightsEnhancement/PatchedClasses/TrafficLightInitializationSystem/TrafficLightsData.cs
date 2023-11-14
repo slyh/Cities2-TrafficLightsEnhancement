@@ -6,41 +6,50 @@ namespace TrafficLightsEnhancement.PatchedClasses;
 
 public struct TrafficLightsData : IComponentData, IQueryTypeParameter, ISerializable
 {
+    public const int DefaultSelectedPatternLength = 16;
+
     NativeArray<int> m_SelectedPattern;
 
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < DefaultSelectedPatternLength; i++)
+        {
             writer.Write(m_SelectedPattern[i]);
         }
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
     {
-        m_SelectedPattern = new NativeArray<int>(16, Allocator.Persistent);
-        for (int i = 0; i < m_SelectedPattern.Length; i++) {
+        m_SelectedPattern = new NativeArray<int>(DefaultSelectedPatternLength, Allocator.Persistent);
+        for (int i = 0; i < m_SelectedPattern.Length; i++)
+        {
             reader.Read(out int pattern);
             m_SelectedPattern[i] = pattern;
         }
-     }
+    }
 
-     public TrafficLightsData() {
-        m_SelectedPattern = new NativeArray<int>(16, Allocator.Persistent);
-     }
+    public TrafficLightsData()
+    {
+        m_SelectedPattern = new NativeArray<int>(DefaultSelectedPatternLength, Allocator.Persistent);
+    }
 
-     public TrafficLightsData(int[] patterns) {
+    public TrafficLightsData(int[] patterns)
+    {
         m_SelectedPattern = new NativeArray<int>(patterns, Allocator.Persistent);
-     }
+    }
 
-     public int GetPattern(int ways) {
+    public int GetPattern(int ways)
+    {
         return m_SelectedPattern[ways];
-     }
+    }
 
-    public void SetPatterns(int[] patterns) {
+    public void SetPatterns(int[] patterns)
+    {
         m_SelectedPattern.CopyFrom(patterns);
-     }
+    }
 
-    public void SetPattern(int ways, int pattern) {
+    public void SetPattern(int ways, int pattern)
+    {
         m_SelectedPattern[ways] = pattern;
-     }
+    }
 }

@@ -1,6 +1,6 @@
 ## Notice
 
-Currently, the mod only supports three-way and four-way junctions. Any other types of junctions will behave like those in the vanilla game, except that pedestrians will always have an exclusive phase.
+Currently, the mod only supports three-way and four-way junctions. Any other types of junctions will behave like those in the vanilla game, except that pedestrians will have an exclusive phase if you have enabled this feature.
 
 ## How To Use
 

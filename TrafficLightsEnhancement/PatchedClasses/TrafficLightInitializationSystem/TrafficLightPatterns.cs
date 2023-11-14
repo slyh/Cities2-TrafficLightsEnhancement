@@ -1,14 +1,28 @@
+using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
 namespace TrafficLightsEnhancement.PatchedClasses;
 
 class TrafficLightPatterns {
-    public enum Pattern : int {
+    public enum Pattern : int
+    {
         Vanilla = 0,
         SplitPhasing = 1,
         DoesThisExistInRealWorld = 2,
         ExclusivePedestrian = 1 << 16
+    }
+
+    public static bool IsValidPattern(int ways, int pattern)
+    {
+        foreach(int p in Enum.GetValues(typeof(Pattern)))
+        {
+            if ((p & 0xFFFF) == (pattern & 0xFFFF))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void ProcessVehicleLaneGroups(ref NativeList<TrafficLightInitializationSystem.LaneGroup> vehicleLanes, ref NativeList<TrafficLightInitializationSystem.LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int pattern)
