@@ -315,7 +315,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                         num6 = num4++;
                     }
 
-                    if (pattern != (int) TrafficLightPatterns.Pattern.Vanilla)
+                    if ((pattern & 0xFFFF) != (int) TrafficLightPatterns.Pattern.Vanilla)
                     {
                         flag = false;
                     }
@@ -345,7 +345,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 }
             }
 
-            if (pattern == (int) TrafficLightPatterns.Pattern.Vanilla)
+            if ((pattern & 0xFFFF) == (int) TrafficLightPatterns.Pattern.Vanilla)
             {
                 for (int l = 0; l < groups.Length; l++)
                 {
@@ -356,7 +356,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 return;
             }
 
-            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount, m_LeftHandTraffic, pattern);
+            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount, m_LeftHandTraffic, ways, pattern);
             return;
         }
 

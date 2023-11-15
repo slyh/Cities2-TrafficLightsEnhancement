@@ -38,6 +38,12 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
                     </div>
                     <span class="c2vm-tle-panel-secondary-text">Split Phasing</span>
                 </div>
+                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="3">
+                    <div class="c2vm-tle-panel-radio">
+                        <div class="c2vm-tle-panel-radio-bullet"></div>
+                    </div>
+                    <span class="c2vm-tle-panel-secondary-text">Advanced Split Phasing</span>
+                </div>
                 <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="2">
                     <div class="c2vm-tle-panel-radio">
                         <div class="c2vm-tle-panel-radio-bullet"></div>
