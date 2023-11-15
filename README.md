@@ -21,7 +21,9 @@ This repository contains mods that offer minor quality-of-life improvements over
 
    * To remove BepInEx 5, you need to delete the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file from your game's installation directory
 
-2. Install [BepInEx 6](https://builds.bepinex.dev/projects/bepinex_be)
+2. Install [BepInEx 6 Bleeding Edge build](https://builds.bepinex.dev/projects/bepinex_be)
+
+   * The pre-release version of BepInEx 6 available on their GitHub release page is quite outdated (dated August 2022) and does not support loading this mod. Please download the Bleeding Edge version from [their website](https://builds.bepinex.dev/projects/bepinex_be)
 
    * Download `BepInEx-Unity.Mono-win-x64-6.0.0-be.674+82077ec.zip` (or a newer version), and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
 
