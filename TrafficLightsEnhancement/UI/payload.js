@@ -6,61 +6,7 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
                 <img class="c2vm-tle-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />
                 <div class="c2vm-tle-panel-header-title">Traffic Lights Enhancement</div>
             </div>
-            <div class="c2vm-tle-panel-content">
-                <div class="c2vm-tle-panel-row">
-                    Three-Way Junction
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="3" data-pattern="0">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Vanilla</span>
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="3" data-pattern="1">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Split Phasing</span>
-                </div>
-                <div class="c2vm-tle-panel-row-divider"></div>
-                <div class="c2vm-tle-panel-row">
-                    Four-Way Junction
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="0">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Vanilla</span>
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="1">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Split Phasing</span>
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="3">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Advanced Split Phasing</span>
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-pattern" data-ways="4" data-pattern="2">
-                    <div class="c2vm-tle-panel-radio">
-                        <div class="c2vm-tle-panel-radio-bullet"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Some Weird Mode</span>
-                </div>
-                <div class="c2vm-tle-panel-row-divider"></div>
-                <div class="c2vm-tle-panel-row">
-                    Options
-                </div>
-                <div class="c2vm-tle-panel-row" data-type="c2vm-tle-panel-option" data-key="ExclusivePedestrian" data-value="0">
-                    <div class="c2vm-tle-panel-checkbox">
-                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>
-                    </div>
-                    <span class="c2vm-tle-panel-secondary-text">Exclusive Pedestrian Phase</span>
-                </div>
-            </div>
+            <div class="c2vm-tle-panel-content"></div>
         </div>
         <style>
             .c2vm-tle-panel {
@@ -180,8 +126,6 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             }
         }
     };
-    engine.call('C2VM-TLE-PatternChanged', "3_0").then(enginePatternCallback);
-    engine.call('C2VM-TLE-PatternChanged', "4_0").then(enginePatternCallback);
 
     const patternListener = (event) => {
         resetPatternButtons();
@@ -189,13 +133,6 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
         console.log(event.currentTarget, dataset, dataset.ways, dataset.pattern);
         engine.call('C2VM-TLE-PatternChanged', `${dataset.ways}_${dataset.pattern}`).then(enginePatternCallback);
     };
-    
-    const patternItems = document.querySelectorAll(`[data-type="c2vm-tle-panel-pattern"]`);
-    for (const item of patternItems) {
-        if (item.dataset.ways > 0) {
-            item.onclick = patternListener;
-        }
-    }
 
     // Options
     const resetOptionCheckboxes = () => {
@@ -219,7 +156,6 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             }
         }
     };
-    engine.call('C2VM-TLE-OptionChanged', "ExclusivePedestrian_1").then(engineOptionCallback);
 
     const optionListener = (event) => {
         resetOptionCheckboxes();
@@ -231,19 +167,79 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
         }
         engine.call('C2VM-TLE-OptionChanged', `${dataset.key}_${value}`).then(engineOptionCallback);
     };
-    
-    const optionItems = document.querySelectorAll(`[data-type="c2vm-tle-panel-option"]`);
-    for (const item of optionItems) {
-        item.onclick = optionListener;
-    }
+
+    engine.call("C2VM-TLE-RequestMenuData").then((result) => {
+        const menu = JSON.parse(result);
+        const content = document.querySelector(".c2vm-tle-panel-content");
+        console.log(menu, content);
+        for (const item of menu) {
+            if (!item.itemType) {
+                continue;
+            }
+            if (item.itemType == "divider") {
+                const row = document.createElement("div");
+                row.classList.add("c2vm-tle-panel-row-divider");
+                content.appendChild(row);
+            }
+            if (item.itemType == "title") {
+                const row = document.createElement("div");
+                row.classList.add("c2vm-tle-panel-row");
+                row.innerHTML = item.title;
+                content.appendChild(row);
+            }
+            if (item.itemType == "radio") {
+                const row = document.createElement("div");
+                row.classList.add("c2vm-tle-panel-row");
+                for (const key in item) {
+                    row.dataset[key] = item[key];
+                }
+                row.innerHTML += `
+                    <div class="c2vm-tle-panel-radio">
+                        <div class="c2vm-tle-panel-radio-bullet"></div>
+                    </div>
+                    <span class="c2vm-tle-panel-secondary-text">${item.label}</span>
+                `;
+                content.appendChild(row);
+            }
+            if (item.itemType == "checkbox") {
+                const row = document.createElement("div");
+                row.classList.add("c2vm-tle-panel-row");
+                for (const key in item) {
+                    row.dataset[key] = item[key];
+                }
+                row.innerHTML += `
+                    <div class="c2vm-tle-panel-checkbox">
+                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>
+                    </div>
+                    <span class="c2vm-tle-panel-secondary-text">${item.label}</span>
+                `;
+                content.appendChild(row);
+            }
+        }
+
+        const optionItems = document.querySelectorAll(`[data-type="c2vm-tle-panel-option"]`);
+        for (const item of optionItems) {
+            item.onclick = optionListener;
+        }
+
+        const patternItems = document.querySelectorAll(`[data-type="c2vm-tle-panel-pattern"]`);
+        for (const item of patternItems) {
+            if (item.dataset.ways > 0) {
+                item.onclick = patternListener;
+            }
+        }
+
+        engine.call('C2VM-TLE-PatternChanged', "3_0").then(enginePatternCallback);
+        engine.call('C2VM-TLE-PatternChanged', "4_0").then(enginePatternCallback);
+        engine.call('C2VM-TLE-OptionChanged', "ExclusivePedestrian_1").then(engineOptionCallback);
+        engine.call('C2VM-TLE-OptionChanged', "AlwaysGreenKerbsideTurn_0").then(engineOptionCallback);
+    });
 
     const body = document.querySelector("body");
     const config = { attributes: true, childList: true, subtree: true };
     const callback = (mutationList, observer) => {
         const img = document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img");
-
         const panel = document.querySelector("div.c2vm-tle-panel");
-        
         if (panel) {
             panel.style.display = (img && img.src == "Media/Game/Icons/TrafficLights.svg") ? "block" : "none";
         }
