@@ -4,8 +4,6 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 ## Notice
 
-* This project has moved to BepInEx version 6, which is not compatible with the previous BepInEx version 5
-
 * Suggestions wanted! What additional signal phases do you think should be included in the Traffic Lights Enhancement mod? Leave your opinion in the [Discussions section](https://github.com/slyh/Cities2-Various-Mods/discussions)! 
 
 ## Mods
@@ -13,27 +11,33 @@ This repository contains mods that offer minor quality-of-life improvements over
 * Traffic Lights Enhancement
    * Set traffic lights to various predefined signal modes
    * Guide available [here](https://github.com/slyh/Cities2-Various-Mods/tree/main/TrafficLightsEnhancement/README.md)
-   * Compatible with version 1.0.13f1
+   * Compatible with version 1.0.14f1
 
 ## Installation
 
-1. Remove BepInEx 5 if you have that installed. Otherwise, proceed to step 2
+1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 3
 
-   * To remove BepInEx 5, you need to delete the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file from your game's installation directory
+2. Install [BepInEx 5](https://github.com/BepInEx/BepInEx/releases)
 
-2. Install [BepInEx 6 Bleeding Edge build](https://builds.bepinex.dev/projects/bepinex_be)
-
-   * The pre-release version of BepInEx 6 available on their GitHub release page is quite outdated (dated August 2022) and does not support loading this mod. Please download the Bleeding Edge version from [their website](https://builds.bepinex.dev/projects/bepinex_be)
-
-   * Download `BepInEx-Unity.Mono-win-x64-6.0.0-be.674+82077ec.zip` (or a newer version), and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
+   * Download `BepInEx_x64_5.4.22.0.zip` (or a newer version), and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
 
    * The installation directory should now have the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file
 
 3. Run the game once, then close it. You can close it when the main menu appears
 
-4. Download the mod you like from the [release page](https://github.com/slyh/Cities2-Various-Mods/releases). Unzip it into the `Cities Skylines II/BepInEx/plugins` folder
+4. Download the mod
 
-5. Launch the game, mods should be loaded automatically
+   * For BepInEx 5 users, download [C2VM_TrafficLightsEnhancement_BepInEx5.zip
+](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM_TrafficLightsEnhancement_BepInEx5.zip
+)
+
+   * For BepInEx 6 users, download [C2VM_TrafficLightsEnhancement_BepInEx6.zip
+](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM_TrafficLightsEnhancement_BepInEx6.zip
+)
+
+5. Unzip the downloaded file into the `Cities Skylines II/BepInEx/plugins` folder
+
+6. Launch the game, mods should be loaded automatically
 
 ## Thanks
 

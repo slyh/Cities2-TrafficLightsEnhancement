@@ -1,0 +1,61 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout main branch
+      uses: actions/checkout@v3
+
+    - name: Retrieve dependencies
+      run: |
+        wget ${{ secrets.DependenciesUrl }}/Managed.zip
+        unzip Managed.zip -d .
+        mkdir C2VM_TrafficLightsEnhancement
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: |
+        dotnet build --no-restore --configuration Release
+        cp ./TrafficLightsEnhancement/bin/Release/net46/TrafficLightsEnhancement.dll ./C2VM_TrafficLightsEnhancement/
+        zip -r ./C2VM_TrafficLightsEnhancement_BepInEx6.zip ./C2VM_TrafficLightsEnhancement/
+        rm -rf ./C2VM_TrafficLightsEnhancement/*
+
+    - name: Checkout BepInEx 5 branch
+      run: |
+        git fetch
+        git checkout origin/bepinex5
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: |
+        dotnet build --no-restore --configuration Release
+        cp ./TrafficLightsEnhancement/bin/Release/net46/TrafficLightsEnhancement.dll ./C2VM_TrafficLightsEnhancement/
+        zip -r ./C2VM_TrafficLightsEnhancement_BepInEx5.zip ./C2VM_TrafficLightsEnhancement/
+        rm -rf ./C2VM_TrafficLightsEnhancement/*
+
+    - name: Create Release
+      id: create-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create ${{ inputs.tag }} C2VM_TrafficLightsEnhancement_BepInEx6.zip C2VM_TrafficLightsEnhancement_BepInEx5.zip
