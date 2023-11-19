@@ -353,7 +353,6 @@ public class TrafficLightInitializationSystem : GameSystemBase
                     value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
                     groups[l] = value3;
                 }
-                return;
             }
 
             TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount, m_LeftHandTraffic, ways, pattern);

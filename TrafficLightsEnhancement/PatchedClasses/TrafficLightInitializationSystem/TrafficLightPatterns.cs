@@ -9,9 +9,10 @@ class TrafficLightPatterns {
     {
         Vanilla = 0,
         SplitPhasing = 1,
-        DoesThisExistInRealWorld = 2,
+        ProtectedCentreTurn = 2,
         SplitPhasingAdvanced = 3,
-        ExclusivePedestrian = 1 << 16
+        ExclusivePedestrian = 1 << 16,
+        AlwaysGreenKerbsideTurn = 2 << 16,
     }
 
     public static bool IsValidPattern(int ways, int pattern)
@@ -89,14 +90,7 @@ class TrafficLightPatterns {
             for (int i = 0; i < groups.Length; i++)
             {
                 TrafficLightInitializationSystem.LaneGroup group = groups[i];
-                group.m_GroupMask = 0;
-                groupCount = math.max(groupCount, group.m_GroupIndex);
-                groups[i] = group;
-            }
 
-            for (int i = 0; i < groups.Length; i++)
-            {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
                 group.m_GroupMask |= (ushort)(1 << (group.m_GroupIndex & 0xF));
 
                 if (leftHandTraffic && group.m_IsTurnLeft && groupLeft[group.m_GroupIndex] >= 0)
@@ -113,23 +107,16 @@ class TrafficLightPatterns {
             }
         }
 
-        if ((pattern & 0xFFFF) == (int) Pattern.DoesThisExistInRealWorld)
+        if ((pattern & 0xFFFF) == (int) Pattern.ProtectedCentreTurn)
         {
-            for (int i = 0; i < groups.Length; i++)
-            {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
-                group.m_GroupMask = ushort.MaxValue;
-                groups[i] = group;
-                groupCount = math.max(groupCount, group.m_GroupIndex);
-            }
-
+            int signalGroupIndex = 0;
             for (int currentGroupIndex = 0; currentGroupIndex < groupCount; currentGroupIndex++) {
-                bool modfied = false;
+                bool modified = false;
                 for (int i = 0; i < groups.Length; i++)
                 {
                     TrafficLightInitializationSystem.LaneGroup group = groups[i];
 
-                    if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
+                    if (group.m_GroupMask != 0 || group.m_GroupIndex != currentGroupIndex) {
                         continue;
                     }
 
@@ -145,27 +132,27 @@ class TrafficLightPatterns {
                                 ((leftHandTraffic && group2.m_IsTurnRight) || (!leftHandTraffic && group2.m_IsTurnLeft))
                             )
                             {
-                                group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                                group2.m_GroupMask |= (ushort)(1 << (signalGroupIndex & 0xF));
                                 groups[j] = group2;
                             }
                         }
-                        group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                        group.m_GroupMask |= (ushort)(1 << (signalGroupIndex & 0xF));
                         groups[i] = group;
-                        modfied = true;
+                        modified = true;
                     }
                 }
 
-                if (modfied)
+                if (modified)
                 {
-                    groupCount++;
-                    modfied = false;
+                    signalGroupIndex++;
+                    modified = false;
                 }
                 
                 for (int i = 0; i < groups.Length; i++)
                 {
                     TrafficLightInitializationSystem.LaneGroup group = groups[i];
 
-                    if (group.m_GroupMask != ushort.MaxValue || group.m_GroupIndex != currentGroupIndex) {
+                    if (group.m_GroupMask != 0 || group.m_GroupIndex != currentGroupIndex) {
                         continue;
                     }
 
@@ -181,20 +168,42 @@ class TrafficLightPatterns {
                                 ((leftHandTraffic && !group2.m_IsTurnRight) || (!leftHandTraffic && !group2.m_IsTurnLeft))
                             )
                             {
-                                group2.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                                group2.m_GroupMask |= (ushort)(1 << (signalGroupIndex & 0xF));
                                 groups[j] = group2;
                             }
                         }
-                        group.m_GroupMask = (ushort)(1 << (groupCount & 0xF));
+                        group.m_GroupMask |= (ushort)(1 << (signalGroupIndex & 0xF));
                         groups[i] = group;
-                        modfied = true;
+                        modified = true;
                     }
                 }
 
-                if (modfied)
+                if (modified)
                 {
-                    groupCount++;
+                    signalGroupIndex++;
                 }
+            }
+        }
+        
+        if ((pattern & (int) Pattern.AlwaysGreenKerbsideTurn) != 0)
+        {
+            ushort allGroupMask = 0;
+            for (int i = 0; i < groups.Length; i++)
+            {
+                allGroupMask |= groups[i].m_GroupMask;
+            }
+
+            for (int i = 0; i < groups.Length; i++)
+            {
+                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                if (
+                    (leftHandTraffic && group.m_IsTurnLeft) ||
+                    (!leftHandTraffic && group.m_IsTurnRight)
+                )
+                {
+                    group.m_GroupMask |= allGroupMask;
+                }
+                groups[i] = group;
             }
         }
 
