@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>TrafficLightsEnhancement</AssemblyName>
     <Description>TrafficLightsEnhancement</Description>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -25,5 +25,9 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
   </ItemGroup>
 </Project>

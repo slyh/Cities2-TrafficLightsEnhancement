@@ -8,7 +8,7 @@ public struct TrafficLightsData : IComponentData, IQueryTypeParameter, ISerializ
 {
     public const int DefaultSelectedPatternLength = 16;
 
-    NativeArray<int> m_SelectedPattern;
+    private NativeArray<int> m_SelectedPattern;
 
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
@@ -41,6 +41,11 @@ public struct TrafficLightsData : IComponentData, IQueryTypeParameter, ISerializ
     public int GetPattern(int ways)
     {
         return m_SelectedPattern[ways];
+    }
+
+    public NativeArray<int> GetPatterns()
+    {
+        return m_SelectedPattern;
     }
 
     public void SetPatterns(int[] patterns)

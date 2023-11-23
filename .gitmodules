@@ -1,0 +1,3 @@
+[submodule "CommonLibraries"]
+	path = CommonLibraries
+	url = git@github.com:C2VM/CommonLibraries.git

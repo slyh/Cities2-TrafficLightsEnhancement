@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightsEnhancement", "TrafficLightsEnhancement\TrafficLightsEnhancement.csproj", "{3BB0DFB3-6E30-47D9-AD56-F0DB22A73523}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonLibraries", "CommonLibraries", "{50E84A2F-0152-411F-95C9-1BF1D47E1302}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaneSystem", "CommonLibraries\LaneSystem\LaneSystem.csproj", "{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,5 +34,20 @@ Global
 		{3BB0DFB3-6E30-47D9-AD56-F0DB22A73523}.Release|x64.Build.0 = Release|Any CPU
 		{3BB0DFB3-6E30-47D9-AD56-F0DB22A73523}.Release|x86.ActiveCfg = Release|Any CPU
 		{3BB0DFB3-6E30-47D9-AD56-F0DB22A73523}.Release|x86.Build.0 = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|x64.Build.0 = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Debug|x86.Build.0 = Debug|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|x64.ActiveCfg = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|x64.Build.0 = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|x86.ActiveCfg = Release|Any CPU
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E67F3A52-9E03-4A59-9CD8-B69A4A941E26} = {50E84A2F-0152-411F-95C9-1BF1D47E1302}
 	EndGlobalSection
 EndGlobal

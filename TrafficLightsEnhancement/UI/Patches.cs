@@ -1,3 +1,4 @@
+using C2VM.CommonLibraries.LaneSystem;
 using Game.Prefabs;
 using HarmonyLib;
 using Unity.Entities;
@@ -21,23 +22,28 @@ class Patches
 
         if ((flags.m_General & CompositionFlags.General.TrafficLights) != 0)
         {
-            UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
-            ComponentLookup<PatchedClasses.TrafficLightsData> trafficLightsDataLookup = __instance.GetComponentLookup<PatchedClasses.TrafficLightsData>(false);
-
-            if (!trafficLightsDataLookup.HasComponent(entity))
+            BufferLookup<ConnectPositionSource> connectPositionSourceLookup = __instance.GetBufferLookup<ConnectPositionSource>(false);
+            if (!connectPositionSourceLookup.HasBuffer(entity))
             {
-                bool result = __instance.EntityManager.AddComponentData(entity, new PatchedClasses.TrafficLightsData(uiSystem.m_SelectedPattern));
-                if (!result)
-                {
-                    System.Console.WriteLine($"[SetAppliedUpgrade] Failed to add TrafficLightsData to entity {entity.ToString()}.");
-                }
+                __instance.EntityManager.AddBuffer<ConnectPositionSource>(entity);
             }
             else
             {
-                PatchedClasses.TrafficLightsData trafficLightsData = trafficLightsDataLookup[entity];
-                trafficLightsData.SetPatterns(uiSystem.m_SelectedPattern);
-                trafficLightsDataLookup[entity] = trafficLightsData;
+                connectPositionSourceLookup[entity].Clear();
             }
+
+            BufferLookup<ConnectPositionTarget> connectPositionTargetLookup = __instance.GetBufferLookup<ConnectPositionTarget>(false);
+            if (!connectPositionTargetLookup.HasBuffer(entity))
+            {
+                __instance.EntityManager.AddBuffer<ConnectPositionTarget>(entity);
+            }
+            else
+            {
+                connectPositionTargetLookup[entity].Clear();
+            }
+
+            UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
+            uiSystem.UpdateSelectedEntity(entity);
         }
     }
 
