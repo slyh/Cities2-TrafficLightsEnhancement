@@ -5,6 +5,7 @@ using C2VM.CommonLibraries.LaneSystem;
 using cohtml.Net;
 using Game;
 using Game.Common;
+using Game.Net;
 using Game.SceneFlow;
 using Newtonsoft.Json;
 using Unity.Entities;
@@ -130,12 +131,38 @@ public class UISystem : GameSystemBase
     {
     }
 
+    protected void UpdateEntity()
+    {
+        if (m_SelectedEntity != Entity.Null)
+        {
+            BufferLookup<SubLane> subLaneLookup = GetBufferLookup<SubLane>(false);
+            if (subLaneLookup.HasBuffer(m_SelectedEntity))
+            {
+                DynamicBuffer<SubLane> buffer = subLaneLookup[m_SelectedEntity];
+                foreach (SubLane subLane in buffer)
+                {
+                    EntityManager.AddComponentData(subLane.m_SubLane, default(Updated));
+                }
+            }
+            BufferLookup<ConnectedEdge> connectedEdgeLookup = GetBufferLookup<ConnectedEdge>(false);
+            if (connectedEdgeLookup.HasBuffer(m_SelectedEntity))
+            {
+                DynamicBuffer<ConnectedEdge> buffer = connectedEdgeLookup[m_SelectedEntity];
+                foreach (ConnectedEdge connectedEdge in buffer)
+                {
+                    EntityManager.AddComponentData(connectedEdge.m_Edge, default(Updated));
+                }
+            }
+            EntityManager.AddComponentData(m_SelectedEntity, default(Updated));
+        }
+    }
+
     protected void ResetLaneManagement(string input)
     {
         if (m_SelectedEntity != Entity.Null)
         {
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
-            EntityManager.AddComponent<Updated>(m_SelectedEntity);
+            UpdateEntity();
         }
     }
 
@@ -323,7 +350,7 @@ public class UISystem : GameSystemBase
                 DynamicBuffer<CustomLaneDirection> buffer = EntityManager.AddBuffer<CustomLaneDirection>(m_SelectedEntity);
                 buffer.Add(direction);
             }
-            EntityManager.AddComponent<Updated>(m_SelectedEntity);
+            UpdateEntity();
         }
         return "{}";
         // return RequestLaneManagementData(JsonConvert.SerializeObject(direction));
@@ -518,6 +545,6 @@ public class UISystem : GameSystemBase
             m_TrafficLightsDataLookup[m_SelectedEntity] = trafficLightsData;
         }
 
-        EntityManager.AddComponent<Updated>(m_SelectedEntity);
+        UpdateEntity();
     }
 }
