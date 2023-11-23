@@ -2,7 +2,7 @@ using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace TrafficLightsEnhancement.PatchedClasses;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 class TrafficLightPatterns {
     public enum Pattern : int
@@ -27,7 +27,7 @@ class TrafficLightPatterns {
         return false;
     }
 
-    public static void ProcessVehicleLaneGroups(ref NativeList<TrafficLightInitializationSystem.LaneGroup> vehicleLanes, ref NativeList<TrafficLightInitializationSystem.LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, int pattern)
+    public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, int pattern)
     {
         int[] groupLeft = new int[groups.Length];
         int[] groupRight = new int[groups.Length];
@@ -42,11 +42,11 @@ class TrafficLightPatterns {
 
         for (int i = 0; i < groups.Length; i++)
         {
-            TrafficLightInitializationSystem.LaneGroup group = groups[i];
+            LaneGroup group = groups[i];
 
             for (int j = 0; j < groups.Length; j++)
             {
-                TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
+                LaneGroup group2 = groups[j];
 
                 if (group.m_IsStraight && math.dot(group.m_EndDirection, group2.m_EndDirection) > 0.999f && math.dot(group.m_EndDirection, group2.m_StartDirection) > 0.999f)
                 {
@@ -79,7 +79,7 @@ class TrafficLightPatterns {
         {
             for (int i = 0; i < groups.Length; i++)
             {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                LaneGroup group = groups[i];
                 group.m_GroupMask = (ushort)(1 << (group.m_GroupIndex & 0xF));
                 groups[i] = group;
             }
@@ -89,7 +89,7 @@ class TrafficLightPatterns {
         {
             for (int i = 0; i < groups.Length; i++)
             {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                LaneGroup group = groups[i];
 
                 group.m_GroupMask |= (ushort)(1 << (group.m_GroupIndex & 0xF));
 
@@ -114,7 +114,7 @@ class TrafficLightPatterns {
                 bool modified = false;
                 for (int i = 0; i < groups.Length; i++)
                 {
-                    TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                    LaneGroup group = groups[i];
 
                     if (group.m_GroupMask != 0 || group.m_GroupIndex != currentGroupIndex) {
                         continue;
@@ -126,7 +126,7 @@ class TrafficLightPatterns {
                     ) {
                         for (int j = 0; j < groups.Length; j++)
                         {
-                            TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
+                            LaneGroup group2 = groups[j];
                             if (
                                 (group2.m_GroupIndex == groupStraight[group.m_GroupIndex]) &&
                                 ((leftHandTraffic && group2.m_IsTurnRight) || (!leftHandTraffic && group2.m_IsTurnLeft))
@@ -150,7 +150,7 @@ class TrafficLightPatterns {
                 
                 for (int i = 0; i < groups.Length; i++)
                 {
-                    TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                    LaneGroup group = groups[i];
 
                     if (group.m_GroupMask != 0 || group.m_GroupIndex != currentGroupIndex) {
                         continue;
@@ -162,7 +162,7 @@ class TrafficLightPatterns {
                     ) {
                         for (int j = 0; j < groups.Length; j++)
                         {
-                            TrafficLightInitializationSystem.LaneGroup group2 = groups[j];
+                            LaneGroup group2 = groups[j];
                             if (
                                 (group2.m_GroupIndex == groupStraight[group.m_GroupIndex]) && 
                                 ((leftHandTraffic && !group2.m_IsTurnRight) || (!leftHandTraffic && !group2.m_IsTurnLeft))
@@ -195,7 +195,7 @@ class TrafficLightPatterns {
 
             for (int i = 0; i < groups.Length; i++)
             {
-                TrafficLightInitializationSystem.LaneGroup group = groups[i];
+                LaneGroup group = groups[i];
                 if (
                     (leftHandTraffic && group.m_IsTurnLeft) ||
                     (!leftHandTraffic && group.m_IsTurnRight)

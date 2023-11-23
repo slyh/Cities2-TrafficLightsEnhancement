@@ -27,19 +27,19 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 4. Download the mod
 
-   * For BepInEx 5 users, download [C2VM_TrafficLightsEnhancement_BepInEx5.zip
-](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM_TrafficLightsEnhancement_BepInEx5.zip
-)
+   * For BepInEx 5 users, download [C2VM.TrafficLightsEnhancement-BepInEx5.zip](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx5.zip)
 
-   * For BepInEx 6 users, download [C2VM_TrafficLightsEnhancement_BepInEx6.zip
-](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM_TrafficLightsEnhancement_BepInEx6.zip
-)
+   * For BepInEx 6 users, download [C2VM.TrafficLightsEnhancement-BepInEx6.zip](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx6.zip)
 
 5. Unzip the downloaded file into the `Cities Skylines II/BepInEx/plugins` folder
 
-6. Launch the game, mods should be loaded automatically
+   * Don't forget to uninstall the old version of the mod to avoid conflicts
+
+6. Launch the game, the mod should be loaded automatically
 
 ## Thanks
+
+[PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insight on the inner workings of the lane system
 
 [Cities2Modding](https://github.com/optimus-code/Cities2Modding): Info dump / guides for Cities Skylines 2 modding
 

@@ -3,7 +3,7 @@ using Game.Prefabs;
 using HarmonyLib;
 using Unity.Entities;
 
-namespace TrafficLightsEnhancement.UI;
+namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
 [HarmonyPatch]
 class Patches

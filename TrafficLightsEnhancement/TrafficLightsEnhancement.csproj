@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
-    <AssemblyName>TrafficLightsEnhancement</AssemblyName>
-    <Description>TrafficLightsEnhancement</Description>
+    <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
+    <Description>C2VM.TrafficLightsEnhancement</Description>
     <Version>0.2.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
@@ -12,7 +12,7 @@
       https://nuget.bepinex.dev/v3/index.json;
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
-    <RootNamespace>TrafficLightsEnhancement</RootNamespace>
+    <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -4,6 +4,7 @@
 #endregion
 
 using System.Runtime.CompilerServices;
+using C2VM.TrafficLightsEnhancement.Components;
 using Colossal.Mathematics;
 using Game;
 using Game.Common;
@@ -17,36 +18,11 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
 
-namespace TrafficLightsEnhancement.PatchedClasses;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 [CompilerGenerated]
-public class TrafficLightInitializationSystem : GameSystemBase
+public class PatchedTrafficLightInitializationSystem : GameSystemBase
 {
-    public struct LaneGroup
-    {
-        public float2 m_StartDirection;
-
-        public float2 m_EndDirection;
-
-        public int2 m_LaneRange;
-
-        public int m_GroupIndex;
-
-        public ushort m_GroupMask;
-
-        public bool m_IsStraight;
-
-        public bool m_IsCombined;
-
-        public bool m_IsUnsafe;
-
-        public bool m_IsTrack;
-
-        public bool m_IsTurnLeft;
-
-        public bool m_IsTurnRight;
-    }
-
     [BurstCompile]
     private struct InitializeTrafficLightsJob : IJobChunk
     {
@@ -79,7 +55,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
         [NativeDisableParallelForRestriction]
         public ComponentLookup<LaneSignal> m_LaneSignalData;
 
-        public ComponentTypeHandle<PatchedClasses.TrafficLightsData> m_TrafficLightsDataType;
+        public ComponentTypeHandle<CustomTrafficLights> m_CustomTrafficLightsType;
 
         public bool m_LeftHandTraffic;
 
@@ -90,23 +66,23 @@ public class TrafficLightInitializationSystem : GameSystemBase
             NativeList<LaneGroup> pedestrianLanes = new NativeList<LaneGroup>(16, Allocator.Temp);
             NativeArray<TrafficLights> nativeArray = chunk.GetNativeArray(ref m_TrafficLightsType);
             BufferAccessor<SubLane> bufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
-            NativeArray<TrafficLightsData> trafficLightsDataArray = chunk.GetNativeArray(ref m_TrafficLightsDataType);
+            NativeArray<CustomTrafficLights> customTrafficLightsArray = chunk.GetNativeArray(ref m_CustomTrafficLightsType);
             for (int i = 0; i < nativeArray.Length; i++)
             {
                 TrafficLights trafficLights = nativeArray[i];
                 DynamicBuffer<SubLane> subLanes = bufferAccessor[i];
-                TrafficLightsData trafficLightsData;
-                if (i < trafficLightsDataArray.Length)
+                CustomTrafficLights customTrafficLights;
+                if (i < customTrafficLightsArray.Length)
                 {
-                    trafficLightsData = trafficLightsDataArray[i];
+                    customTrafficLights = customTrafficLightsArray[i];
                 }
                 else
                 {
-                    trafficLightsData = new TrafficLightsData();
+                    customTrafficLights = new CustomTrafficLights();
                 }
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
-                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref trafficLightsData, out int ways, out int pattern);
+                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref customTrafficLights, out int ways, out int pattern);
                 ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, ways, pattern);
                 InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
                 nativeArray[i] = trafficLights;
@@ -191,7 +167,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, ref TrafficLightsData trafficLightsData, out int ways, out int pattern)
+        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, ref CustomTrafficLights customTrafficLights, out int ways, out int pattern)
         {
             groupCount = 0;
             while (vehicleLanes.Length > 0)
@@ -204,7 +180,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 while (num < vehicleLanes.Length)
                 {
                     LaneGroup value2 = vehicleLanes[num];
-                      if ((!isLevelCrossing | (value.m_IsTrack == value2.m_IsTrack)) && math.dot(value.m_StartDirection, value2.m_StartDirection) > 0.999f)
+                    if ((!isLevelCrossing | (value.m_IsTrack == value2.m_IsTrack)) && math.dot(value.m_StartDirection, value2.m_StartDirection) > 0.999f)
                     {
                         value2.m_GroupIndex = value.m_GroupIndex;
                         groups.Add(in value2);
@@ -224,7 +200,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
                 ways = math.max(group.m_GroupIndex, ways);
             }
             ways++;
-            pattern = trafficLightsData.GetPattern(ways);
+            pattern = customTrafficLights.GetPattern(ways);
 
             int i = 0;
             groupCount = 0;
@@ -513,7 +489,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
 
         public ComponentLookup<LaneSignal> __Game_Net_LaneSignal_RW_ComponentLookup;
 
-        public ComponentTypeHandle<PatchedClasses.TrafficLightsData> __TrafficLightsData_RW_ComponentTypeHandle;
+        public ComponentTypeHandle<CustomTrafficLights> __CustomTrafficLights_RW_ComponentTypeHandle;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void __AssignHandles(ref SystemState state)
@@ -528,7 +504,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
             __Game_Net_Curve_RO_ComponentLookup = state.GetComponentLookup<Curve>(isReadOnly: true);
             __Game_Net_LaneOverlap_RO_BufferLookup = state.GetBufferLookup<LaneOverlap>(isReadOnly: true);
             __Game_Net_LaneSignal_RW_ComponentLookup = state.GetComponentLookup<LaneSignal>();
-            __TrafficLightsData_RW_ComponentTypeHandle = state.GetComponentTypeHandle<TrafficLightsData>();
+            __CustomTrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<CustomTrafficLights>();
         }
     }
 
@@ -564,10 +540,10 @@ public class TrafficLightInitializationSystem : GameSystemBase
         __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
-        __TypeHandle.__TrafficLightsData_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
+        __TypeHandle.__CustomTrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         InitializeTrafficLightsJob jobData = new InitializeTrafficLightsJob{
             m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic,
-            m_TrafficLightsDataType = __TypeHandle.__TrafficLightsData_RW_ComponentTypeHandle
+            m_CustomTrafficLightsType = __TypeHandle.__CustomTrafficLights_RW_ComponentTypeHandle
         };
         jobData.m_SubLaneType = __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle;
         jobData.m_TrafficLightsType = __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle;
@@ -596,7 +572,7 @@ public class TrafficLightInitializationSystem : GameSystemBase
     }
 
     [Preserve]
-    public TrafficLightInitializationSystem()
+    public PatchedTrafficLightInitializationSystem()
     {
     }
 }

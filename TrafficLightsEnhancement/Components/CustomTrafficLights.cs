@@ -2,9 +2,9 @@ using Colossal.Serialization.Entities;
 using Unity.Collections;
 using Unity.Entities;
 
-namespace TrafficLightsEnhancement.PatchedClasses;
+namespace C2VM.TrafficLightsEnhancement.Components;
 
-public struct TrafficLightsData : IComponentData, IQueryTypeParameter, ISerializable
+public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerializable
 {
     public const int DefaultSelectedPatternLength = 16;
 
@@ -28,12 +28,12 @@ public struct TrafficLightsData : IComponentData, IQueryTypeParameter, ISerializ
         }
     }
 
-    public TrafficLightsData()
+    public CustomTrafficLights()
     {
         m_SelectedPattern = new NativeArray<int>(DefaultSelectedPatternLength, Allocator.Persistent);
     }
 
-    public TrafficLightsData(int[] patterns)
+    public CustomTrafficLights(int[] patterns)
     {
         m_SelectedPattern = new NativeArray<int>(patterns, Allocator.Persistent);
     }
