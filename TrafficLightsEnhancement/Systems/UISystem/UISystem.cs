@@ -101,6 +101,12 @@ public class UISystem : GameSystemBase
 
     private ComponentLookup<CustomTrafficLights> m_CustomTrafficLightsLookup;
 
+    private BufferLookup<ConnectedEdge> m_ConnectedEdgeLookup;
+
+    private ComponentLookup<Edge> m_EdgeLookup;
+
+    private BufferLookup<SubLane> m_SubLaneLookup;
+
     protected override void OnCreate()
     {
         base.OnCreate();
@@ -113,6 +119,9 @@ public class UISystem : GameSystemBase
         m_ConnectPositionTargetLookup = GetBufferLookup<ConnectPositionTarget>(false);
         m_CustomLaneDirectionLookup = GetBufferLookup<CustomLaneDirection>(false);
         m_CustomTrafficLightsLookup = GetComponentLookup<CustomTrafficLights>(false);
+        m_ConnectedEdgeLookup = GetBufferLookup<ConnectedEdge>(false);
+        m_EdgeLookup = GetComponentLookup<Edge>(false);
+        m_SubLaneLookup = GetBufferLookup<SubLane>(false);
 
         m_View = GameManager.instance.userInterface.view.View;
         m_View.BindCall("C2VM-TLE-ToggleLaneManagement", ToggleLaneManagement);
@@ -137,22 +146,26 @@ public class UISystem : GameSystemBase
     {
         if (m_SelectedEntity != Entity.Null)
         {
-            BufferLookup<SubLane> subLaneLookup = GetBufferLookup<SubLane>(false);
-            if (subLaneLookup.HasBuffer(m_SelectedEntity))
+            if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
             {
-                DynamicBuffer<SubLane> buffer = subLaneLookup[m_SelectedEntity];
+                DynamicBuffer<SubLane> buffer = m_SubLaneLookup[m_SelectedEntity];
                 foreach (SubLane subLane in buffer)
                 {
                     EntityManager.AddComponentData(subLane.m_SubLane, default(Updated));
                 }
             }
-            BufferLookup<ConnectedEdge> connectedEdgeLookup = GetBufferLookup<ConnectedEdge>(false);
-            if (connectedEdgeLookup.HasBuffer(m_SelectedEntity))
+            if (m_ConnectedEdgeLookup.HasBuffer(m_SelectedEntity))
             {
-                DynamicBuffer<ConnectedEdge> buffer = connectedEdgeLookup[m_SelectedEntity];
+                DynamicBuffer<ConnectedEdge> buffer = m_ConnectedEdgeLookup[m_SelectedEntity];
                 foreach (ConnectedEdge connectedEdge in buffer)
                 {
                     EntityManager.AddComponentData(connectedEdge.m_Edge, default(Updated));
+                    if (m_EdgeLookup.HasComponent(connectedEdge.m_Edge))
+                    {
+                        Edge edge = m_EdgeLookup[connectedEdge.m_Edge];
+                        EntityManager.AddComponentData(edge.m_Start, default(Updated));
+                        EntityManager.AddComponentData(edge.m_End, default(Updated));
+                    }
                 }
             }
             EntityManager.AddComponentData(m_SelectedEntity, default(Updated));
