@@ -22,6 +22,14 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
     <Reference Include="../Managed/*.dll" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localisations/*.restext">
+      <StronglyTypedLanguage>C#</StronglyTypedLanguage>
+      <StronglyTypedNamespace>$(RootNamespace).Localisations</StronglyTypedNamespace>
+      <StronglyTypedClassName>%(Filename)</StronglyTypedClassName>
+    </EmbeddedResource>
+  </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />

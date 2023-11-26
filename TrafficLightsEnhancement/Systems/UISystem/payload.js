@@ -107,6 +107,29 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
                 background-color: rgba(6, 10, 16, 0.7);
                 width: 100%;
             }
+            @keyframes notification-warning {
+                to {
+                  background-color: rgba(200, 0, 0, 0.5);
+                }
+              }
+            .c2vm-tle-panel-row[data-notification-type="warning"] {
+                animation-timing-function: linear;
+                animation-duration: 2s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+                animation-name: notification-warning;
+                border-radius: 3rem;
+                padding: 8rem;
+            }
+            .c2vm-tle-panel-notification-image {
+                width: 20rem;
+                height: 20rem;
+                margin-right: 10rem;
+            }
+            .c2vm-tle-panel-notification-text {
+                color: rgba(217, 217, 217, 1);
+                flex: 1;
+            }
 
             .c2vm-tle-lane-panel {
                 width: 200rem;
@@ -316,6 +339,22 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
                 if (item.engineEventName == "C2VM-TLE-ToggleLaneManagement" && item.value == 1) {
                     removeLaneManagementButtons = false;
                 }
+            }
+            if (item.itemType == "notification") {
+                const row = document.createElement("div");
+                row.classList.add("c2vm-tle-panel-row");
+                for (const key in item) {
+                    row.dataset[key] = item[key];
+                }
+                const img = document.createElement("img");
+                img.src = "Media/Game/Icons/AdvisorNotifications.svg";
+                img.classList.add("c2vm-tle-panel-notification-image");
+                const labelDiv = document.createElement("div");
+                labelDiv.classList.add("c2vm-tle-panel-notification-text");
+                labelDiv.innerHTML = item.label;
+                row.appendChild(img);
+                row.appendChild(labelDiv);
+                content.appendChild(row);
             }
         }
 
@@ -562,6 +601,7 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             }
         });
     };
+
     setInterval(updateLaneButtonPosition, 100);
 
     engine.call("C2VM-TLE-RequestMenuData").then(menuUpdateCallback);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Resources;
 using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
@@ -11,6 +12,7 @@ using Game.Net;
 using Game.SceneFlow;
 using Newtonsoft.Json;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
@@ -73,6 +75,18 @@ public class UISystem : GameSystemBase
         public string engineEventName;
     }
 
+    public struct MenuItemNotification {
+        [JsonProperty]
+        const string itemType = "notification";
+
+        [JsonProperty]
+        const string type = "c2vm-tle-panel-notification";
+
+        public string label;
+
+        public string notificationType;
+    }
+
     public struct WorldToScreen {
         public float x;
 
@@ -83,6 +97,8 @@ public class UISystem : GameSystemBase
 
     public bool m_IsLaneManagementToolOpen;
 
+    public bool m_ShowNotificationUnsaved;
+
     public Dictionary<string, int> m_Options;
 
     public int[] m_SelectedPattern;
@@ -90,6 +106,12 @@ public class UISystem : GameSystemBase
     public Entity m_SelectedEntity;
 
     private View m_View;
+
+    private int m_Ways;
+
+    private ResourceManager m_ResourceManager;
+
+    private string m_Locale;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
@@ -99,11 +121,25 @@ public class UISystem : GameSystemBase
 
     private BufferLookup<CustomLaneDirection> m_CustomLaneDirectionLookup;
 
-    private ComponentLookup<CustomTrafficLights> m_CustomTrafficLightsLookup;
-
     private BufferLookup<ConnectedEdge> m_ConnectedEdgeLookup;
 
+    private ComponentLookup<CarLane> m_CarLaneLookup;
+
+    private ComponentLookup<Curve> m_CurveLookup;
+
+    private ComponentLookup<CustomTrafficLights> m_CustomTrafficLightsLookup;
+
     private ComponentLookup<Edge> m_EdgeLookup;
+
+    private ComponentLookup<LaneSignal> m_LaneSignalLookup;
+
+    private ComponentLookup<MasterLane> m_MasterLaneLookup;
+
+    private ComponentLookup<PedestrianLane> m_PedestrianLaneLookup;
+
+    private ComponentLookup<SlaveLane> m_SlaveLaneLookup;
+
+    private ComponentLookup<SecondaryLane> m_SecondaryLaneLookup;
 
     private BufferLookup<SubLane> m_SubLaneLookup;
 
@@ -120,8 +156,18 @@ public class UISystem : GameSystemBase
         m_CustomLaneDirectionLookup = GetBufferLookup<CustomLaneDirection>(false);
         m_CustomTrafficLightsLookup = GetComponentLookup<CustomTrafficLights>(false);
         m_ConnectedEdgeLookup = GetBufferLookup<ConnectedEdge>(false);
+        m_CarLaneLookup = GetComponentLookup<CarLane>(true);
+        m_CurveLookup = GetComponentLookup<Curve>(true);
         m_EdgeLookup = GetComponentLookup<Edge>(false);
+        m_LaneSignalLookup = GetComponentLookup<LaneSignal>(true);
+        m_MasterLaneLookup = GetComponentLookup<MasterLane>(true);
+        m_PedestrianLaneLookup = GetComponentLookup<PedestrianLane>(true);
+        m_SlaveLaneLookup = GetComponentLookup<SlaveLane>(true);
+        m_SecondaryLaneLookup = GetComponentLookup<SecondaryLane>(true);
         m_SubLaneLookup = GetBufferLookup<SubLane>(false);
+
+        m_Locale = GetLocale();
+        m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_Locale, typeof(UISystem).Assembly);
 
         m_View = GameManager.instance.userInterface.view.View;
         m_View.BindCall("C2VM-TLE-ToggleLaneManagement", ToggleLaneManagement);
@@ -134,12 +180,27 @@ public class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-PatternChanged", PatternChanged);
         m_View.BindCall("C2VM-TLE-CustomLaneDirectionChanged", CustomLaneDirectionChanged);
         m_View.ExecuteScript("""
-            if(!document.querySelector("div.c2vm-tle-panel")){const e=document.createElement("div");e.innerHTML='\n        <div class="c2vm-tle-panel">\n            <div class="c2vm-tle-panel-header">\n                <img class="c2vm-tle-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />\n                <div class="c2vm-tle-panel-header-title">Traffic Lights Enhancement</div>\n            </div>\n            <div class="c2vm-tle-panel-content"></div>\n        </div>\n        <style>\n            .c2vm-tle-panel {\n                width: 300rem;\n                position: absolute;\n                top: calc(10rem+ var(--floatingToggleSize) +6rem);\n                left: 10rem;\n            }\n            .c2vm-tle-panel-header {\n                border-radius: 4rem 4rem 0rem 0rem;\n                background-color: rgba(24, 33, 51, 0.6);\n                backdrop-filter: blur(5px);\n                color: rgba(75, 195, 241, 1);\n                font-size: 14rem;\n                padding: 6rem 10rem;\n                min-height: 36rem;\n                display: flex;\n                flex-direction: row;\n                align-items: center;\n            }\n            .c2vm-tle-panel-header-image {\n                width: 24rem;\n                height: 24rem;\n            }\n            .c2vm-tle-panel-header > .c2vm-tle-panel-header-title {\n                text-transform: uppercase;\n                flex: 1;\n                text-align: center;\n                overflow-x: hidden;\n                overflow-y: hidden;\n                text-overflow: ellipsis;\n                white-space: nowrap;\n            }\n            .c2vm-tle-panel-content {\n                border-radius: 0rem 0rem 4rem 4rem;\n                background-color: rgba(42, 55, 83, 0.437500);\n                backdrop-filter: blur(5px);\n                color: rgba(255, 255, 255, 1);\n                flex: 1;\n                position: relative;\n                padding: 6rem;\n            }\n            .c2vm-tle-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-panel-row-divider {\n                height: 2px;\n                width: auto;\n                border: 2px solid rgba(255, 255, 255, 0.1);\n                margin: 6rem -6rem;\n            }\n            .c2vm-tle-panel-secondary-text {\n                color: rgba(217, 217, 217, 1);\n            }\n            .c2vm-tle-panel-radio {\n                border: 2px solid rgba(75, 195, 241, 1);\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 3px;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet {\n                width: 100%;\n                height: 100%;\n                background-color:  white;\n                opacity: 0;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n\n            .c2vm-tle-lane-panel {\n                width: 200rem;\n                display: none;\n            }\n            .c2vm-tle-lane-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-lane-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                background-color: rgba(6, 10, 16, 0.7);\n            }\n            .c2vm-tle-lane-button > img {\n                width: 28rem;\n                height: 28rem;\n            }\n            .c2vm-tle-lane-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-lane-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n        </style>\n    ';document.querySelector("body").appendChild(e);const n=()=>{const e=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"] .c2vm-tle-panel-radio-bullet');for(const n of e)n.classList.remove("c2vm-tle-panel-radio-bullet-checked")},t=e=>{n();const t=JSON.parse(e);for(const e in t){const n=e,a=65535&t[n],l=document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${n}"][data-pattern="${a}"] .c2vm-tle-panel-radio-bullet`);l&&l.classList.add("c2vm-tle-panel-radio-bullet-checked")}},a=e=>{n();const a=e.currentTarget.dataset;engine.call("C2VM-TLE-PatternChanged",`${a.ways}_${a.pattern}`).then(t)},l=()=>{const e=document.querySelectorAll('.c2vm-tle-panel [data-type="c2vm-tle-panel-option"]');for(const n of e){n.dataset.value=0;const e=n.querySelector(".c2vm-tle-panel-checkbox-checkmark");e&&e.classList.remove("c2vm-tle-panel-checkbox-checkmark-checked")}},c=e=>{l();const n=JSON.parse(e);for(const e in n){const t=n[e],a=document.querySelector(`[data-type="c2vm-tle-panel-option"][data-key="${e}"]`);if(!a)continue;a.dataset.value=t;const l=a.querySelector(".c2vm-tle-panel-checkbox-checkmark");l&&1===t&&l.classList.add("c2vm-tle-panel-checkbox-checkmark-checked")}},r=e=>{const n=e.currentTarget.dataset;let t=0;0==n.value&&(t=1),l(),engine.call("C2VM-TLE-OptionChanged",`${n.key}_${t}`).then(c)},o=e=>{const n=e.currentTarget.dataset;"C2VM-TLE-RequestMenuSave"==n.engineEventName?d():engine.call(n.engineEventName,`${n.key}_${n.value}`)},d=()=>{engine.call("C2VM-TLE-RequestMenuSave","save_1")},i=()=>{const e=document.querySelector("body");for(const n of e.children)n.classList.contains("c2vm-tle-lane-button")&&e.removeChild(n)},s=e=>{const n=JSON.parse(e),l=document.querySelector(".c2vm-tle-panel-content");for(;l.firstChild;)l.removeChild(l.lastChild);let d=!0;for(const e of n)if(e.itemType){if("divider"==e.itemType){const e=document.createElement("div");e.classList.add("c2vm-tle-panel-row-divider"),l.appendChild(e)}if("title"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row"),n.innerHTML=e.title,l.appendChild(n)}if("radio"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-radio">\n                        <div class="c2vm-tle-panel-radio-bullet"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-checkbox">\n                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <button class="c2vm-tle-panel-button">${e.label}</button>\n                `,l.appendChild(n),"C2VM-TLE-ToggleLaneManagement"==e.engineEventName&&1==e.value&&(d=!1)}}d&&i();const s=document.querySelectorAll('[data-type="c2vm-tle-panel-option"]');for(const e of s)e.onclick=r;const m=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"]');for(const e of m)e.dataset.ways&&e.dataset.ways>0&&(e.onclick=a);const p=document.querySelectorAll('[data-type="c2vm-tle-panel-button"]');for(const e of p)e.onclick=o;engine.call("C2VM-TLE-PatternChanged","").then(t),engine.call("C2VM-TLE-OptionChanged","").then(c)};engine.call("C2VM-TLE-RequestMenuData").then(s),engine.on("C2VM-TLE-Event-UpdateMenu",s);const m=e=>{const n=e.currentTarget.dataset,t=e.currentTarget.querySelector(".c2vm-tle-lane-panel-checkbox-checkmark");t&&t.classList.remove("c2vm-tle-lane-panel-checkbox-checkmark-checked"),"False"==n.value?(n.value="True",t&&t.classList.add("c2vm-tle-lane-panel-checkbox-checkmark-checked")):n.value="False"},p=e=>{const n=e.currentTarget.dataset;if("C2VM-TLE-CustomLaneDirectionChanged"==n.engineEventName){let t=!0,a=!0,l=!0,c=!0;const r=e.currentTarget.parentElement.parentElement.dataset,o=e.currentTarget.parentElement.querySelectorAll('[data-item-type="checkbox"]');for(const e of o)"m_BanLeft"==e.dataset.key&&"True"==e.dataset.value&&(t=!1),"m_BanRight"==e.dataset.key&&"True"==e.dataset.value&&(a=!1),"m_BanStraight"==e.dataset.key&&"True"==e.dataset.value&&(l=!1),"m_BanUTurn"==e.dataset.key&&"True"==e.dataset.value&&(c=!1);const d=JSON.stringify({m_Type:0,m_SourcePosition:{x:r.worldX,y:r.worldY,z:r.worldZ},m_Restriction:{m_BanLeft:t,m_BanRight:a,m_BanStraight:l,m_BanUTurn:c}});engine.call(n.engineEventName,d).then((()=>{}));const i=e.currentTarget.parentElement;for(i.style.display="none";i.firstChild;)i.removeChild(i.lastChild);const s=document.querySelectorAll(".c2vm-tle-lane-button");for(const e of s)e.style.display="block";e.stopPropagation()}},u=e=>{const n=e.currentTarget.dataset;e.currentTarget.querySelector(".c2vm-tle-lane-panel")&&0==e.currentTarget.querySelector(".c2vm-tle-lane-panel").children.length&&engine.call("C2VM-TLE-RequestLaneManagementData",JSON.stringify({m_SourcePosition:{x:n.worldX,y:n.worldY,z:n.worldZ},m_Restriction:{m_BanLeft:!0,m_BanRight:!0,m_BanStraight:!0,m_BanUTurn:!0}})).then(v);const t=document.querySelectorAll(".c2vm-tle-lane-button");for(const n of t)n!==e.currentTarget&&(n.style.display="none")},v=e=>{try{const n=JSON.parse(e),t=n[0],a=document.querySelector(`[data-world-x="${t.x}"][data-world-y="${t.y}"][data-world-z="${t.z}"]`).querySelector(".c2vm-tle-lane-panel");if(!a)return void console.log("Panel not found.",t,a);for(a.style.display="block";a.firstChild;)a.removeChild(a.lastChild);const l=document.createElement("div");l.classList.add("c2vm-tle-lane-panel-row"),l.style.color="white",l.innerHTML="Lane Direction",a.appendChild(l);for(const e of n)if(e.itemType){if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];"True"==e.value?n.dataset.value="False":n.dataset.value="True",n.innerHTML+=`\n                        <div class="c2vm-tle-lane-panel-checkbox">\n                            <div class="c2vm-tle-lane-panel-checkbox-checkmark ${"True"==n.dataset.value?"c2vm-tle-lane-panel-checkbox-checkmark-checked":""}"></div>\n                        </div>\n                        <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                    `,n.onclick=m,a.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                        <button class="c2vm-tle-lane-panel-button">${e.label}</button>\n                    `,n.onclick=p,a.appendChild(n)}}}catch(e){console.log(e)}};engine.on("C2VM-TLE-Event-ConnectPosition",(function(e){const n=JSON.parse(e);for(const e of n.source){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-button"),n.innerHTML='\n                <img src="Media/Game/Icons/RoadsServices.svg">\n                <div class="c2vm-tle-lane-panel"></div>\n            ',n.dataset.worldX=e.world.x,n.dataset.worldY=e.world.y,n.dataset.worldZ=e.world.z,n.style.position="absolute",n.onclick=u,document.querySelector("body").appendChild(n)}}));setInterval((()=>{const e=[...document.querySelectorAll("div.c2vm-tle-lane-button")].map((e=>({x:e.dataset.worldX,y:e.dataset.worldY,z:e.dataset.worldZ})));0!=e.length&&engine.call("C2VM-TLE-RequestWorldToScreen",JSON.stringify(e)).then((e=>{try{const n=JSON.parse(e);for(const e of n){const n=document.querySelector(`div.c2vm-tle-lane-button[data-world-x="${e.world.x}"][data-world-y="${e.world.y}"][data-world-z="${e.world.z}"]`);n&&(n.style.left=e.screen.x-17+"px",n.style.bottom=e.screen.y-17+"px")}}catch(e){console.log(e)}}))}),100),engine.call("C2VM-TLE-RequestMenuData").then(s);const h=document.querySelector("body"),g={attributes:!0,childList:!0,subtree:!0};new MutationObserver(((e,n)=>{const t=document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img"),a=document.querySelector("div.c2vm-tle-panel");a&&(t&&"Media/Game/Icons/TrafficLights.svg"==t.src?a.style.display="block":"none"!=a.style.display&&(a.style.display="none",i(),d()))})).observe(h,g)}
+            if(!document.querySelector("div.c2vm-tle-panel")){const e=document.createElement("div");e.innerHTML='\n        <div class="c2vm-tle-panel">\n            <div class="c2vm-tle-panel-header">\n                <img class="c2vm-tle-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />\n                <div class="c2vm-tle-panel-header-title">Traffic Lights Enhancement</div>\n            </div>\n            <div class="c2vm-tle-panel-content"></div>\n        </div>\n        <style>\n            .c2vm-tle-panel {\n                width: 300rem;\n                position: absolute;\n                top: calc(10rem+ var(--floatingToggleSize) +6rem);\n                left: 10rem;\n            }\n            .c2vm-tle-panel-header {\n                border-radius: 4rem 4rem 0rem 0rem;\n                background-color: rgba(24, 33, 51, 0.6);\n                backdrop-filter: blur(5px);\n                color: rgba(75, 195, 241, 1);\n                font-size: 14rem;\n                padding: 6rem 10rem;\n                min-height: 36rem;\n                display: flex;\n                flex-direction: row;\n                align-items: center;\n            }\n            .c2vm-tle-panel-header-image {\n                width: 24rem;\n                height: 24rem;\n            }\n            .c2vm-tle-panel-header > .c2vm-tle-panel-header-title {\n                text-transform: uppercase;\n                flex: 1;\n                text-align: center;\n                overflow-x: hidden;\n                overflow-y: hidden;\n                text-overflow: ellipsis;\n                white-space: nowrap;\n            }\n            .c2vm-tle-panel-content {\n                border-radius: 0rem 0rem 4rem 4rem;\n                background-color: rgba(42, 55, 83, 0.437500);\n                backdrop-filter: blur(5px);\n                color: rgba(255, 255, 255, 1);\n                flex: 1;\n                position: relative;\n                padding: 6rem;\n            }\n            .c2vm-tle-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-panel-row-divider {\n                height: 2px;\n                width: auto;\n                border: 2px solid rgba(255, 255, 255, 0.1);\n                margin: 6rem -6rem;\n            }\n            .c2vm-tle-panel-secondary-text {\n                color: rgba(217, 217, 217, 1);\n            }\n            .c2vm-tle-panel-radio {\n                border: 2px solid rgba(75, 195, 241, 1);\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 3px;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet {\n                width: 100%;\n                height: 100%;\n                background-color:  white;\n                opacity: 0;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n            @keyframes notification-warning {\n                to {\n                  background-color: rgba(200, 0, 0, 0.5);\n                }\n              }\n            .c2vm-tle-panel-row[data-notification-type="warning"] {\n                animation-timing-function: linear;\n                animation-duration: 2s;\n                animation-iteration-count: infinite;\n                animation-direction: alternate;\n                animation-name: notification-warning;\n                border-radius: 3rem;\n                padding: 8rem;\n            }\n            .c2vm-tle-panel-notification-image {\n                width: 20rem;\n                height: 20rem;\n                margin-right: 10rem;\n            }\n            .c2vm-tle-panel-notification-text {\n                color: rgba(217, 217, 217, 1);\n                flex: 1;\n            }\n\n            .c2vm-tle-lane-panel {\n                width: 200rem;\n                display: none;\n            }\n            .c2vm-tle-lane-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-lane-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                background-color: rgba(6, 10, 16, 0.7);\n            }\n            .c2vm-tle-lane-button > img {\n                width: 28rem;\n                height: 28rem;\n            }\n            .c2vm-tle-lane-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-lane-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n        </style>\n    ';document.querySelector("body").appendChild(e);const n=()=>{const e=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"] .c2vm-tle-panel-radio-bullet');for(const n of e)n.classList.remove("c2vm-tle-panel-radio-bullet-checked")},t=e=>{n();const t=JSON.parse(e);for(const e in t){const n=e,a=65535&t[n],l=document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${n}"][data-pattern="${a}"] .c2vm-tle-panel-radio-bullet`);l&&l.classList.add("c2vm-tle-panel-radio-bullet-checked")}},a=e=>{n();const a=e.currentTarget.dataset;engine.call("C2VM-TLE-PatternChanged",`${a.ways}_${a.pattern}`).then(t)},l=()=>{const e=document.querySelectorAll('.c2vm-tle-panel [data-type="c2vm-tle-panel-option"]');for(const n of e){n.dataset.value=0;const e=n.querySelector(".c2vm-tle-panel-checkbox-checkmark");e&&e.classList.remove("c2vm-tle-panel-checkbox-checkmark-checked")}},c=e=>{l();const n=JSON.parse(e);for(const e in n){const t=n[e],a=document.querySelector(`[data-type="c2vm-tle-panel-option"][data-key="${e}"]`);if(!a)continue;a.dataset.value=t;const l=a.querySelector(".c2vm-tle-panel-checkbox-checkmark");l&&1===t&&l.classList.add("c2vm-tle-panel-checkbox-checkmark-checked")}},o=e=>{const n=e.currentTarget.dataset;let t=0;0==n.value&&(t=1),l(),engine.call("C2VM-TLE-OptionChanged",`${n.key}_${t}`).then(c)},r=e=>{const n=e.currentTarget.dataset;"C2VM-TLE-RequestMenuSave"==n.engineEventName?i():engine.call(n.engineEventName,`${n.key}_${n.value}`)},i=()=>{engine.call("C2VM-TLE-RequestMenuSave","save_1")},d=()=>{const e=document.querySelector("body");for(const n of e.children)n.classList.contains("c2vm-tle-lane-button")&&e.removeChild(n)},s=e=>{const n=JSON.parse(e),l=document.querySelector(".c2vm-tle-panel-content");for(;l.firstChild;)l.removeChild(l.lastChild);let i=!0;for(const e of n)if(e.itemType){if("divider"==e.itemType){const e=document.createElement("div");e.classList.add("c2vm-tle-panel-row-divider"),l.appendChild(e)}if("title"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row"),n.innerHTML=e.title,l.appendChild(n)}if("radio"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-radio">\n                        <div class="c2vm-tle-panel-radio-bullet"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-checkbox">\n                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <button class="c2vm-tle-panel-button">${e.label}</button>\n                `,l.appendChild(n),"C2VM-TLE-ToggleLaneManagement"==e.engineEventName&&1==e.value&&(i=!1)}if("notification"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];const t=document.createElement("img");t.src="Media/Game/Icons/AdvisorNotifications.svg",t.classList.add("c2vm-tle-panel-notification-image");const a=document.createElement("div");a.classList.add("c2vm-tle-panel-notification-text"),a.innerHTML=e.label,n.appendChild(t),n.appendChild(a),l.appendChild(n)}}i&&d();const s=document.querySelectorAll('[data-type="c2vm-tle-panel-option"]');for(const e of s)e.onclick=o;const m=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"]');for(const e of m)e.dataset.ways&&e.dataset.ways>0&&(e.onclick=a);const p=document.querySelectorAll('[data-type="c2vm-tle-panel-button"]');for(const e of p)e.onclick=r;engine.call("C2VM-TLE-PatternChanged","").then(t),engine.call("C2VM-TLE-OptionChanged","").then(c)};engine.call("C2VM-TLE-RequestMenuData").then(s),engine.on("C2VM-TLE-Event-UpdateMenu",s);const m=e=>{const n=e.currentTarget.dataset,t=e.currentTarget.querySelector(".c2vm-tle-lane-panel-checkbox-checkmark");t&&t.classList.remove("c2vm-tle-lane-panel-checkbox-checkmark-checked"),"False"==n.value?(n.value="True",t&&t.classList.add("c2vm-tle-lane-panel-checkbox-checkmark-checked")):n.value="False"},p=e=>{const n=e.currentTarget.dataset;if("C2VM-TLE-CustomLaneDirectionChanged"==n.engineEventName){let t=!0,a=!0,l=!0,c=!0;const o=e.currentTarget.parentElement.parentElement.dataset,r=e.currentTarget.parentElement.querySelectorAll('[data-item-type="checkbox"]');for(const e of r)"m_BanLeft"==e.dataset.key&&"True"==e.dataset.value&&(t=!1),"m_BanRight"==e.dataset.key&&"True"==e.dataset.value&&(a=!1),"m_BanStraight"==e.dataset.key&&"True"==e.dataset.value&&(l=!1),"m_BanUTurn"==e.dataset.key&&"True"==e.dataset.value&&(c=!1);const i=JSON.stringify({m_Type:0,m_SourcePosition:{x:o.worldX,y:o.worldY,z:o.worldZ},m_Restriction:{m_BanLeft:t,m_BanRight:a,m_BanStraight:l,m_BanUTurn:c}});engine.call(n.engineEventName,i).then((()=>{}));const d=e.currentTarget.parentElement;for(d.style.display="none";d.firstChild;)d.removeChild(d.lastChild);const s=document.querySelectorAll(".c2vm-tle-lane-button");for(const e of s)e.style.display="block";e.stopPropagation()}},u=e=>{const n=e.currentTarget.dataset;e.currentTarget.querySelector(".c2vm-tle-lane-panel")&&0==e.currentTarget.querySelector(".c2vm-tle-lane-panel").children.length&&engine.call("C2VM-TLE-RequestLaneManagementData",JSON.stringify({m_SourcePosition:{x:n.worldX,y:n.worldY,z:n.worldZ},m_Restriction:{m_BanLeft:!0,m_BanRight:!0,m_BanStraight:!0,m_BanUTurn:!0}})).then(v);const t=document.querySelectorAll(".c2vm-tle-lane-button");for(const n of t)n!==e.currentTarget&&(n.style.display="none")},v=e=>{try{const n=JSON.parse(e),t=n[0],a=document.querySelector(`[data-world-x="${t.x}"][data-world-y="${t.y}"][data-world-z="${t.z}"]`).querySelector(".c2vm-tle-lane-panel");if(!a)return void console.log("Panel not found.",t,a);for(a.style.display="block";a.firstChild;)a.removeChild(a.lastChild);const l=document.createElement("div");l.classList.add("c2vm-tle-lane-panel-row"),l.style.color="white",l.innerHTML="Lane Direction",a.appendChild(l);for(const e of n)if(e.itemType){if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];"True"==e.value?n.dataset.value="False":n.dataset.value="True",n.innerHTML+=`\n                        <div class="c2vm-tle-lane-panel-checkbox">\n                            <div class="c2vm-tle-lane-panel-checkbox-checkmark ${"True"==n.dataset.value?"c2vm-tle-lane-panel-checkbox-checkmark-checked":""}"></div>\n                        </div>\n                        <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                    `,n.onclick=m,a.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                        <button class="c2vm-tle-lane-panel-button">${e.label}</button>\n                    `,n.onclick=p,a.appendChild(n)}}}catch(e){console.log(e)}};engine.on("C2VM-TLE-Event-ConnectPosition",(function(e){const n=JSON.parse(e);for(const e of n.source){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-button"),n.innerHTML='\n                <img src="Media/Game/Icons/RoadsServices.svg">\n                <div class="c2vm-tle-lane-panel"></div>\n            ',n.dataset.worldX=e.world.x,n.dataset.worldY=e.world.y,n.dataset.worldZ=e.world.z,n.style.position="absolute",n.onclick=u,document.querySelector("body").appendChild(n)}}));setInterval((()=>{const e=[...document.querySelectorAll("div.c2vm-tle-lane-button")].map((e=>({x:e.dataset.worldX,y:e.dataset.worldY,z:e.dataset.worldZ})));0!=e.length&&engine.call("C2VM-TLE-RequestWorldToScreen",JSON.stringify(e)).then((e=>{try{const n=JSON.parse(e);for(const e of n){const n=document.querySelector(`div.c2vm-tle-lane-button[data-world-x="${e.world.x}"][data-world-y="${e.world.y}"][data-world-z="${e.world.z}"]`);n&&(n.style.left=e.screen.x-17+"px",n.style.bottom=e.screen.y-17+"px")}}catch(e){console.log(e)}}))}),100),engine.call("C2VM-TLE-RequestMenuData").then(s);const h=document.querySelector("body"),g={attributes:!0,childList:!0,subtree:!0};new MutationObserver(((e,n)=>{const t=document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img"),a=document.querySelector("div.c2vm-tle-panel");a&&(t&&"Media/Game/Icons/TrafficLights.svg"==t.src?a.style.display="block":"none"!=a.style.display&&(a.style.display="none",d(),i()))})).observe(h,g)}
         """);
     }
 
     protected override void OnUpdate()
     {
+    }
+
+    protected static string GetLocale()
+    {
+        string locale = GameManager.instance.localizationManager.activeLocaleId;
+        List<string> supportedLocales = new List<string>
+        {
+            "en-US",
+            "zh-HANT"
+        };
+        if (!supportedLocales.Contains(locale))
+        {
+            locale = supportedLocales[0];
+        }
+        return locale;
     }
 
     protected void UpdateEntity()
@@ -178,6 +239,8 @@ public class UISystem : GameSystemBase
         {
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
             UpdateEntity();
+            m_IsLaneManagementToolOpen = false;
+            TriggerUpdateMenu();
         }
     }
 
@@ -209,8 +272,20 @@ public class UISystem : GameSystemBase
 
     public void UpdateSelectedEntity(Entity entity)
     {
+        if (entity != m_SelectedEntity && entity != Entity.Null && m_SelectedEntity != Entity.Null)
+        {
+            m_ShowNotificationUnsaved = true;
+            TriggerUpdateMenu();
+            return;
+        }
+
         if (entity != m_SelectedEntity)
         {
+            m_Ways = 0;
+
+            m_ShowNotificationUnsaved = false;
+
+            // Clean up old entity
             if (m_ConnectPositionSourceLookup.HasBuffer(m_SelectedEntity))
             {
                 EntityManager.RemoveComponent<ConnectPositionSource>(m_SelectedEntity);
@@ -222,6 +297,44 @@ public class UISystem : GameSystemBase
             }
 
             m_SelectedEntity = entity;
+
+            // Retrieve info of new entity
+            if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
+            {
+                Dictionary<float3, bool> lanes = new Dictionary<float3, bool>();
+                DynamicBuffer<SubLane> buffer = m_SubLaneLookup[m_SelectedEntity];
+                foreach (SubLane subLane in buffer)
+                {
+                    if (m_SecondaryLaneLookup.HasComponent(subLane.m_SubLane))
+                    {
+                        continue;
+                    }
+
+                    if (m_PedestrianLaneLookup.HasComponent(subLane.m_SubLane))
+                    {
+                        continue;
+                    }
+
+                    if (!m_CarLaneLookup.HasComponent(subLane.m_SubLane))
+                    {
+                        continue;
+                    }
+
+                    if (m_MasterLaneLookup.HasComponent(subLane.m_SubLane) || !m_SlaveLaneLookup.HasComponent(subLane.m_SubLane))
+                    {
+                        if (m_CurveLookup.HasComponent(subLane.m_SubLane))
+                        {
+                            Curve curve = m_CurveLookup[subLane.m_SubLane];
+                            if (lanes.ContainsKey(curve.m_Bezier.a))
+                            {
+                                continue;
+                            }
+                            lanes[curve.m_Bezier.a] = true;
+                        }
+                    }
+                }
+                m_Ways = lanes.Count;
+            }
 
             ResetStateMenu();
 
@@ -280,6 +393,12 @@ public class UISystem : GameSystemBase
                             i--;
                         }
                     }
+                }
+                // Build default config if CustomLaneDirection doesn't exist
+                else
+                {
+                    DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer = EntityManager.AddBuffer<CustomLaneDirection>(m_SelectedEntity);
+                    DefaultLaneDirection.Build(ref customLaneDirectionBuffer, ref connectPositionSourceBuffer);
                 }
             }
 
@@ -399,11 +518,11 @@ public class UISystem : GameSystemBase
     
         var menu = new ArrayList();
         menu.Add(new {x = direction.m_SourcePosition.x, y = direction.m_SourcePosition.y, z = direction.m_SourcePosition.z});
-        menu.Add(new MenuItemOption{label = "Left", key = "m_BanLeft", value = direction.m_Restriction.m_BanLeft.ToString()});
-        menu.Add(new MenuItemOption{label = "Ahead", key = "m_BanStraight", value = direction.m_Restriction.m_BanStraight.ToString()});
-        menu.Add(new MenuItemOption{label = "Right", key = "m_BanRight", value = direction.m_Restriction.m_BanRight.ToString()});
-        menu.Add(new MenuItemOption{label = "U-Turn", key = "m_BanUTurn", value = direction.m_Restriction.m_BanUTurn.ToString()});
-        menu.Add(new MenuItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM-TLE-CustomLaneDirectionChanged"});
+        menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Left"), key = "m_BanLeft", value = direction.m_Restriction.m_BanLeft.ToString()});
+        menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Ahead"), key = "m_BanStraight", value = direction.m_Restriction.m_BanStraight.ToString()});
+        menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Right"), key = "m_BanRight", value = direction.m_Restriction.m_BanRight.ToString()});
+        menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("UTurn"), key = "m_BanUTurn", value = direction.m_Restriction.m_BanUTurn.ToString()});
+        menu.Add(new MenuItemButton{label = m_ResourceManager.GetString("Save"), key = "save", value = "1", engineEventName = "C2VM-TLE-CustomLaneDirectionChanged"});
         return JsonConvert.SerializeObject(menu);
     }
 
@@ -415,53 +534,60 @@ public class UISystem : GameSystemBase
 
     protected string RequestMenuData()
     {
-        // System.Console.WriteLine($"RequestMenuData {m_SelectedEntity} {m_SelectedEntity.Index}");
         var menu = new ArrayList();
         if (m_SelectedEntity != Entity.Null)
         {
-            menu.Add(new MenuItemTitle{title = "Three-Way Junction"});
-            menu.Add(new MenuItemPattern{label = "Vanilla", ways = 3, pattern = (int) TrafficLightPatterns.Pattern.Vanilla});
-            menu.Add(new MenuItemPattern{label = "Split Phasing", ways = 3, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasing});
-            menu.Add(new MenuItemTitle{title = "Four-Way Junction"});
-            menu.Add(new MenuItemPattern{label = "Vanilla", ways = 4, pattern = (int) TrafficLightPatterns.Pattern.Vanilla});
-            menu.Add(new MenuItemPattern{label = "Split Phasing", ways = 4, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasing});
-            menu.Add(new MenuItemPattern{label = "Advanced Split Phasing", ways = 4, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced});
+            menu.Add(new MenuItemTitle{title = m_ResourceManager.GetString("TrafficSignal")});
+            menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("Vanilla"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.Vanilla});
+            if (m_Ways == 3 || m_Ways == 4)
+            {
+                menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("SplitPhasing"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasing});
+                menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("AdvancedSplitPhasing"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced});
+            }
+            if (m_Ways == 4)
+            {
+                if (m_CityConfigurationSystem.leftHandTraffic)
+                {
+                    menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("ProtectedRightTurns"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn});
+                }
+                else
+                {
+                    menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("ProtectedLeftTurns"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn});
+                }
+            }
+            menu.Add(default(MenuItemDivider));
+            menu.Add(new MenuItemTitle{title = m_ResourceManager.GetString("Options")});
+            menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("ExclusivePedestrianPhase"), key = TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString(), value = "1"});
             if (m_CityConfigurationSystem.leftHandTraffic)
             {
-                menu.Add(new MenuItemPattern{label = "Protected Right-Turns", ways = 4, pattern = (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn});
+                menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("AlwaysGreenLeftTurns"), key = TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString(), value = "0"});
             }
             else
             {
-                menu.Add(new MenuItemPattern{label = "Protected Left-Turns", ways = 4, pattern = (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn});
+                menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("AlwaysGreenRightTurns"), key = TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString(), value = "0"});
             }
             menu.Add(default(MenuItemDivider));
-            menu.Add(new MenuItemTitle{title = "Options"});
-            menu.Add(new MenuItemOption{label = "Exclusive Pedestrian Phase", key = TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString(), value = "1"});
-            if (m_CityConfigurationSystem.leftHandTraffic)
-            {
-                menu.Add(new MenuItemOption{label = "Always Green Left-Turns", key = TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString(), value = "0"});
-            }
-            else
-            {
-                menu.Add(new MenuItemOption{label = "Always Green Right-Turns", key = TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString(), value = "0"});
-            }
-            menu.Add(default(MenuItemDivider));
-            menu.Add(new MenuItemTitle{title = "Lane Direction Tool (Experimental)"});
+            menu.Add(new MenuItemTitle{title = m_ResourceManager.GetString("LaneDirectionTool")});
             if (m_IsLaneManagementToolOpen)
             {
-                menu.Add(new MenuItemButton{label = "Close", key = "status", value = "1", engineEventName = "C2VM-TLE-ToggleLaneManagement"});
+                menu.Add(new MenuItemButton{label = m_ResourceManager.GetString("Close"), key = "status", value = "1", engineEventName = "C2VM-TLE-ToggleLaneManagement"});
             }
             else
             {
-                menu.Add(new MenuItemButton{label = "Open", key = "status", value = "0", engineEventName = "C2VM-TLE-ToggleLaneManagement"});
+                menu.Add(new MenuItemButton{label = m_ResourceManager.GetString("Open"), key = "status", value = "0", engineEventName = "C2VM-TLE-ToggleLaneManagement"});
             }
-            menu.Add(new MenuItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM-TLE-ResetLaneManagement"});
+            menu.Add(new MenuItemButton{label = m_ResourceManager.GetString("Reset"), key = "status", value = "0", engineEventName = "C2VM-TLE-ResetLaneManagement"});
             menu.Add(default(MenuItemDivider));
-            menu.Add(new MenuItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM-TLE-RequestMenuSave"});
+            menu.Add(new MenuItemButton{label = m_ResourceManager.GetString("Save"), key = "save", value = "1", engineEventName = "C2VM-TLE-RequestMenuSave"});
+            if (m_ShowNotificationUnsaved)
+            {
+                menu.Add(default(MenuItemDivider));
+                menu.Add(new MenuItemNotification{label = m_ResourceManager.GetString("PleaseSave"), notificationType = "warning"});
+            }
         }
         else
         {
-            menu.Add(new MenuItemTitle{title = "<div style=\"margin: 20rem auto; flex: 1; text-align: center;\">Please select a junction</div>"});
+            menu.Add(new MenuItemTitle{title = "<div style=\"margin: 20rem auto; flex: 1; text-align: center;\">" + m_ResourceManager.GetString("PleaseSelectJunction") + "</div>"});
         }
         return JsonConvert.SerializeObject(menu);
     }
