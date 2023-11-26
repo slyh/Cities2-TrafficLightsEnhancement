@@ -87,23 +87,57 @@ class TrafficLightPatterns {
 
         if ((pattern & 0xFFFF) == (int) Pattern.SplitPhasingAdvanced)
         {
-            for (int i = 0; i < groups.Length; i++)
+            if (ways == 3)
             {
-                LaneGroup group = groups[i];
-
-                group.m_GroupMask |= (ushort)(1 << (group.m_GroupIndex & 0xF));
-
-                if (leftHandTraffic && group.m_IsTurnLeft && groupLeft[group.m_GroupIndex] >= 0)
+                for (int i = 0; i < groups.Length; i++)
                 {
-                    group.m_GroupMask |= (ushort)(1 << (groupLeft[group.m_GroupIndex] & 0xF));
-                }
-                
-                if (!leftHandTraffic && group.m_IsTurnRight && groupRight[group.m_GroupIndex] >= 0)
-                {
-                    group.m_GroupMask |= (ushort)(1 << (groupRight[group.m_GroupIndex] & 0xF));
-                }
+                    LaneGroup group = groups[i];
 
-                groups[i] = group;
+                    group.m_GroupMask |= (ushort)(1 << (group.m_GroupIndex & 0xF));
+
+                    if (leftHandTraffic && !group.m_IsTurnRight && groupStraight[group.m_GroupIndex] >= 0 && groupLeft[group.m_GroupIndex] < 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupStraight[group.m_GroupIndex] & 0xF));
+                    }
+
+                    if (!leftHandTraffic && !group.m_IsTurnLeft && groupStraight[group.m_GroupIndex] >= 0 && groupRight[group.m_GroupIndex] < 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupStraight[group.m_GroupIndex] & 0xF));
+                    }
+
+                    if (leftHandTraffic && group.m_IsTurnLeft && groupLeft[group.m_GroupIndex] >= 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupLeft[group.m_GroupIndex] & 0xF));
+                    }
+                    
+                    if (!leftHandTraffic && group.m_IsTurnRight && groupRight[group.m_GroupIndex] >= 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupRight[group.m_GroupIndex] & 0xF));
+                    }
+
+                    groups[i] = group;
+                }
+            }
+            if (ways == 4)
+            {
+                for (int i = 0; i < groups.Length; i++)
+                {
+                    LaneGroup group = groups[i];
+
+                    group.m_GroupMask |= (ushort)(1 << (group.m_GroupIndex & 0xF));
+
+                    if (leftHandTraffic && group.m_IsTurnLeft && groupLeft[group.m_GroupIndex] >= 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupLeft[group.m_GroupIndex] & 0xF));
+                    }
+                    
+                    if (!leftHandTraffic && group.m_IsTurnRight && groupRight[group.m_GroupIndex] >= 0)
+                    {
+                        group.m_GroupMask |= (ushort)(1 << (groupRight[group.m_GroupIndex] & 0xF));
+                    }
+
+                    groups[i] = group;
+                }
             }
         }
 
