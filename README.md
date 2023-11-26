@@ -39,6 +39,12 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 ## Thanks
 
+[Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) for the Korean translation
+
+[SuperYYT](https://github.com/SuperYYT) for the Simplified Chinese translation
+
+[PsykotropyK](https://github.com/PsykotropyK) for the French translation
+
 [PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insight on the inner workings of the lane system
 
 [Cities2Modding](https://github.com/optimus-code/Cities2Modding): Info dump / guides for Cities Skylines 2 modding
