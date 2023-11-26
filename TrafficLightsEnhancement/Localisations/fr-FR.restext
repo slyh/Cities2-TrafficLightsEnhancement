@@ -1,9 +1,9 @@
-TrafficSignal=Feux tricolore
+TrafficSignal=Feux tricolores
 Vanilla=Vanilla
 SplitPhasing=Feux fractionnés
-AdvancedSplitPhasing=Feux fractionés avancés
-ProtectedRightTurns=Virage à droite protégés
-ProtectedLeftTurns=Virage à gauche protégés
+AdvancedSplitPhasing=Feux fractionnés avancés
+ProtectedRightTurns=Virage à droite protégé
+ProtectedLeftTurns=Virage à gauche protégé
 Options=Options
 ExclusivePedestrianPhase=Feux exclusifs piétons
 AlwaysGreenLeftTurns=Tourner à gauche toujours vert
