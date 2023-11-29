@@ -188,17 +188,14 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
         }
     };
 
-    const enginePatternCallback = (result) => {
+    const enginePatternCallback = (jsonString) => {
         resetPatternButtons();
-        const m_SelectedPattern = JSON.parse(result);
-        // console.log(`C2VM-TLE-PatternChanged result ${result} m_SelectedPattern ${m_SelectedPattern}`);
-        for (const i in m_SelectedPattern) {
-            const ways = i;
-            const pattern = m_SelectedPattern[ways] & 0xFFFF;
-            const button = document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${ways}"][data-pattern="${pattern}"] .c2vm-tle-panel-radio-bullet`);
-            if (button) {
-                button.classList.add("c2vm-tle-panel-radio-bullet-checked");
-            }
+        const result = JSON.parse(jsonString);
+        const ways = result.ways;
+        const pattern = result.pattern & 0xFFFF;
+        const button = document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${ways}"][data-pattern="${pattern}"] .c2vm-tle-panel-radio-bullet`);
+        if (button) {
+            button.classList.add("c2vm-tle-panel-radio-bullet-checked");
         }
     };
 
@@ -436,11 +433,18 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             }
             const connection = JSON.stringify({
                 m_Type: 0,
-                m_SourcePosition: {
+                m_Position: {
                     x: position.worldX,
                     y: position.worldY,
                     z: position.worldZ
                 },
+                m_Tangent: {
+                    x: position.tangentX,
+                    y: position.tangentY,
+                    z: position.tangentZ
+                },
+                m_GroupIndex: position.groupIndex,
+                m_LaneIndex: position.laneIndex,
                 m_Restriction: {
                     m_BanLeft,
                     m_BanRight,
@@ -468,11 +472,18 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             engine.call(
                 "C2VM-TLE-RequestLaneManagementData",
                 JSON.stringify({
-                    m_SourcePosition: {
+                    m_Position: {
                         x: dataset.worldX,
                         y: dataset.worldY,
                         z: dataset.worldZ
                     },
+                    m_Tangent: {
+                        x: dataset.tangentX,
+                        y: dataset.tangentY,
+                        z: dataset.tangentZ
+                    },
+                    m_GroupIndex: dataset.groupIndex,
+                    m_LaneIndex: dataset.laneIndex,
                     m_Restriction: {
                         m_BanLeft: true,
                         m_BanRight: true,
@@ -570,6 +581,11 @@ if (!document.querySelector("div.c2vm-tle-panel")) {
             laneButton.dataset.worldX = position.world.x;
             laneButton.dataset.worldY = position.world.y;
             laneButton.dataset.worldZ = position.world.z;
+            laneButton.dataset.tangentX = position.world.tangentX;
+            laneButton.dataset.tangentY = position.world.tangentY;
+            laneButton.dataset.tangentZ = position.world.tangentZ;
+            laneButton.dataset.groupIndex = position.world.groupIndex;
+            laneButton.dataset.laneIndex = position.world.laneIndex;
             laneButton.style.position = "absolute";
             laneButton.onclick = laneButtonListener;
             document.querySelector("body").appendChild(laneButton);

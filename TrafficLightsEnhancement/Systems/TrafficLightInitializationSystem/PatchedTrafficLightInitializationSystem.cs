@@ -78,7 +78,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                 }
                 else
                 {
-                    customTrafficLights = new CustomTrafficLights();
+                    customTrafficLights = new CustomTrafficLights((int) TrafficLightPatterns.Pattern.Vanilla);
                 }
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
@@ -201,6 +201,10 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
             ways++;
             pattern = customTrafficLights.GetPattern(ways);
+            if (!TrafficLightPatterns.IsValidPattern(ways, pattern))
+            {
+                pattern = (int) TrafficLightPatterns.Pattern.Vanilla;
+            }
 
             int i = 0;
             groupCount = 0;

@@ -101,7 +101,7 @@ public class UISystem : GameSystemBase
 
     public Dictionary<string, int> m_Options;
 
-    public int[] m_SelectedPattern;
+    public int m_SelectedPattern;
 
     public Entity m_SelectedEntity;
 
@@ -143,12 +143,13 @@ public class UISystem : GameSystemBase
 
     private BufferLookup<SubLane> m_SubLaneLookup;
 
+    private ComponentLookup<TrackLane> m_TrackLaneLookup;
+
     protected override void OnCreate()
     {
         base.OnCreate();
 
         m_Options = new Dictionary<string, int>();
-        m_SelectedPattern = new int[16];
 
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_ConnectPositionSourceLookup = GetBufferLookup<ConnectPositionSource>(false);
@@ -165,6 +166,7 @@ public class UISystem : GameSystemBase
         m_SlaveLaneLookup = GetComponentLookup<SlaveLane>(true);
         m_SecondaryLaneLookup = GetComponentLookup<SecondaryLane>(true);
         m_SubLaneLookup = GetBufferLookup<SubLane>(false);
+        m_TrackLaneLookup = GetComponentLookup<TrackLane>(true);
 
         m_Locale = GetLocale();
         m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_Locale, typeof(UISystem).Assembly);
@@ -180,7 +182,7 @@ public class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-PatternChanged", PatternChanged);
         m_View.BindCall("C2VM-TLE-CustomLaneDirectionChanged", CustomLaneDirectionChanged);
         m_View.ExecuteScript("""
-            if(!document.querySelector("div.c2vm-tle-panel")){const e=document.createElement("div");e.innerHTML='\n        <div class="c2vm-tle-panel">\n            <div class="c2vm-tle-panel-header">\n                <img class="c2vm-tle-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />\n                <div class="c2vm-tle-panel-header-title">Traffic Lights Enhancement</div>\n            </div>\n            <div class="c2vm-tle-panel-content"></div>\n        </div>\n        <style>\n            .c2vm-tle-panel {\n                width: 300rem;\n                position: absolute;\n                top: calc(10rem+ var(--floatingToggleSize) +6rem);\n                left: 10rem;\n            }\n            .c2vm-tle-panel-header {\n                border-radius: 4rem 4rem 0rem 0rem;\n                background-color: rgba(24, 33, 51, 0.6);\n                backdrop-filter: blur(5px);\n                color: rgba(75, 195, 241, 1);\n                font-size: 14rem;\n                padding: 6rem 10rem;\n                min-height: 36rem;\n                display: flex;\n                flex-direction: row;\n                align-items: center;\n            }\n            .c2vm-tle-panel-header-image {\n                width: 24rem;\n                height: 24rem;\n            }\n            .c2vm-tle-panel-header > .c2vm-tle-panel-header-title {\n                text-transform: uppercase;\n                flex: 1;\n                text-align: center;\n                overflow-x: hidden;\n                overflow-y: hidden;\n                text-overflow: ellipsis;\n                white-space: nowrap;\n            }\n            .c2vm-tle-panel-content {\n                border-radius: 0rem 0rem 4rem 4rem;\n                background-color: rgba(42, 55, 83, 0.437500);\n                backdrop-filter: blur(5px);\n                color: rgba(255, 255, 255, 1);\n                flex: 1;\n                position: relative;\n                padding: 6rem;\n            }\n            .c2vm-tle-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-panel-row-divider {\n                height: 2px;\n                width: auto;\n                border: 2px solid rgba(255, 255, 255, 0.1);\n                margin: 6rem -6rem;\n            }\n            .c2vm-tle-panel-secondary-text {\n                color: rgba(217, 217, 217, 1);\n            }\n            .c2vm-tle-panel-radio {\n                border: 2px solid rgba(75, 195, 241, 1);\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 3px;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet {\n                width: 100%;\n                height: 100%;\n                background-color:  white;\n                opacity: 0;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n            @keyframes notification-warning {\n                to {\n                  background-color: rgba(200, 0, 0, 0.5);\n                }\n              }\n            .c2vm-tle-panel-row[data-notification-type="warning"] {\n                animation-timing-function: linear;\n                animation-duration: 2s;\n                animation-iteration-count: infinite;\n                animation-direction: alternate;\n                animation-name: notification-warning;\n                border-radius: 3rem;\n                padding: 8rem;\n            }\n            .c2vm-tle-panel-notification-image {\n                width: 20rem;\n                height: 20rem;\n                margin-right: 10rem;\n            }\n            .c2vm-tle-panel-notification-text {\n                color: rgba(217, 217, 217, 1);\n                flex: 1;\n            }\n\n            .c2vm-tle-lane-panel {\n                width: 200rem;\n                display: none;\n            }\n            .c2vm-tle-lane-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-lane-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                background-color: rgba(6, 10, 16, 0.7);\n            }\n            .c2vm-tle-lane-button > img {\n                width: 28rem;\n                height: 28rem;\n            }\n            .c2vm-tle-lane-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-lane-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n        </style>\n    ';document.querySelector("body").appendChild(e);const n=()=>{const e=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"] .c2vm-tle-panel-radio-bullet');for(const n of e)n.classList.remove("c2vm-tle-panel-radio-bullet-checked")},t=e=>{n();const t=JSON.parse(e);for(const e in t){const n=e,a=65535&t[n],l=document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${n}"][data-pattern="${a}"] .c2vm-tle-panel-radio-bullet`);l&&l.classList.add("c2vm-tle-panel-radio-bullet-checked")}},a=e=>{n();const a=e.currentTarget.dataset;engine.call("C2VM-TLE-PatternChanged",`${a.ways}_${a.pattern}`).then(t)},l=()=>{const e=document.querySelectorAll('.c2vm-tle-panel [data-type="c2vm-tle-panel-option"]');for(const n of e){n.dataset.value=0;const e=n.querySelector(".c2vm-tle-panel-checkbox-checkmark");e&&e.classList.remove("c2vm-tle-panel-checkbox-checkmark-checked")}},c=e=>{l();const n=JSON.parse(e);for(const e in n){const t=n[e],a=document.querySelector(`[data-type="c2vm-tle-panel-option"][data-key="${e}"]`);if(!a)continue;a.dataset.value=t;const l=a.querySelector(".c2vm-tle-panel-checkbox-checkmark");l&&1===t&&l.classList.add("c2vm-tle-panel-checkbox-checkmark-checked")}},o=e=>{const n=e.currentTarget.dataset;let t=0;0==n.value&&(t=1),l(),engine.call("C2VM-TLE-OptionChanged",`${n.key}_${t}`).then(c)},r=e=>{const n=e.currentTarget.dataset;"C2VM-TLE-RequestMenuSave"==n.engineEventName?i():engine.call(n.engineEventName,`${n.key}_${n.value}`)},i=()=>{engine.call("C2VM-TLE-RequestMenuSave","save_1")},d=()=>{const e=document.querySelector("body");for(const n of e.children)n.classList.contains("c2vm-tle-lane-button")&&e.removeChild(n)},s=e=>{const n=JSON.parse(e),l=document.querySelector(".c2vm-tle-panel-content");for(;l.firstChild;)l.removeChild(l.lastChild);let i=!0;for(const e of n)if(e.itemType){if("divider"==e.itemType){const e=document.createElement("div");e.classList.add("c2vm-tle-panel-row-divider"),l.appendChild(e)}if("title"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row"),n.innerHTML=e.title,l.appendChild(n)}if("radio"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-radio">\n                        <div class="c2vm-tle-panel-radio-bullet"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-checkbox">\n                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <button class="c2vm-tle-panel-button">${e.label}</button>\n                `,l.appendChild(n),"C2VM-TLE-ToggleLaneManagement"==e.engineEventName&&1==e.value&&(i=!1)}if("notification"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];const t=document.createElement("img");t.src="Media/Game/Icons/AdvisorNotifications.svg",t.classList.add("c2vm-tle-panel-notification-image");const a=document.createElement("div");a.classList.add("c2vm-tle-panel-notification-text"),a.innerHTML=e.label,n.appendChild(t),n.appendChild(a),l.appendChild(n)}}i&&d();const s=document.querySelectorAll('[data-type="c2vm-tle-panel-option"]');for(const e of s)e.onclick=o;const m=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"]');for(const e of m)e.dataset.ways&&e.dataset.ways>0&&(e.onclick=a);const p=document.querySelectorAll('[data-type="c2vm-tle-panel-button"]');for(const e of p)e.onclick=r;engine.call("C2VM-TLE-PatternChanged","").then(t),engine.call("C2VM-TLE-OptionChanged","").then(c)};engine.call("C2VM-TLE-RequestMenuData").then(s),engine.on("C2VM-TLE-Event-UpdateMenu",s);const m=e=>{const n=e.currentTarget.dataset,t=e.currentTarget.querySelector(".c2vm-tle-lane-panel-checkbox-checkmark");t&&t.classList.remove("c2vm-tle-lane-panel-checkbox-checkmark-checked"),"False"==n.value?(n.value="True",t&&t.classList.add("c2vm-tle-lane-panel-checkbox-checkmark-checked")):n.value="False"},p=e=>{const n=e.currentTarget.dataset;if("C2VM-TLE-CustomLaneDirectionChanged"==n.engineEventName){let t=!0,a=!0,l=!0,c=!0;const o=e.currentTarget.parentElement.parentElement.dataset,r=e.currentTarget.parentElement.querySelectorAll('[data-item-type="checkbox"]');for(const e of r)"m_BanLeft"==e.dataset.key&&"True"==e.dataset.value&&(t=!1),"m_BanRight"==e.dataset.key&&"True"==e.dataset.value&&(a=!1),"m_BanStraight"==e.dataset.key&&"True"==e.dataset.value&&(l=!1),"m_BanUTurn"==e.dataset.key&&"True"==e.dataset.value&&(c=!1);const i=JSON.stringify({m_Type:0,m_SourcePosition:{x:o.worldX,y:o.worldY,z:o.worldZ},m_Restriction:{m_BanLeft:t,m_BanRight:a,m_BanStraight:l,m_BanUTurn:c}});engine.call(n.engineEventName,i).then((()=>{}));const d=e.currentTarget.parentElement;for(d.style.display="none";d.firstChild;)d.removeChild(d.lastChild);const s=document.querySelectorAll(".c2vm-tle-lane-button");for(const e of s)e.style.display="block";e.stopPropagation()}},u=e=>{const n=e.currentTarget.dataset;e.currentTarget.querySelector(".c2vm-tle-lane-panel")&&0==e.currentTarget.querySelector(".c2vm-tle-lane-panel").children.length&&engine.call("C2VM-TLE-RequestLaneManagementData",JSON.stringify({m_SourcePosition:{x:n.worldX,y:n.worldY,z:n.worldZ},m_Restriction:{m_BanLeft:!0,m_BanRight:!0,m_BanStraight:!0,m_BanUTurn:!0}})).then(v);const t=document.querySelectorAll(".c2vm-tle-lane-button");for(const n of t)n!==e.currentTarget&&(n.style.display="none")},v=e=>{try{const n=JSON.parse(e),t=n[0],a=document.querySelector(`[data-world-x="${t.x}"][data-world-y="${t.y}"][data-world-z="${t.z}"]`).querySelector(".c2vm-tle-lane-panel");if(!a)return void console.log("Panel not found.",t,a);for(a.style.display="block";a.firstChild;)a.removeChild(a.lastChild);const l=document.createElement("div");l.classList.add("c2vm-tle-lane-panel-row"),l.style.color="white",l.innerHTML="Lane Direction",a.appendChild(l);for(const e of n)if(e.itemType){if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];"True"==e.value?n.dataset.value="False":n.dataset.value="True",n.innerHTML+=`\n                        <div class="c2vm-tle-lane-panel-checkbox">\n                            <div class="c2vm-tle-lane-panel-checkbox-checkmark ${"True"==n.dataset.value?"c2vm-tle-lane-panel-checkbox-checkmark-checked":""}"></div>\n                        </div>\n                        <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                    `,n.onclick=m,a.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                        <button class="c2vm-tle-lane-panel-button">${e.label}</button>\n                    `,n.onclick=p,a.appendChild(n)}}}catch(e){console.log(e)}};engine.on("C2VM-TLE-Event-ConnectPosition",(function(e){const n=JSON.parse(e);for(const e of n.source){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-button"),n.innerHTML='\n                <img src="Media/Game/Icons/RoadsServices.svg">\n                <div class="c2vm-tle-lane-panel"></div>\n            ',n.dataset.worldX=e.world.x,n.dataset.worldY=e.world.y,n.dataset.worldZ=e.world.z,n.style.position="absolute",n.onclick=u,document.querySelector("body").appendChild(n)}}));setInterval((()=>{const e=[...document.querySelectorAll("div.c2vm-tle-lane-button")].map((e=>({x:e.dataset.worldX,y:e.dataset.worldY,z:e.dataset.worldZ})));0!=e.length&&engine.call("C2VM-TLE-RequestWorldToScreen",JSON.stringify(e)).then((e=>{try{const n=JSON.parse(e);for(const e of n){const n=document.querySelector(`div.c2vm-tle-lane-button[data-world-x="${e.world.x}"][data-world-y="${e.world.y}"][data-world-z="${e.world.z}"]`);n&&(n.style.left=e.screen.x-17+"px",n.style.bottom=e.screen.y-17+"px")}}catch(e){console.log(e)}}))}),100),engine.call("C2VM-TLE-RequestMenuData").then(s);const h=document.querySelector("body"),g={attributes:!0,childList:!0,subtree:!0};new MutationObserver(((e,n)=>{const t=document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img"),a=document.querySelector("div.c2vm-tle-panel");a&&(t&&"Media/Game/Icons/TrafficLights.svg"==t.src?a.style.display="block":"none"!=a.style.display&&(a.style.display="none",d(),i()))})).observe(h,g)}
+            if(!document.querySelector("div.c2vm-tle-panel")){const e=document.createElement("div");e.innerHTML='\n        <div class="c2vm-tle-panel">\n            <div class="c2vm-tle-panel-header">\n                <img class="c2vm-tle-panel-header-image" src="Media/Game/Icons/TrafficLights.svg" />\n                <div class="c2vm-tle-panel-header-title">Traffic Lights Enhancement</div>\n            </div>\n            <div class="c2vm-tle-panel-content"></div>\n        </div>\n        <style>\n            .c2vm-tle-panel {\n                width: 300rem;\n                position: absolute;\n                top: calc(10rem+ var(--floatingToggleSize) +6rem);\n                left: 10rem;\n            }\n            .c2vm-tle-panel-header {\n                border-radius: 4rem 4rem 0rem 0rem;\n                background-color: rgba(24, 33, 51, 0.6);\n                backdrop-filter: blur(5px);\n                color: rgba(75, 195, 241, 1);\n                font-size: 14rem;\n                padding: 6rem 10rem;\n                min-height: 36rem;\n                display: flex;\n                flex-direction: row;\n                align-items: center;\n            }\n            .c2vm-tle-panel-header-image {\n                width: 24rem;\n                height: 24rem;\n            }\n            .c2vm-tle-panel-header > .c2vm-tle-panel-header-title {\n                text-transform: uppercase;\n                flex: 1;\n                text-align: center;\n                overflow-x: hidden;\n                overflow-y: hidden;\n                text-overflow: ellipsis;\n                white-space: nowrap;\n            }\n            .c2vm-tle-panel-content {\n                border-radius: 0rem 0rem 4rem 4rem;\n                background-color: rgba(42, 55, 83, 0.437500);\n                backdrop-filter: blur(5px);\n                color: rgba(255, 255, 255, 1);\n                flex: 1;\n                position: relative;\n                padding: 6rem;\n            }\n            .c2vm-tle-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-panel-row-divider {\n                height: 2px;\n                width: auto;\n                border: 2px solid rgba(255, 255, 255, 0.1);\n                margin: 6rem -6rem;\n            }\n            .c2vm-tle-panel-secondary-text {\n                color: rgba(217, 217, 217, 1);\n            }\n            .c2vm-tle-panel-radio {\n                border: 2px solid rgba(75, 195, 241, 1);\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 3px;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet {\n                width: 100%;\n                height: 100%;\n                background-color:  white;\n                opacity: 0;\n                border-radius: 50%;\n            }\n            .c2vm-tle-panel-radio-bullet-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n            @keyframes notification-warning {\n                to {\n                  background-color: rgba(200, 0, 0, 0.5);\n                }\n              }\n            .c2vm-tle-panel-row[data-notification-type="warning"] {\n                animation-timing-function: linear;\n                animation-duration: 2s;\n                animation-iteration-count: infinite;\n                animation-direction: alternate;\n                animation-name: notification-warning;\n                border-radius: 3rem;\n                padding: 8rem;\n            }\n            .c2vm-tle-panel-notification-image {\n                width: 20rem;\n                height: 20rem;\n                margin-right: 10rem;\n            }\n            .c2vm-tle-panel-notification-text {\n                color: rgba(217, 217, 217, 1);\n                flex: 1;\n            }\n\n            .c2vm-tle-lane-panel {\n                width: 200rem;\n                display: none;\n            }\n            .c2vm-tle-lane-panel-row {\n                padding: 3rem 8rem;\n                width: 100%;\n                display: flex;\n            }\n            .c2vm-tle-lane-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                background-color: rgba(6, 10, 16, 0.7);\n            }\n            .c2vm-tle-lane-button > img {\n                width: 28rem;\n                height: 28rem;\n            }\n            .c2vm-tle-lane-panel-checkbox {\n                margin: 0 10rem 0 0;\n                width: 20rem;\n                height: 20rem;\n                padding: 1px;\n                border: 2px solid rgba(255, 255, 255, 0.500000);\n                border-radius: 3rem;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark {\n                width: 100%;\n                height: 100%;\n                mask-image: url(Media/Glyphs/Checkmark.svg);\n                mask-size: 100% auto;\n                background-color: white;\n                opacity: 0;\n            }\n            .c2vm-tle-lane-panel-checkbox-checkmark-checked {\n                opacity: 1;\n            }\n            .c2vm-tle-lane-panel-button {\n                padding: 3rem;\n                border-radius: 3rem;\n                color: white;\n                background-color: rgba(6, 10, 16, 0.7);\n                width: 100%;\n            }\n        </style>\n    ';document.querySelector("body").appendChild(e);const n=()=>{const e=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"] .c2vm-tle-panel-radio-bullet');for(const n of e)n.classList.remove("c2vm-tle-panel-radio-bullet-checked")},t=e=>{n();const t=JSON.parse(e),a=t.ways,l=65535&t.pattern,c=document.querySelector(`[data-type="c2vm-tle-panel-pattern"][data-ways="${a}"][data-pattern="${l}"] .c2vm-tle-panel-radio-bullet`);c&&c.classList.add("c2vm-tle-panel-radio-bullet-checked")},a=e=>{n();const a=e.currentTarget.dataset;engine.call("C2VM-TLE-PatternChanged",`${a.ways}_${a.pattern}`).then(t)},l=()=>{const e=document.querySelectorAll('.c2vm-tle-panel [data-type="c2vm-tle-panel-option"]');for(const n of e){n.dataset.value=0;const e=n.querySelector(".c2vm-tle-panel-checkbox-checkmark");e&&e.classList.remove("c2vm-tle-panel-checkbox-checkmark-checked")}},c=e=>{l();const n=JSON.parse(e);for(const e in n){const t=n[e],a=document.querySelector(`[data-type="c2vm-tle-panel-option"][data-key="${e}"]`);if(!a)continue;a.dataset.value=t;const l=a.querySelector(".c2vm-tle-panel-checkbox-checkmark");l&&1===t&&l.classList.add("c2vm-tle-panel-checkbox-checkmark-checked")}},o=e=>{const n=e.currentTarget.dataset;let t=0;0==n.value&&(t=1),l(),engine.call("C2VM-TLE-OptionChanged",`${n.key}_${t}`).then(c)},r=e=>{const n=e.currentTarget.dataset;"C2VM-TLE-RequestMenuSave"==n.engineEventName?i():engine.call(n.engineEventName,`${n.key}_${n.value}`)},i=()=>{engine.call("C2VM-TLE-RequestMenuSave","save_1")},d=()=>{const e=document.querySelector("body");for(const n of e.children)n.classList.contains("c2vm-tle-lane-button")&&e.removeChild(n)},s=e=>{const n=JSON.parse(e),l=document.querySelector(".c2vm-tle-panel-content");for(;l.firstChild;)l.removeChild(l.lastChild);let i=!0;for(const e of n)if(e.itemType){if("divider"==e.itemType){const e=document.createElement("div");e.classList.add("c2vm-tle-panel-row-divider"),l.appendChild(e)}if("title"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row"),n.innerHTML=e.title,l.appendChild(n)}if("radio"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-radio">\n                        <div class="c2vm-tle-panel-radio-bullet"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <div class="c2vm-tle-panel-checkbox">\n                        <div class="c2vm-tle-panel-checkbox-checkmark"></div>\n                    </div>\n                    <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                `,l.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                    <button class="c2vm-tle-panel-button">${e.label}</button>\n                `,l.appendChild(n),"C2VM-TLE-ToggleLaneManagement"==e.engineEventName&&1==e.value&&(i=!1)}if("notification"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-panel-row");for(const t in e)n.dataset[t]=e[t];const t=document.createElement("img");t.src="Media/Game/Icons/AdvisorNotifications.svg",t.classList.add("c2vm-tle-panel-notification-image");const a=document.createElement("div");a.classList.add("c2vm-tle-panel-notification-text"),a.innerHTML=e.label,n.appendChild(t),n.appendChild(a),l.appendChild(n)}}i&&d();const s=document.querySelectorAll('[data-type="c2vm-tle-panel-option"]');for(const e of s)e.onclick=o;const m=document.querySelectorAll('[data-type="c2vm-tle-panel-pattern"]');for(const e of m)e.dataset.ways&&e.dataset.ways>0&&(e.onclick=a);const p=document.querySelectorAll('[data-type="c2vm-tle-panel-button"]');for(const e of p)e.onclick=r;engine.call("C2VM-TLE-PatternChanged","").then(t),engine.call("C2VM-TLE-OptionChanged","").then(c)};engine.call("C2VM-TLE-RequestMenuData").then(s),engine.on("C2VM-TLE-Event-UpdateMenu",s);const m=e=>{const n=e.currentTarget.dataset,t=e.currentTarget.querySelector(".c2vm-tle-lane-panel-checkbox-checkmark");t&&t.classList.remove("c2vm-tle-lane-panel-checkbox-checkmark-checked"),"False"==n.value?(n.value="True",t&&t.classList.add("c2vm-tle-lane-panel-checkbox-checkmark-checked")):n.value="False"},p=e=>{const n=e.currentTarget.dataset;if("C2VM-TLE-CustomLaneDirectionChanged"==n.engineEventName){let t=!0,a=!0,l=!0,c=!0;const o=e.currentTarget.parentElement.parentElement.dataset,r=e.currentTarget.parentElement.querySelectorAll('[data-item-type="checkbox"]');for(const e of r)"m_BanLeft"==e.dataset.key&&"True"==e.dataset.value&&(t=!1),"m_BanRight"==e.dataset.key&&"True"==e.dataset.value&&(a=!1),"m_BanStraight"==e.dataset.key&&"True"==e.dataset.value&&(l=!1),"m_BanUTurn"==e.dataset.key&&"True"==e.dataset.value&&(c=!1);const i=JSON.stringify({m_Type:0,m_Position:{x:o.worldX,y:o.worldY,z:o.worldZ},m_Tangent:{x:o.tangentX,y:o.tangentY,z:o.tangentZ},m_GroupIndex:o.groupIndex,m_LaneIndex:o.laneIndex,m_Restriction:{m_BanLeft:t,m_BanRight:a,m_BanStraight:l,m_BanUTurn:c}});engine.call(n.engineEventName,i).then((()=>{}));const d=e.currentTarget.parentElement;for(d.style.display="none";d.firstChild;)d.removeChild(d.lastChild);const s=document.querySelectorAll(".c2vm-tle-lane-button");for(const e of s)e.style.display="block";e.stopPropagation()}},u=e=>{const n=e.currentTarget.dataset;e.currentTarget.querySelector(".c2vm-tle-lane-panel")&&0==e.currentTarget.querySelector(".c2vm-tle-lane-panel").children.length&&engine.call("C2VM-TLE-RequestLaneManagementData",JSON.stringify({m_Position:{x:n.worldX,y:n.worldY,z:n.worldZ},m_Tangent:{x:n.tangentX,y:n.tangentY,z:n.tangentZ},m_GroupIndex:n.groupIndex,m_LaneIndex:n.laneIndex,m_Restriction:{m_BanLeft:!0,m_BanRight:!0,m_BanStraight:!0,m_BanUTurn:!0}})).then(v);const t=document.querySelectorAll(".c2vm-tle-lane-button");for(const n of t)n!==e.currentTarget&&(n.style.display="none")},v=e=>{try{const n=JSON.parse(e),t=n[0],a=document.querySelector(`[data-world-x="${t.x}"][data-world-y="${t.y}"][data-world-z="${t.z}"]`).querySelector(".c2vm-tle-lane-panel");if(!a)return void console.log("Panel not found.",t,a);for(a.style.display="block";a.firstChild;)a.removeChild(a.lastChild);const l=document.createElement("div");l.classList.add("c2vm-tle-lane-panel-row"),l.style.color="white",l.innerHTML="Lane Direction",a.appendChild(l);for(const e of n)if(e.itemType){if("checkbox"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];"True"==e.value?n.dataset.value="False":n.dataset.value="True",n.innerHTML+=`\n                        <div class="c2vm-tle-lane-panel-checkbox">\n                            <div class="c2vm-tle-lane-panel-checkbox-checkmark ${"True"==n.dataset.value?"c2vm-tle-lane-panel-checkbox-checkmark-checked":""}"></div>\n                        </div>\n                        <span class="c2vm-tle-panel-secondary-text">${e.label}</span>\n                    `,n.onclick=m,a.appendChild(n)}if("button"==e.itemType){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-panel-row");for(const t in e)n.dataset[t]=e[t];n.innerHTML+=`\n                        <button class="c2vm-tle-lane-panel-button">${e.label}</button>\n                    `,n.onclick=p,a.appendChild(n)}}}catch(e){console.log(e)}};engine.on("C2VM-TLE-Event-ConnectPosition",(function(e){const n=JSON.parse(e);for(const e of n.source){const n=document.createElement("div");n.classList.add("c2vm-tle-lane-button"),n.innerHTML='\n                <img src="Media/Game/Icons/RoadsServices.svg">\n                <div class="c2vm-tle-lane-panel"></div>\n            ',n.dataset.worldX=e.world.x,n.dataset.worldY=e.world.y,n.dataset.worldZ=e.world.z,n.dataset.tangentX=e.world.tangentX,n.dataset.tangentY=e.world.tangentY,n.dataset.tangentZ=e.world.tangentZ,n.dataset.groupIndex=e.world.groupIndex,n.dataset.laneIndex=e.world.laneIndex,n.style.position="absolute",n.onclick=u,document.querySelector("body").appendChild(n)}}));setInterval((()=>{const e=[...document.querySelectorAll("div.c2vm-tle-lane-button")].map((e=>({x:e.dataset.worldX,y:e.dataset.worldY,z:e.dataset.worldZ})));0!=e.length&&engine.call("C2VM-TLE-RequestWorldToScreen",JSON.stringify(e)).then((e=>{try{const n=JSON.parse(e);for(const e of n){const n=document.querySelector(`div.c2vm-tle-lane-button[data-world-x="${e.world.x}"][data-world-y="${e.world.y}"][data-world-z="${e.world.z}"]`);n&&(n.style.left=e.screen.x-17+"px",n.style.bottom=e.screen.y-17+"px")}}catch(e){console.log(e)}}))}),100),engine.call("C2VM-TLE-RequestMenuData").then(s);const h=document.querySelector("body"),g={attributes:!0,childList:!0,subtree:!0};new MutationObserver(((e,n)=>{const t=document.querySelector("button.selected.item_KJ3.item-hover_WK8.item-active_Spn > img"),a=document.querySelector("div.c2vm-tle-panel");a&&(t&&"Media/Game/Icons/TrafficLights.svg"==t.src?a.style.display="block":"none"!=a.style.display&&(a.style.display="none",d(),i()))})).observe(h,g)}
         """);
     }
 
@@ -244,26 +246,23 @@ public class UISystem : GameSystemBase
         }
     }
 
-    protected void ResetStateMenu()
+    protected void ResetMenuState()
     {
         m_IsLaneManagementToolOpen = false;
 
-        for (int i = 0; i < m_SelectedPattern.Length; i++)
-        {
-            m_SelectedPattern[i] = 0;
-        }
-
         m_Options.Clear();
+
+        m_SelectedPattern = 0;
 
         if (m_CustomTrafficLightsLookup.HasComponent(m_SelectedEntity))
         {
-            m_CustomTrafficLightsLookup[m_SelectedEntity].GetPatterns().CopyTo(m_SelectedPattern);
+            m_SelectedPattern = m_CustomTrafficLightsLookup[m_SelectedEntity].GetPattern(m_Ways);
         }
 
         foreach(int pattern in Enum.GetValues(typeof(TrafficLightPatterns.Pattern)))
         {
             string key = Enum.GetName(typeof(TrafficLightPatterns.Pattern), pattern);
-            if ((pattern & m_SelectedPattern[0]) != 0)
+            if ((pattern & m_SelectedPattern) != 0)
             {
                 m_Options[key] = 1;
             }
@@ -281,8 +280,6 @@ public class UISystem : GameSystemBase
 
         if (entity != m_SelectedEntity)
         {
-            m_Ways = 0;
-
             m_ShowNotificationUnsaved = false;
 
             // Clean up old entity
@@ -297,6 +294,10 @@ public class UISystem : GameSystemBase
             }
 
             m_SelectedEntity = entity;
+
+            m_Ways = 0;
+
+            m_SelectedPattern = 0;
 
             // Retrieve info of new entity
             if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
@@ -315,7 +316,7 @@ public class UISystem : GameSystemBase
                         continue;
                     }
 
-                    if (!m_CarLaneLookup.HasComponent(subLane.m_SubLane))
+                    if (!m_CarLaneLookup.HasComponent(subLane.m_SubLane) && !m_TrackLaneLookup.HasComponent(subLane.m_SubLane))
                     {
                         continue;
                     }
@@ -336,7 +337,7 @@ public class UISystem : GameSystemBase
                 m_Ways = lanes.Count;
             }
 
-            ResetStateMenu();
+            ResetMenuState();
 
             TriggerUpdateMenu();
         }
@@ -376,6 +377,11 @@ public class UISystem : GameSystemBase
                             x = worldPosition.x,
                             y = worldPosition.y,
                             z = worldPosition.z,
+                            tangentX = connectPositionSourceBuffer[i].m_Tangent.x,
+                            tangentY = connectPositionSourceBuffer[i].m_Tangent.y,
+                            tangentZ = connectPositionSourceBuffer[i].m_Tangent.z,
+                            groupIndex = connectPositionSourceBuffer[i].m_GroupIndex,
+                            laneIndex = connectPositionSourceBuffer[i].m_LaneIndex,
                         }
                     });
                 }
@@ -386,7 +392,7 @@ public class UISystem : GameSystemBase
                     DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
                     for (int i = 0; i < customLaneDirectionBuffer.Length; i++)
                     {
-                        Unity.Mathematics.float3 customLaneDirectionPosition = customLaneDirectionBuffer[i].m_SourcePosition;
+                        Unity.Mathematics.float3 customLaneDirectionPosition = customLaneDirectionBuffer[i].m_Position;
                         if (!sourceExist.ContainsKey(customLaneDirectionPosition))
                         {
                             customLaneDirectionBuffer.RemoveAt(i);
@@ -404,18 +410,6 @@ public class UISystem : GameSystemBase
 
             if (m_ConnectPositionTargetLookup.HasBuffer(m_SelectedEntity))
             {
-                DynamicBuffer<ConnectPositionTarget> connectPositionTarget = m_ConnectPositionTargetLookup[m_SelectedEntity];
-                for (int i = 0; i < connectPositionTarget.Length; i++)
-                {
-                    Unity.Mathematics.float3 worldPosition = connectPositionTarget[i].m_Position;
-                    target.Add(new {
-                        world = new {
-                            x = worldPosition.x,
-                            y = worldPosition.y,
-                            z = worldPosition.z,
-                        }
-                    });
-                }
             }
         }
         return JsonConvert.SerializeObject(new {source, target});
@@ -467,7 +461,7 @@ public class UISystem : GameSystemBase
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     CustomLaneDirection existingDirection = buffer[i];
-                    if (existingDirection.m_SourcePosition.Equals(direction.m_SourcePosition))
+                    if (existingDirection.Equals(direction))
                     {
                         buffer[i] = direction;
                         foundExistingDirection = true;
@@ -505,19 +499,22 @@ public class UISystem : GameSystemBase
             if (m_CustomLaneDirectionLookup.HasBuffer(m_SelectedEntity))
             {
                 DynamicBuffer<CustomLaneDirection> buffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    CustomLaneDirection existingConnection = buffer[i];
-                    if (existingConnection.m_SourcePosition.Equals(direction.m_SourcePosition))
-                    {
-                        direction = existingConnection;
-                    }
-                }
+                CustomLaneDirection.Get(buffer, direction.m_Position, direction.m_Tangent, direction.m_GroupIndex, direction.m_LaneIndex, out CustomLaneDirection directionFound);
+                direction.m_Restriction = directionFound.m_Restriction;
             }
         }
     
         var menu = new ArrayList();
-        menu.Add(new {x = direction.m_SourcePosition.x, y = direction.m_SourcePosition.y, z = direction.m_SourcePosition.z});
+        menu.Add(new {
+            x = direction.m_Position.x,
+            y = direction.m_Position.y,
+            z = direction.m_Position.z,
+            tangentX = direction.m_Tangent.x,
+            tangentY = direction.m_Tangent.y,
+            tangentZ = direction.m_Tangent.z,
+            groupIndex = direction.m_GroupIndex,
+            laneIndex = direction.m_LaneIndex,
+        });
         menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Left"), key = "m_BanLeft", value = direction.m_Restriction.m_BanLeft.ToString()});
         menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Ahead"), key = "m_BanStraight", value = direction.m_Restriction.m_BanStraight.ToString()});
         menu.Add(new MenuItemOption{label = m_ResourceManager.GetString("Right"), key = "m_BanRight", value = direction.m_Restriction.m_BanRight.ToString()});
@@ -539,12 +536,15 @@ public class UISystem : GameSystemBase
         {
             menu.Add(new MenuItemTitle{title = m_ResourceManager.GetString("TrafficSignal")});
             menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("Vanilla"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.Vanilla});
-            if (m_Ways == 3 || m_Ways == 4)
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasing))
             {
                 menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("SplitPhasing"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasing});
+            }
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced))
+            {
                 menu.Add(new MenuItemPattern{label = m_ResourceManager.GetString("AdvancedSplitPhasing"), ways = m_Ways, pattern = (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced});
             }
-            if (m_Ways == 4)
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn))
             {
                 if (m_CityConfigurationSystem.leftHandTraffic)
                 {
@@ -625,49 +625,46 @@ public class UISystem : GameSystemBase
                 int pattern;
                 int.TryParse(splitInput[0], out ways);
                 int.TryParse(splitInput[1], out pattern);
-                if (ways < m_SelectedPattern.Length)
+                if (!TrafficLightPatterns.IsValidPattern(ways, pattern))
                 {
-                    if (!TrafficLightPatterns.IsValidPattern(ways, pattern))
-                    {
-                        pattern = 0;
-                    }
-                    m_SelectedPattern[ways] = pattern;
+                    pattern = 0;
                 }
+                m_SelectedPattern = pattern;
             }
         }
         UpdatePatterns();
-        string result = JsonConvert.SerializeObject(m_SelectedPattern);
+        string result = JsonConvert.SerializeObject(new {
+            ways = m_Ways,
+            pattern = m_SelectedPattern
+        });
         // Console.WriteLine($"UISystem PatternChanged {input} {result}");
         return result;
     }
 
     protected void UpdatePatterns()
     {
-        for (int i = 0; i < m_SelectedPattern.Length; i++)
+        if (
+            m_Options.ContainsKey(TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString()) &&
+            m_Options[TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString()] == 1
+        )
         {
-            if (
-                m_Options.ContainsKey(TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString()) &&
-                m_Options[TrafficLightPatterns.Pattern.ExclusivePedestrian.ToString()] == 1
-            )
-            {
-                m_SelectedPattern[i] = m_SelectedPattern[i] | (int) TrafficLightPatterns.Pattern.ExclusivePedestrian;
-            }
-            else
-            {
-                m_SelectedPattern[i] = m_SelectedPattern[i] & (int) ~TrafficLightPatterns.Pattern.ExclusivePedestrian;
-            }
+            m_SelectedPattern = m_SelectedPattern | (int) TrafficLightPatterns.Pattern.ExclusivePedestrian;
+        }
+        else
+        {
+            m_SelectedPattern = m_SelectedPattern & (int) ~TrafficLightPatterns.Pattern.ExclusivePedestrian;
+        }
 
-            if (
-                m_Options.ContainsKey(TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString()) &&
-                m_Options[TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString()] == 1
-            )
-            {
-                m_SelectedPattern[i] = m_SelectedPattern[i] | (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
-            }
-            else
-            {
-                m_SelectedPattern[i] = m_SelectedPattern[i] & (int) ~TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
-            }
+        if (
+            m_Options.ContainsKey(TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString()) &&
+            m_Options[TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn.ToString()] == 1
+        )
+        {
+            m_SelectedPattern = m_SelectedPattern | (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
+        }
+        else
+        {
+            m_SelectedPattern = m_SelectedPattern & (int) ~TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
         }
 
         if (m_SelectedEntity == Entity.Null)
@@ -682,7 +679,7 @@ public class UISystem : GameSystemBase
         else
         {
             CustomTrafficLights customTrafficLights = m_CustomTrafficLightsLookup[m_SelectedEntity];
-            customTrafficLights.SetPatterns(m_SelectedPattern);
+            customTrafficLights.SetPattern(m_SelectedPattern);
             m_CustomTrafficLightsLookup[m_SelectedEntity] = customTrafficLights;
         }
 

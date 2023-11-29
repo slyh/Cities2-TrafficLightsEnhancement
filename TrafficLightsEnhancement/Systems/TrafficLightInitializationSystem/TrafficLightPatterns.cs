@@ -17,14 +17,31 @@ class TrafficLightPatterns {
 
     public static bool IsValidPattern(int ways, int pattern)
     {
-        foreach(int p in Enum.GetValues(typeof(Pattern)))
+        switch (pattern)
         {
-            if ((p & 0xFFFF) == (pattern & 0xFFFF))
-            {
+            case (int) Pattern.Vanilla:
                 return true;
-            }
+
+            case (int) Pattern.SplitPhasing:
+                return true;
+
+            case (int) Pattern.SplitPhasingAdvanced:
+                if (ways >= 3 && ways <= 4)
+                {
+                    return true;
+                }
+                return false;
+
+            case (int) Pattern.ProtectedCentreTurn:
+                if (ways == 4)
+                {
+                    return true;
+                }
+                return false;
+
+            default:
+                return false;
         }
-        return false;
     }
 
     public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, int pattern)
