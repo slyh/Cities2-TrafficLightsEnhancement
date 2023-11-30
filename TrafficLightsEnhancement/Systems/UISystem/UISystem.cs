@@ -196,6 +196,13 @@ public class UISystem : GameSystemBase
         List<string> supportedLocales = new List<string>
         {
             "en-US",
+            "de-DE",
+            "fr-FR",
+            "ja-JP",
+            "ko-KR",
+            "pt-BR",
+            "ru-RU",
+            "zh-HANS",
             "zh-HANT"
         };
         if (!supportedLocales.Contains(locale))

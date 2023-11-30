@@ -17,7 +17,7 @@ class TrafficLightPatterns {
 
     public static bool IsValidPattern(int ways, int pattern)
     {
-        switch (pattern)
+        switch (pattern & 0xFFFF)
         {
             case (int) Pattern.Vanilla:
                 return true;
