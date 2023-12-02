@@ -35,7 +35,7 @@ public static class DefaultLaneDirection
                 laneCount = currentLaneEnd - currentLaneStart + 1;
                 currentGroupIndex = position.m_GroupIndex;
             }
-            CustomLaneDirection direction = new CustomLaneDirection(position.m_Position, position.m_Tangent, position.m_GroupIndex, position.m_LaneIndex, DefaultRestriction(laneCount, i - currentLaneStart));
+            CustomLaneDirection direction = new CustomLaneDirection(position.m_Position, position.m_Tangent, position.m_Owner, position.m_GroupIndex, position.m_LaneIndex, DefaultRestriction(laneCount, i - currentLaneStart));
             customLaneDirectionBuffer.Add(direction);
         }
     }

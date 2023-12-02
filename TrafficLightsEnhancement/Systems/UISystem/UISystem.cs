@@ -460,7 +460,22 @@ public class UISystem : GameSystemBase
             direction.m_Initialised = true;
 
             // System.Console.WriteLine($"connection.m_Restriction m_BanLeft {connection.m_Restriction.m_BanLeft} m_BanStraight {connection.m_Restriction.m_BanStraight} m_BanRight {connection.m_Restriction.m_BanRight} m_BanUTurn {connection.m_Restriction.m_BanUTurn}");
-                    
+
+            if (m_ConnectPositionSourceLookup.HasBuffer(m_SelectedEntity))
+            {
+                DynamicBuffer<ConnectPositionSource> sourcePosBuffer = m_ConnectPositionSourceLookup[m_SelectedEntity];
+                for (int i = 0; i < sourcePosBuffer.Length; i++)
+                {
+                    if (sourcePosBuffer[i].m_Position.Equals(direction.m_Position))
+                    {
+                        direction.m_Owner = sourcePosBuffer[i].m_Owner;
+                        direction.m_Tangent = sourcePosBuffer[i].m_Tangent;
+                        direction.m_GroupIndex = sourcePosBuffer[i].m_GroupIndex;
+                        direction.m_LaneIndex = sourcePosBuffer[i].m_LaneIndex;
+                    }
+                }
+            }
+
             if (m_CustomLaneDirectionLookup.HasBuffer(m_SelectedEntity))
             {
                 DynamicBuffer<CustomLaneDirection> buffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
@@ -506,7 +521,7 @@ public class UISystem : GameSystemBase
             if (m_CustomLaneDirectionLookup.HasBuffer(m_SelectedEntity))
             {
                 DynamicBuffer<CustomLaneDirection> buffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
-                CustomLaneDirection.Get(buffer, direction.m_Position, direction.m_Tangent, direction.m_GroupIndex, direction.m_LaneIndex, out CustomLaneDirection directionFound);
+                CustomLaneDirection.Get(buffer, direction.m_Position, direction.m_Tangent, direction.m_Owner, direction.m_GroupIndex, direction.m_LaneIndex, out CustomLaneDirection directionFound);
                 direction.m_Restriction = directionFound.m_Restriction;
             }
         }
