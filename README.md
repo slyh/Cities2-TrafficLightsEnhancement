@@ -11,7 +11,7 @@ This repository contains mods that offer minor quality-of-life improvements over
 * Traffic Lights Enhancement
    * Set traffic lights to various predefined signal modes
    * Guide available [here](https://github.com/slyh/Cities2-Various-Mods/tree/main/TrafficLightsEnhancement/README.md)
-   * Compatible with version 1.0.14f1
+   * Compatible with version 1.0.15f1
 
 ## Installation
 
