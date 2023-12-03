@@ -32,32 +32,23 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
 
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build
+    - name: Build BepInEx 6 version
       run: |
-        dotnet build --no-restore --configuration Release
+        dotnet build --configuration Release --property:BepInExVersion=6
         cp ./TrafficLightsEnhancement/bin/Release/net46/C2VM.TrafficLightsEnhancement.dll ./C2VM.TrafficLightsEnhancement/
         cp ./TrafficLightsEnhancement/bin/Release/net46/C2VM.CommonLibraries.LaneSystem.dll ./C2VM.CommonLibraries/
         zip -r ./C2VM.TrafficLightsEnhancement-BepInEx6.zip ./C2VM.TrafficLightsEnhancement/ ./C2VM.CommonLibraries/
         rm -rf ./C2VM.TrafficLightsEnhancement/*
         rm -rf ./C2VM.CommonLibraries/*
 
-    - name: Checkout BepInEx 5 branch
+    - name: Build BepInEx 5 version
       run: |
-        git fetch
-        git checkout origin/bepinex5
-        git submodule update --init --recursive
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: |
-        dotnet build --no-restore --configuration Release
+        dotnet build --configuration Release --property:BepInExVersion=5
         cp ./TrafficLightsEnhancement/bin/Release/net46/C2VM.TrafficLightsEnhancement.dll ./C2VM.TrafficLightsEnhancement/
         cp ./TrafficLightsEnhancement/bin/Release/net46/C2VM.CommonLibraries.LaneSystem.dll ./C2VM.CommonLibraries/
         zip -r ./C2VM.TrafficLightsEnhancement-BepInEx5.zip ./C2VM.TrafficLightsEnhancement/ ./C2VM.CommonLibraries/

@@ -1,6 +1,10 @@
 ﻿using BepInEx;
-using BepInEx.Unity.Mono;
 using HarmonyLib;
+using System.Reflection;
+
+#if BEPINEX6
+    using BepInEx.Unity.Mono;
+#endif
 
 namespace C2VM.TrafficLightsEnhancement;
 
@@ -9,7 +13,9 @@ public class Plugin : BaseUnityPlugin
 {
     private void Awake()
     {
-        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} {MyPluginInfo.PLUGIN_VERSION} is loaded!");
+        string informationalVersion = ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(Plugin)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion;
+
+        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} {informationalVersion} is loaded!");
 
         var harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         harmony.PatchAll();

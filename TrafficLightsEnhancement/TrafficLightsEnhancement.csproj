@@ -13,11 +13,23 @@
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
+    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BepInExVersion)'=='6'">
+    <DefineConstants>$(DefineConstants);BEPINEX6</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BepInExVersion)'=='5'">
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BepInExVersion)'=='6'">
+    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" IncludeAssets="compile" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
     <Reference Include="../Managed/*.dll" />
