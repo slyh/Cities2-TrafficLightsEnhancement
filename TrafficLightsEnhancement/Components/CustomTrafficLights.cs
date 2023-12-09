@@ -11,10 +11,10 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
     private const int DefaultSelectedPatternLength = 16;
 
     // Only used in schema 1
-    private NativeArray<int> m_SelectedPatternArray;
+    private NativeArray<uint> m_SelectedPatternArray;
 
     // Only used in schema 2
-    private int m_Pattern;
+    private uint m_Pattern;
 
     private int m_SchemaVersion;
 
@@ -48,10 +48,10 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
         }
         if (m_SchemaVersion == 1)
         {
-            m_SelectedPatternArray = new NativeArray<int>(DefaultSelectedPatternLength, Allocator.Persistent);
+            m_SelectedPatternArray = new NativeArray<uint>(DefaultSelectedPatternLength, Allocator.Persistent);
             for (int i = 1; i < m_SelectedPatternArray.Length; i++)
             {
-                reader.Read(out int pattern);
+                reader.Read(out uint pattern);
                 m_SelectedPatternArray[i] = pattern;
             }
         }
@@ -61,13 +61,13 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
         }
     }
 
-    public CustomTrafficLights(int pattern)
+    public CustomTrafficLights(uint pattern)
     {
         m_SchemaVersion = 2;
         m_Pattern = pattern;
     }
 
-    public int GetPattern(int ways)
+    public uint GetPattern(int ways)
     {
         if (m_SchemaVersion == 1)
         {
@@ -80,7 +80,7 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
         return (int) TrafficLightPatterns.Pattern.Vanilla;
     }
 
-    public void SetPattern(int pattern)
+    public void SetPattern(uint pattern)
     {
         m_SchemaVersion = 2;
         m_Pattern = pattern;

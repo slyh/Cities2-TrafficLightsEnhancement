@@ -5,7 +5,7 @@ using Unity.Mathematics;
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 class TrafficLightPatterns {
-    public enum Pattern : int
+    public enum Pattern : uint
     {
         Vanilla = 0,
         SplitPhasing = 1,
@@ -15,24 +15,24 @@ class TrafficLightPatterns {
         AlwaysGreenKerbsideTurn = 2 << 16,
     }
 
-    public static bool IsValidPattern(int ways, int pattern)
+    public static bool IsValidPattern(int ways, uint pattern)
     {
         switch (pattern & 0xFFFF)
         {
-            case (int) Pattern.Vanilla:
+            case (uint) Pattern.Vanilla:
                 return true;
 
-            case (int) Pattern.SplitPhasing:
+            case (uint) Pattern.SplitPhasing:
                 return true;
 
-            case (int) Pattern.SplitPhasingAdvanced:
+            case (uint) Pattern.SplitPhasingAdvanced:
                 if (ways >= 3 && ways <= 4)
                 {
                     return true;
                 }
                 return false;
 
-            case (int) Pattern.ProtectedCentreTurn:
+            case (uint) Pattern.ProtectedCentreTurn:
                 if (ways == 4)
                 {
                     return true;
@@ -44,7 +44,7 @@ class TrafficLightPatterns {
         }
     }
 
-    public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, int pattern)
+    public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, uint pattern)
     {
         int[] groupLeft = new int[groups.Length];
         int[] groupRight = new int[groups.Length];

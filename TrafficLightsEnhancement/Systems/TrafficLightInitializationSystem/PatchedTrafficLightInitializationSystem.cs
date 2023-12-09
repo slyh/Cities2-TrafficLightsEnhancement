@@ -82,7 +82,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                 }
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
-                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref customTrafficLights, out int ways, out int pattern);
+                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref customTrafficLights, out int ways, out uint pattern);
                 ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, ways, pattern);
                 InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
                 nativeArray[i] = trafficLights;
@@ -167,7 +167,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, ref CustomTrafficLights customTrafficLights, out int ways, out int pattern)
+        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, ref CustomTrafficLights customTrafficLights, out int ways, out uint pattern)
         {
             groupCount = 0;
             while (vehicleLanes.Length > 0)
@@ -339,7 +339,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
             return;
         }
 
-        private void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, int ways, int pattern)
+        private void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, int ways, uint pattern)
         {
             if (groupCount <= 1)
             {

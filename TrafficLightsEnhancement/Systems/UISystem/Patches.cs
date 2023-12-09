@@ -43,7 +43,7 @@ class Patches
             }
 
             UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
-            uiSystem.UpdateSelectedEntity(entity);
+            uiSystem.ChangeSelectedEntity(entity);
         }
     }
 
