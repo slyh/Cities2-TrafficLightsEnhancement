@@ -1,17 +1,15 @@
-This repository contains mods that offer minor quality-of-life improvements over the base game of Cities: Skylines II.
+## Traffic Lights Enhancement
 
-**Disclaimer: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
+* Set traffic lights to various predefined signal modes
+* Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/GUIDE.md)
+* Compatible with version 1.0.15f1
 
-## Notice
+The mod will save extra data to your saves, which it relies on to provide additional functionality. Generally, traffic lights and junctions will revert to vanilla settings when the mod is removed, but this cannot be guaranteed.
 
-* Suggestions wanted! What additional signal phases do you think should be included in the Traffic Lights Enhancement mod? Leave your opinion in the [Discussions section](https://github.com/slyh/Cities2-Various-Mods/discussions)! 
+You cannot downgrade the mod to an older version. Cities saved with the new version are not compatible with previous versions.
 
-## Mods
-
-* Traffic Lights Enhancement
-   * Set traffic lights to various predefined signal modes
-   * Guide available [here](https://github.com/slyh/Cities2-Various-Mods/tree/main/TrafficLightsEnhancement/README.md)
-   * Compatible with version 1.0.15f1
+> [!WARNING]
+> These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.
 
 ## Installation
 
@@ -27,15 +25,17 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 4. Download the mod
 
-   * For BepInEx 5 users, download [C2VM.TrafficLightsEnhancement-BepInEx5.zip](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx5.zip)
+   * For BepInEx 5 users, download [C2VM.TrafficLightsEnhancement-BepInEx5.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx5.zip)
 
-   * For BepInEx 6 users, download [C2VM.TrafficLightsEnhancement-BepInEx6.zip](https://github.com/slyh/Cities2-Various-Mods/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx6.zip)
+   * For BepInEx 6 users, download [C2VM.TrafficLightsEnhancement-BepInEx6.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx6.zip)
 
 5. Unzip the downloaded file into the `Cities Skylines II/BepInEx/plugins` folder
 
    * Don't forget to uninstall the old version of the mod to avoid conflicts
 
 6. Launch the game, the mod should be loaded automatically
+
+The instructions for building the mod yourself are available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/BUILD.md).
 
 ## Thanks
 
@@ -47,11 +47,13 @@ This repository contains mods that offer minor quality-of-life improvements over
 
 [PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insight on the inner workings of the lane system
 
+[primeinc](https://github.com/primeinc) for the [guide](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/GUIDE.md)
+
 [PsykotropyK](https://github.com/PsykotropyK) for the French translation
 
 [SuperYYT](https://github.com/SuperYYT) for the Simplified Chinese translation
 
-[Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) for the Korean translation
+[Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything) for the Korean translation
 
 [Mellaway](https://github.com/Mellaway) for the Russian translation
 
