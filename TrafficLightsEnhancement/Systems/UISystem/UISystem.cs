@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Resources;
 using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
@@ -30,10 +29,6 @@ public class UISystem : GameSystemBase
     private View m_View;
 
     private int m_Ways;
-
-    private ResourceManager m_ResourceManager;
-
-    private string m_Locale;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
@@ -88,11 +83,9 @@ public class UISystem : GameSystemBase
         m_SubLaneLookup = GetBufferLookup<SubLane>(false);
         m_TrackLaneLookup = GetComponentLookup<TrackLane>(true);
 
-        m_Locale = GetLocale();
-        m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_Locale, typeof(UISystem).Assembly);
-
         m_View = GameManager.instance.userInterface.view.View;
 
+        m_View.BindCall("C2VM-TLE-Call-GetLocale", CallGetLocale);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-Update", CallMainPanelUpdate);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdatePattern", CallMainPanelUpdatePattern);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateOption", CallMainPanelUpdateOption);
@@ -113,23 +106,15 @@ public class UISystem : GameSystemBase
     protected static string GetLocale()
     {
         string locale = GameManager.instance.localizationManager.activeLocaleId;
-        List<string> supportedLocales = new List<string>
-        {
-            "en-US",
-            "de-DE",
-            "fr-FR",
-            "ja-JP",
-            "ko-KR",
-            "pt-BR",
-            "ru-RU",
-            "zh-HANS",
-            "zh-HANT"
-        };
-        if (!supportedLocales.Contains(locale))
-        {
-            locale = supportedLocales[0];
-        }
         return locale;
+    }
+
+    protected string CallGetLocale()
+    {
+        var result = new {
+            locale = GetLocale()
+        };
+        return JsonConvert.SerializeObject(result);
     }
 
     protected void CallMainPanelUpdate()
@@ -179,60 +164,60 @@ public class UISystem : GameSystemBase
         };
         if (m_SelectedEntity != Entity.Null)
         {
-            menu.items.Add(new Types.ItemTitle{title = m_ResourceManager.GetString("TrafficSignal")});
-            menu.items.Add(Types.MainPanelItemPattern(m_ResourceManager.GetString("Vanilla"), (int) TrafficLightPatterns.Pattern.Vanilla, m_SelectedPattern));
+            menu.items.Add(new Types.ItemTitle{title = "TrafficSignal"});
+            menu.items.Add(Types.MainPanelItemPattern("Vanilla", (int) TrafficLightPatterns.Pattern.Vanilla, m_SelectedPattern));
             if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasing))
             {
-                menu.items.Add(Types.MainPanelItemPattern(m_ResourceManager.GetString("SplitPhasing"), (int) TrafficLightPatterns.Pattern.SplitPhasing, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemPattern("SplitPhasing", (int) TrafficLightPatterns.Pattern.SplitPhasing, m_SelectedPattern));
             }
             if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced))
             {
-                menu.items.Add(Types.MainPanelItemPattern(m_ResourceManager.GetString("AdvancedSplitPhasing"), (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemPattern("AdvancedSplitPhasing", (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced, m_SelectedPattern));
             }
             if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn))
             {
                 if (m_CityConfigurationSystem.leftHandTraffic)
                 {
-                    menu.items.Add(Types.MainPanelItemPattern(m_ResourceManager.GetString("ProtectedRightTurns"), (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
+                    menu.items.Add(Types.MainPanelItemPattern("ProtectedRightTurns", (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
                 }
                 else
                 {
-                    menu.items.Add(Types.MainPanelItemPattern(m_ResourceManager.GetString("ProtectedLeftTurns"), (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
+                    menu.items.Add(Types.MainPanelItemPattern("ProtectedLeftTurns", (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
                 }
             }
             menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemTitle{title = m_ResourceManager.GetString("Options")});
-            menu.items.Add(Types.MainPanelItemOption(m_ResourceManager.GetString("ExclusivePedestrianPhase"), (int) TrafficLightPatterns.Pattern.ExclusivePedestrian, m_SelectedPattern));
+            menu.items.Add(new Types.ItemTitle{title = "Options"});
+            menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (int) TrafficLightPatterns.Pattern.ExclusivePedestrian, m_SelectedPattern));
             if (m_CityConfigurationSystem.leftHandTraffic)
             {
-                menu.items.Add(Types.MainPanelItemOption(m_ResourceManager.GetString("AlwaysGreenLeftTurns"), (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemOption("AlwaysGreenLeftTurns", (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
             }
             else
             {
-                menu.items.Add(Types.MainPanelItemOption(m_ResourceManager.GetString("AlwaysGreenRightTurns"), (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemOption("AlwaysGreenRightTurns", (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
             }
             menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemTitle{title = m_ResourceManager.GetString("LaneDirectionTool")});
+            menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
             if (m_IsLaneManagementToolOpen)
             {
-                menu.items.Add(new Types.ItemButton{label = m_ResourceManager.GetString("Close"), key = "status", value = "1", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Close"});
+                menu.items.Add(new Types.ItemButton{label = "Close", key = "status", value = "1", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Close"});
             }
             else
             {
-                menu.items.Add(new Types.ItemButton{label = m_ResourceManager.GetString("Open"), key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Open"});
+                menu.items.Add(new Types.ItemButton{label = "Open", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Open"});
             }
-            menu.items.Add(new Types.ItemButton{label = m_ResourceManager.GetString("Reset"), key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Reset"});
+            menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Reset"});
             menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemButton{label = m_ResourceManager.GetString("Save"), key = "save", value = "1", engineEventName = "C2VM-TLE-Call-MainPanel-Save"});
+            menu.items.Add(new Types.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM-TLE-Call-MainPanel-Save"});
             if (m_ShowNotificationUnsaved)
             {
                 menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemNotification{label = m_ResourceManager.GetString("PleaseSave"), notificationType = "warning"});
+                menu.items.Add(new Types.ItemNotification{label = "PleaseSave", notificationType = "warning"});
             }
         }
         else
         {
-            menu.items.Add(new Types.ItemMessage{message = m_ResourceManager.GetString("PleaseSelectJunction")});
+            menu.items.Add(new Types.ItemMessage{message = "PleaseSelectJunction"});
         }
         string result = JsonConvert.SerializeObject(menu);
         m_View.TriggerEvent("C2VM-TLE-Event-UpdateMainPanel", result);
@@ -258,9 +243,7 @@ public class UISystem : GameSystemBase
         {
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
             UpdateEntity();
-            m_IsLaneManagementToolOpen = false;
-            UpdateMainPanel();
-            UpdateLaneDirectionTool();
+            CallLaneDirectionToolClose("");
         }
     }
 
@@ -333,7 +316,7 @@ public class UISystem : GameSystemBase
                         [
                             new Types.ItemButton
                             {
-                                label = m_ResourceManager.GetString("Save"),
+                                label = "Save",
                                 engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Panel-Save"
                             }
                         ]
@@ -582,6 +565,8 @@ public class UISystem : GameSystemBase
             ResetMainPanelState();
 
             UpdateMainPanel();
+
+            UpdateLaneDirectionTool();
         }
     }
 }
