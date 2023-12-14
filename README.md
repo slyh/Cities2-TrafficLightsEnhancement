@@ -2,7 +2,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/GUIDE.md)
-* Compatible with version 1.0.15f1
+* Compatible with version 1.0.18f1
 
 The mod will save extra data to your saves, which it relies on to provide additional functionality. Generally, traffic lights and junctions will revert to vanilla settings when the mod is removed, but this cannot be guaranteed.
 
@@ -49,13 +49,13 @@ The instructions for building the mod yourself are available [here](https://gith
 
 [primeinc](https://github.com/primeinc) for the [guide](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/GUIDE.md)
 
-[PsykotropyK](https://github.com/PsykotropyK) for the French translation
+[PsykotropyK](https://github.com/PsykotropyK) and [Edou24](https://github.com/Edou24) for the French translation
 
 [SuperYYT](https://github.com/SuperYYT) for the Simplified Chinese translation
 
 [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything) for the Korean translation
 
-[Mellaway](https://github.com/Mellaway) for the Russian translation
+[Mellaway](https://github.com/Mellaway) and [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder) for the Russian translation
 
 [TheL0ki](https://github.com/TheL0ki) and [Simanova86](https://github.com/Simanova86) for the German translation
 

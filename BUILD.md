@@ -28,7 +28,7 @@ git submodule update --init --recursive
 
 6. Copy `tle-frontend/dist/assets/Payload.cs` to `Cities2-TrafficLightsEnhancement/TrafficLightsEnhancement/Systems/UISystem/` (optional)
 
-7. Copy the `Cities Skylines II/Cities2_Data/Managed` folder to `Cities2-TrafficLightsEnhancement/`
+7. Copy the `Cities Skylines II/Cities2_Data/Managed/` folder to `Cities2-TrafficLightsEnhancement/`
 
 8. Build the plugin
 

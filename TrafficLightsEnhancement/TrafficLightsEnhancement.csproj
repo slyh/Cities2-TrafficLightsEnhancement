@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
     <Description>C2VM.TrafficLightsEnhancement</Description>
-    <Version>0.2.6</Version>
+    <Version>0.2.7</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -32,6 +32,9 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="../Managed/*.dll" />
   </ItemGroup>
   
