@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
     <Description>C2VM.TrafficLightsEnhancement</Description>
-    <Version>0.2.7</Version>
+    <Version>0.2.8</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -16,15 +16,15 @@
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BepInExVersion)'=='6'">
+  <PropertyGroup Condition="'$(BepInExVersion)' == '6'">
     <DefineConstants>$(DefineConstants);BEPINEX6</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(BepInExVersion)'=='5'">
+  <ItemGroup Condition="'$(BepInExVersion)' == '5' Or '$(BepInExVersion)' == ''">
     <PackageReference Include="BepInEx.Core" Version="5.*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BepInExVersion)'=='6'">
+  <ItemGroup Condition="'$(BepInExVersion)' == '6'">
     <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" IncludeAssets="compile" />
   </ItemGroup>
 
@@ -43,6 +43,15 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
+    <ProjectReference Include="../CommonLibraries/LaneSystem/LaneSystem.csproj" />
   </ItemGroup>
+
+  <Target Name="BuildFrontend" BeforeTargets="CoreCompile">
+    <Exec Command="npm install" WorkingDirectory="../TLEFrontend/" />
+    <Exec Command="npm run build" WorkingDirectory="../TLEFrontend/" />
+    <ItemGroup>
+      <Compile Include="../TLEFrontend/dist/assets/Payload.cs" />
+    </ItemGroup>
+  </Target>
+
 </Project>

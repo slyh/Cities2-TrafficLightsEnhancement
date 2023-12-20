@@ -10,7 +10,6 @@ class Patches
     static bool OnCreate(Game.Net.TrafficLightInitializationSystem __instance)
     {
         __instance.World.GetOrCreateSystemManaged<PatchedTrafficLightInitializationSystem>();
-        __instance.World.GetOrCreateSystemManaged<Game.UpdateSystem>().UpdateAt<PatchedTrafficLightInitializationSystem>(Game.SystemUpdatePhase.GameSimulation);
         return true; // Allow the original method to run so that we only receive update requests when necessary
     }
 

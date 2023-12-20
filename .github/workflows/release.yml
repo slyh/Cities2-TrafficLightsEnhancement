@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       commit-hash:
-        description: 'Commit Hash'
+        description: 'Commit'
         required: true
         type: string
 
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout main branch
+    - name: Checkout
       uses: actions/checkout@v3
       with:
         submodules: recursive
@@ -38,6 +38,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
 
     - name: Restore dependencies
       run: dotnet restore
@@ -60,7 +65,7 @@ jobs:
         rm -rf ./C2VM.TrafficLightsEnhancement/*
         rm -rf ./C2VM.CommonLibraries/*
 
-    - name: Create Release
+    - name: Create release
       id: create-release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
