@@ -228,6 +228,7 @@ public class UISystem : GameSystemBase
         m_IsLaneManagementToolOpen = true;
         UpdateLaneDirectionTool();
         UpdateMainPanel();
+        UpdateEntity();
     }
 
     protected void CallLaneDirectionToolClose(string input)
@@ -235,6 +236,7 @@ public class UISystem : GameSystemBase
         m_IsLaneManagementToolOpen = false;
         UpdateLaneDirectionTool();
         UpdateMainPanel();
+        UpdateEntity();
     }
 
     protected void CallLaneDirectionToolReset(string input)
@@ -242,7 +244,6 @@ public class UISystem : GameSystemBase
         if (m_SelectedEntity != Entity.Null)
         {
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
-            UpdateEntity();
             CallLaneDirectionToolClose("");
         }
     }
@@ -356,7 +357,6 @@ public class UISystem : GameSystemBase
         }
 
         m_View.TriggerEvent("C2VM-TLE-Event-UpdateLaneDirectionTool", JsonConvert.SerializeObject(result));
-        UpdateEntity();
     }
 
     protected void CallLaneDirectionToolPanelSave(string input)

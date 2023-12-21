@@ -3,4 +3,4 @@
 	url = git@github.com:C2VM/CommonLibraries.git
 [submodule "TLEFrontend"]
 	path = TLEFrontend
-	url = git@github.com:C2VM/TLEFrontend
+	url = git@github.com:C2VM/TLEFrontend.git
