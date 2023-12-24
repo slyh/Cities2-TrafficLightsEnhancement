@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
@@ -103,16 +104,12 @@ public class UISystem : GameSystemBase
     {
     }
 
-    protected static string GetLocale()
-    {
-        string locale = GameManager.instance.localizationManager.activeLocaleId;
-        return locale;
-    }
-
     protected string CallGetLocale()
     {
-        var result = new {
-            locale = GetLocale()
+        var result = new
+        {
+            culture = CultureInfo.CurrentCulture.Name,
+            locale = GameManager.instance.localizationManager.activeLocaleId,
         };
         return JsonConvert.SerializeObject(result);
     }

@@ -34,8 +34,14 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <ReferencePath Condition="Exists('C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/')">C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/</ReferencePath>
+    <ReferencePath Condition="Exists('../../Managed/')">../../Managed/</ReferencePath>
+    <ReferencePath Condition="Exists('../Managed/')">../Managed/</ReferencePath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="../Managed/*.dll" />
+    <Reference Include="$(ReferencePath)*.dll" Exclude="$(ReferencePath)System.*.dll" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -52,6 +58,7 @@
     <ItemGroup>
       <Compile Include="../TLEFrontend/dist/assets/Payload.cs" />
     </ItemGroup>
+    <Message Text="ReferencePath: $(ReferencePath)" Importance="high" />
   </Target>
 
 </Project>
