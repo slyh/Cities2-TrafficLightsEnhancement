@@ -13,11 +13,11 @@ You cannot downgrade the mod to an older version. Cities saved with the new vers
 
 ## Installation
 
-1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 3
+1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 4
 
 2. Install [BepInEx 5](https://github.com/BepInEx/BepInEx/releases)
 
-   * Download `BepInEx_x64_5.4.22.0.zip` (or a newer version), and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
+   * Download `BepInEx_x64_5.4.22.0.zip`, and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
 
    * The installation directory should now have the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file
 
@@ -62,3 +62,7 @@ The instructions for building the mod yourself are available [here](https://gith
 [macoto-hino](https://github.com/macoto-hino) for the Japanese translation
 
 [djotabr](https://github.com/djotabr) for the Portuguese translation
+
+[angel84326](https://github.com/angel84326) and the Taiwanese Cities: Skylines community for the Traditional Chinese translation
+
+[Jord38](https://github.com/Jord38) for the Dutch translation

@@ -36,6 +36,42 @@ public static class DefaultLaneDirection
                 currentGroupIndex = position.m_GroupIndex;
             }
             CustomLaneDirection direction = new CustomLaneDirection(position.m_Position, position.m_Tangent, position.m_Owner, position.m_GroupIndex, position.m_LaneIndex, DefaultRestriction(laneCount, i - currentLaneStart));
+            if (!position.m_HasLeftTurnEdge && !direction.m_Restriction.m_BanLeft)
+            {
+                direction.m_Restriction.m_BanLeft = true;
+                if (position.m_HasStraightEdge)
+                {
+                    direction.m_Restriction.m_BanStraight = false;
+                }
+                else if (position.m_HasRightTurnEdge)
+                {
+                    direction.m_Restriction.m_BanRight = false;
+                }
+            }
+            if (!position.m_HasRightTurnEdge && !direction.m_Restriction.m_BanRight)
+            {
+                direction.m_Restriction.m_BanRight = true;
+                if (position.m_HasStraightEdge)
+                {
+                    direction.m_Restriction.m_BanStraight = false;
+                }
+                else if (position.m_HasLeftTurnEdge)
+                {
+                    direction.m_Restriction.m_BanLeft = false;
+                }
+            }
+            if (!position.m_HasStraightEdge && !direction.m_Restriction.m_BanStraight)
+            {
+                direction.m_Restriction.m_BanStraight = true;
+                if (position.m_HasLeftTurnEdge)
+                {
+                    direction.m_Restriction.m_BanLeft = false;
+                }
+                else if (position.m_HasRightTurnEdge)
+                {
+                    direction.m_Restriction.m_BanRight = false;
+                }
+            }
             customLaneDirectionBuffer.Add(direction);
         }
     }
