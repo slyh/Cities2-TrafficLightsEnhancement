@@ -451,7 +451,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                         laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
                     }
 
-                    TrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+                    TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
                     m_LaneSignalData[subLane] = laneSignal;
                 }
             }

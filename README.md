@@ -11,6 +11,8 @@ You cannot downgrade the mod to an older version. Cities saved with the new vers
 > [!WARNING]
 > These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.
 
+Feel free to submit translations on [Crowdin](https://crowdin.com/project/Cities2-TrafficLightsEnhancement), your contributions are appreciated.
+
 ## Installation
 
 1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 4
