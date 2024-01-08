@@ -20,8 +20,10 @@ This mod introduces advanced traffic light controls for Cities: Skylines II, all
 
 | Option | Description |
 | --- | --- |
+| Allow Turning on Red | Allow vehicles to turn left (in LHT) or right (in RHT) when the signal is red. |
+| Give Way to Oncoming Vehicles<br>(Only for vanilla signals) | Require vehicles to give way to oncoming traffic when turning.<br>Note: Although drivers are required to give way, they still behave aggressively. Which might limit the effectiveness of this option at busy junctions. |
 | Exclusive Pedestrian Phase | A dedicated phase for pedestrian crossings, stopping all vehicular traffic. |
-| Always Green Left/Right-Turns | Provides functionality similar to 'allow turn on red,' but vehicles will not give way. |
+| Pedestrian Phase Duration | Sets the duration of the green light for pedestrians.<br>Only available when the "Exclusive Pedestrian Phase" option is enabled.<br>Note: Pedestrian traffic lights are not "smart" and will not extend the green signal. |
 
 > [!WARNING]
 > There may be pedestrian pathfinding issues at junctions, potentially indicating a bug in the game's node or pathfinding system, not addressed by this mod.

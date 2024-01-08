@@ -72,4 +72,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         sha256sum C2VM.TrafficLightsEnhancement-*.zip
-        gh release create ${{ inputs.tag }} C2VM.TrafficLightsEnhancement-BepInEx5.zip C2VM.TrafficLightsEnhancement-BepInEx6.zip
+        gh release create ${{ inputs.tag }} C2VM.TrafficLightsEnhancement-BepInEx5.zip C2VM.TrafficLightsEnhancement-BepInEx6.zip --draft

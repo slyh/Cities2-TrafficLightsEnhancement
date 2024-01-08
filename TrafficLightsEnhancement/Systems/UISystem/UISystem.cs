@@ -219,7 +219,7 @@ public class UISystem : GameSystemBase
                     label = "CustomPedestrianDurationMultiplier",
                     valueSuffix = "CustomPedestrianDurationMultiplierSuffix",
                     min = 0.5f,
-                    max = 8,
+                    max = 10,
                     step = 0.5f,
                     value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
                     engineEventName = "C2VM-TLE-Call-MainPanel-UpdateValue"
