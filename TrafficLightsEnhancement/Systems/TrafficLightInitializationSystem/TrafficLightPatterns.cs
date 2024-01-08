@@ -20,8 +20,6 @@ public class TrafficLightPatterns {
         AlwaysGreenKerbsideTurn = 1 << 17,
 
         CentreTurnGiveWay = 1 << 18,
-
-        CustomPedestrianDuration = 1 << 19,
     }
 
     public static bool IsValidPattern(int ways, Pattern pattern)

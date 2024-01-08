@@ -55,6 +55,9 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
             writer.Write(m_PedestrianPhaseDurationMultiplier);
             writer.Write(m_PedestrianPhaseGroupMask);
         }
+        #if VERBOSITY_DEBUG
+        System.Console.WriteLine($"CustomTrafficLights Serialize m_SchemaVersion {m_SchemaVersion} m_Pattern {(uint)m_Pattern} m_PedestrianPhaseDurationMultiplier {m_PedestrianPhaseDurationMultiplier} m_PedestrianPhaseGroupMask {m_PedestrianPhaseGroupMask}");
+        #endif
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
@@ -101,6 +104,9 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
             m_PedestrianPhaseDurationMultiplier = pedestrianPhaseDurationMultiplier;
             m_PedestrianPhaseGroupMask = pedestrianPhaseGroupMask;
         }
+        #if VERBOSITY_DEBUG
+        System.Console.WriteLine($"CustomTrafficLights Deserialize m_SchemaVersion {m_SchemaVersion}");
+        #endif
     }
 
     public CustomTrafficLights()
@@ -121,6 +127,9 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
 
     public TrafficLightPatterns.Pattern GetPattern(int ways)
     {
+        #if VERBOSITY_DEBUG
+        System.Console.WriteLine($"CustomTrafficLights GetPattern ways {ways} m_SchemaVersion {m_SchemaVersion} m_Pattern {m_Pattern} m_TwoWayPattern {m_TwoWayPattern} m_ThreeWayPattern {m_ThreeWayPattern} m_FourWayPattern {m_FourWayPattern}");
+        #endif
         if (m_SchemaVersion == 1)
         {
             m_SchemaVersion = 3;
@@ -136,6 +145,9 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
             {
                 m_Pattern = m_TwoWayPattern;
             }
+            #if VERBOSITY_DEBUG
+            System.Console.WriteLine($"CustomTrafficLights Upgrade m_SchemaVersion from 1 to 3, ways {ways} m_Pattern {(uint)m_Pattern}");
+            #endif
             return m_Pattern;
         }
         else if (m_SchemaVersion >= 2)
@@ -158,13 +170,19 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
 
     public void SetPedestrianPhaseDurationMultiplier(float durationMultiplier)
     {
-        m_SchemaVersion = 3;
+        if (m_SchemaVersion >= 2)
+        {
+            m_SchemaVersion = 3;
+        }
         m_PedestrianPhaseDurationMultiplier = durationMultiplier;
     }
 
     public void SetPedestrianPhaseGroupMask(int groupMask)
     {
-        m_SchemaVersion = 3;
+        if (m_SchemaVersion >= 2)
+        {
+            m_SchemaVersion = 3;
+        }
         m_PedestrianPhaseGroupMask = groupMask;
     }
 }
