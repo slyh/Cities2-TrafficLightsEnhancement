@@ -27,4 +27,6 @@ public struct LaneGroup
     public bool m_IsTurnLeft;
 
     public bool m_IsTurnRight;
+
+    public bool m_IsYield;
 }

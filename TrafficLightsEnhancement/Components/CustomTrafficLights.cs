@@ -7,16 +7,24 @@ namespace C2VM.TrafficLightsEnhancement.Components;
 
 public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerializable
 {
-    // Only used in schema 1
+    private int m_SchemaVersion;
+
+    // Schema 1
     private const int DefaultSelectedPatternLength = 16;
 
-    // Only used in schema 1
-    private NativeArray<uint> m_SelectedPatternArray;
+    private TrafficLightPatterns.Pattern m_TwoWayPattern;
 
-    // Only used in schema 2
-    private uint m_Pattern;
+    private TrafficLightPatterns.Pattern m_ThreeWayPattern;
 
-    private int m_SchemaVersion;
+    private TrafficLightPatterns.Pattern m_FourWayPattern;
+
+    // Schema 2
+    private TrafficLightPatterns.Pattern m_Pattern;
+
+    // Schema 3
+    public float m_PedestrianPhaseDurationMultiplier { get; private set; }
+
+    public int m_PedestrianPhaseGroupMask { get; private set; }
 
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
@@ -24,19 +32,35 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
         {
             for (int i = 0; i < DefaultSelectedPatternLength; i++)
             {
-                writer.Write(m_SelectedPatternArray[i]);
+                if (i == 3)
+                {
+                    writer.Write((uint)m_ThreeWayPattern);
+                }
+                else if (i == 4)
+                {
+                    writer.Write((uint)m_FourWayPattern);
+                }
+                else
+                {
+                    writer.Write((uint)m_TwoWayPattern);
+                }
             }
         }
-        else if (m_SchemaVersion == 2)
+        else if (m_SchemaVersion >= 2)
         {
+            m_SchemaVersion = 3;
             writer.Write(uint.MaxValue);
             writer.Write(m_SchemaVersion);
-            writer.Write(m_Pattern);
+            writer.Write((uint)m_Pattern);
+            writer.Write(m_PedestrianPhaseDurationMultiplier);
+            writer.Write(m_PedestrianPhaseGroupMask);
         }
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
     {
+        m_PedestrianPhaseDurationMultiplier = 1;
+        m_PedestrianPhaseGroupMask = 0;
         reader.Read(out uint uint1);
         if (uint1 == uint.MaxValue)
         {
@@ -48,41 +72,99 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
         }
         if (m_SchemaVersion == 1)
         {
-            m_SelectedPatternArray = new NativeArray<uint>(DefaultSelectedPatternLength, Allocator.Persistent);
-            for (int i = 1; i < m_SelectedPatternArray.Length; i++)
+            for (int i = 1; i < DefaultSelectedPatternLength; i++)
             {
                 reader.Read(out uint pattern);
-                m_SelectedPatternArray[i] = pattern;
+                if (i == 2)
+                {
+                    m_TwoWayPattern = (TrafficLightPatterns.Pattern)pattern;
+                }
+                else if (i == 3)
+                {
+                    m_ThreeWayPattern = (TrafficLightPatterns.Pattern)pattern;
+                }
+                else if (i == 4)
+                {
+                    m_FourWayPattern = (TrafficLightPatterns.Pattern)pattern;
+                }
             }
         }
-        else if (m_SchemaVersion == 2)
+        if (m_SchemaVersion >= 2)
         {
-            reader.Read(out m_Pattern);
+            reader.Read(out uint pattern);
+            m_Pattern = (TrafficLightPatterns.Pattern)pattern;
+        }
+        if (m_SchemaVersion >= 3)
+        {
+            reader.Read(out float pedestrianPhaseDurationMultiplier);
+            reader.Read(out int pedestrianPhaseGroupMask);
+            m_PedestrianPhaseDurationMultiplier = pedestrianPhaseDurationMultiplier;
+            m_PedestrianPhaseGroupMask = pedestrianPhaseGroupMask;
         }
     }
 
-    public CustomTrafficLights(uint pattern)
+    public CustomTrafficLights()
     {
-        m_SchemaVersion = 2;
-        m_Pattern = pattern;
+        m_SchemaVersion = 3;
+        m_Pattern = TrafficLightPatterns.Pattern.Vanilla;
+        m_PedestrianPhaseDurationMultiplier = 1;
+        m_PedestrianPhaseGroupMask = 0;
     }
 
-    public uint GetPattern(int ways)
+    public CustomTrafficLights(TrafficLightPatterns.Pattern pattern)
+    {
+        m_SchemaVersion = 3;
+        m_Pattern = pattern;
+        m_PedestrianPhaseDurationMultiplier = 1;
+        m_PedestrianPhaseGroupMask = 0;
+    }
+
+    public TrafficLightPatterns.Pattern GetPattern(int ways)
     {
         if (m_SchemaVersion == 1)
         {
-            return m_SelectedPatternArray[ways];
+            m_SchemaVersion = 3;
+            if (ways == 3)
+            {
+                m_Pattern = m_ThreeWayPattern;
+            }
+            else if (ways == 4)
+            {
+                m_Pattern = m_FourWayPattern;
+            }
+            else
+            {
+                m_Pattern = m_TwoWayPattern;
+            }
+            return m_Pattern;
         }
-        else if (m_SchemaVersion == 2)
+        else if (m_SchemaVersion >= 2)
         {
             return m_Pattern;
         }
-        return (int) TrafficLightPatterns.Pattern.Vanilla;
+        return TrafficLightPatterns.Pattern.Vanilla;
     }
 
     public void SetPattern(uint pattern)
     {
-        m_SchemaVersion = 2;
+        SetPattern((TrafficLightPatterns.Pattern)pattern);
+    }
+
+    public void SetPattern(TrafficLightPatterns.Pattern pattern)
+    {
+        m_SchemaVersion = 3;
         m_Pattern = pattern;
+    }
+
+    public void SetPedestrianPhaseDurationMultiplier(float durationMultiplier)
+    {
+        m_SchemaVersion = 3;
+        m_PedestrianPhaseDurationMultiplier = durationMultiplier;
+    }
+
+    public void SetPedestrianPhaseGroupMask(int groupMask)
+    {
+        m_SchemaVersion = 3;
+        m_PedestrianPhaseGroupMask = groupMask;
     }
 }

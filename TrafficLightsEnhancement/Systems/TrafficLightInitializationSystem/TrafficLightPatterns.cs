@@ -4,35 +4,44 @@ using Unity.Mathematics;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
-class TrafficLightPatterns {
+public class TrafficLightPatterns {
     public enum Pattern : uint
     {
         Vanilla = 0,
+
         SplitPhasing = 1,
+
         ProtectedCentreTurn = 2,
+
         SplitPhasingAdvanced = 3,
+
         ExclusivePedestrian = 1 << 16,
-        AlwaysGreenKerbsideTurn = 2 << 16,
+
+        AlwaysGreenKerbsideTurn = 1 << 17,
+
+        CentreTurnGiveWay = 1 << 18,
+
+        CustomPedestrianDuration = 1 << 19,
     }
 
-    public static bool IsValidPattern(int ways, uint pattern)
+    public static bool IsValidPattern(int ways, Pattern pattern)
     {
-        switch (pattern & 0xFFFF)
+        switch ((uint)pattern & 0xFFFF)
         {
-            case (uint) Pattern.Vanilla:
+            case (uint)Pattern.Vanilla:
                 return true;
 
-            case (uint) Pattern.SplitPhasing:
+            case (uint)Pattern.SplitPhasing:
                 return true;
 
-            case (uint) Pattern.SplitPhasingAdvanced:
+            case (uint)Pattern.SplitPhasingAdvanced:
                 if (ways >= 3 && ways <= 4)
                 {
                     return true;
                 }
                 return false;
 
-            case (uint) Pattern.ProtectedCentreTurn:
+            case (uint)Pattern.ProtectedCentreTurn:
                 if (ways == 4)
                 {
                     return true;
@@ -44,7 +53,7 @@ class TrafficLightPatterns {
         }
     }
 
-    public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, uint pattern)
+    public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, Pattern pattern)
     {
         int[] groupLeft = new int[groups.Length];
         int[] groupRight = new int[groups.Length];
@@ -92,7 +101,7 @@ class TrafficLightPatterns {
         //     System.Console.WriteLine($"groupRight {i} {groupRight[i]}");
         // }
 
-        if ((pattern & 0xFFFF) == (int) Pattern.SplitPhasing)
+        if (((uint)pattern & 0xFFFF) == (uint)Pattern.SplitPhasing)
         {
             for (int i = 0; i < groups.Length; i++)
             {
@@ -102,7 +111,7 @@ class TrafficLightPatterns {
             }
         }
 
-        if ((pattern & 0xFFFF) == (int) Pattern.SplitPhasingAdvanced)
+        if (((uint)pattern & 0xFFFF) == (uint)Pattern.SplitPhasingAdvanced)
         {
             if (ways == 3)
             {
@@ -158,7 +167,7 @@ class TrafficLightPatterns {
             }
         }
 
-        if ((pattern & 0xFFFF) == (int) Pattern.ProtectedCentreTurn)
+        if (((uint)pattern & 0xFFFF) == (uint)Pattern.ProtectedCentreTurn)
         {
             int signalGroupIndex = 0;
             for (int currentGroupIndex = 0; currentGroupIndex < groupCount; currentGroupIndex++) {
@@ -236,7 +245,7 @@ class TrafficLightPatterns {
             }
         }
         
-        if ((pattern & (int) Pattern.AlwaysGreenKerbsideTurn) != 0)
+        if (((uint)pattern & (uint)Pattern.AlwaysGreenKerbsideTurn) != 0)
         {
             ushort allGroupMask = 0;
             for (int i = 0; i < groups.Length; i++)
@@ -253,6 +262,23 @@ class TrafficLightPatterns {
                 )
                 {
                     group.m_GroupMask |= allGroupMask;
+                    group.m_IsYield = true;
+                }
+                groups[i] = group;
+            }
+        }
+
+        if (((uint)pattern & (uint)Pattern.CentreTurnGiveWay) != 0)
+        {
+            for (int i = 0; i < groups.Length; i++)
+            {
+                LaneGroup group = groups[i];
+                if (
+                    (leftHandTraffic && group.m_IsTurnRight) ||
+                    (!leftHandTraffic && group.m_IsTurnLeft)
+                )
+                {
+                    group.m_IsYield = true;
                 }
                 groups[i] = group;
             }

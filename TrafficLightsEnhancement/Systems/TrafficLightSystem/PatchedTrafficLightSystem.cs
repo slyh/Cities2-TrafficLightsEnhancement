@@ -4,6 +4,7 @@
 #endregion
 
 using System.Runtime.CompilerServices;
+using C2VM.TrafficLightsEnhancement.Components;
 using Game;
 using Game.Common;
 using Game.Net;
@@ -34,28 +35,39 @@ public class PatchedTrafficLightSystem : GameSystemBase
 
         public ComponentTypeHandle<TrafficLights> m_TrafficLightsType;
 
+        [ReadOnly]
+        public ComponentTypeHandle<CustomTrafficLights> m_CustomTrafficLightsType;
+
         [NativeDisableParallelForRestriction]
         public ComponentLookup<LaneSignal> m_LaneSignalData;
 
         [NativeDisableParallelForRestriction]
         public ComponentLookup<TrafficLight> m_TrafficLightData;
 
+        public ComponentLookup<ExtraLaneSignal> m_ExtraLaneSignalData;
+
         public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
             NativeArray<TrafficLights> nativeArray = chunk.GetNativeArray(ref m_TrafficLightsType);
+            NativeArray<CustomTrafficLights> customTrafficLightsArray = chunk.GetNativeArray(ref m_CustomTrafficLightsType);
             BufferAccessor<SubLane> bufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
             BufferAccessor<SubObject> bufferAccessor2 = chunk.GetBufferAccessor(ref m_SubObjectType);
             for (int i = 0; i < nativeArray.Length; i++)
             {
                 TrafficLights trafficLights = nativeArray[i];
+                CustomTrafficLights customTrafficLights = new CustomTrafficLights();
+                if (i < customTrafficLightsArray.Length)
+                {
+                    customTrafficLights = customTrafficLightsArray[i];
+                }
                 DynamicBuffer<SubLane> subLanes = bufferAccessor[i];
                 DynamicBuffer<SubObject> subObjects = bufferAccessor2[i];
-                UpdateTrafficLightState(subLanes, subObjects, ref trafficLights);
+                UpdateTrafficLightState(subLanes, subObjects, ref trafficLights, ref customTrafficLights);
                 nativeArray[i] = trafficLights;
             }
         }
 
-        private void UpdateTrafficLightState(DynamicBuffer<SubLane> subLanes, DynamicBuffer<SubObject> subObjects, ref TrafficLights trafficLights)
+        private void UpdateTrafficLightState(DynamicBuffer<SubLane> subLanes, DynamicBuffer<SubObject> subObjects, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights)
         {
             bool canExtend;
             switch (trafficLights.m_State)
@@ -93,7 +105,15 @@ public class PatchedTrafficLightSystem : GameSystemBase
 
                     break;
                 case Game.Net.TrafficLightState.Ongoing:
-                    if (++trafficLights.m_Timer >= 2)
+                    float greenDuration = 2;
+                    if ((customTrafficLights.m_PedestrianPhaseGroupMask & 1 << trafficLights.m_CurrentSignalGroup - 1) != 0)
+                    {
+                        greenDuration *= customTrafficLights.m_PedestrianPhaseDurationMultiplier;
+                    }
+#if VERBOSITY_DEBUG
+                    System.Console.WriteLine($"UpdateTrafficLightState m_CurrentSignalGroup {trafficLights.m_CurrentSignalGroup} greenDuration {greenDuration} m_PedestrianPhaseGroupMask {customTrafficLights.m_PedestrianPhaseGroupMask}");
+#endif
+                    if (++trafficLights.m_Timer >= greenDuration)
                     {
                         bool canExtend2;
                         int nextSignalGroup3 = GetNextSignalGroup(subLanes, trafficLights, trafficLights.m_Timer >= 6, out canExtend2);
@@ -375,7 +395,12 @@ public class PatchedTrafficLightSystem : GameSystemBase
                 if (m_LaneSignalData.HasComponent(subLane))
                 {
                     LaneSignal laneSignal = m_LaneSignalData[subLane];
-                    UpdateLaneSignal(trafficLights, ref laneSignal);
+                    ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
+                    if (m_ExtraLaneSignalData.HasComponent(subLane))
+                    {
+                        extraLaneSignal = m_ExtraLaneSignalData[subLane];
+                    }
+                    UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
                     laneSignal.m_Petitioner = Entity.Null;
                     laneSignal.m_Priority = laneSignal.m_Default;
                     m_LaneSignalData[subLane] = laneSignal;
@@ -430,7 +455,12 @@ public class PatchedTrafficLightSystem : GameSystemBase
 
         public ComponentLookup<LaneSignal> __Game_Net_LaneSignal_RW_ComponentLookup;
 
+        public ComponentLookup<ExtraLaneSignal> __TLE_ExtraLaneSignal_RW_ComponentLookup;
+
         public ComponentLookup<TrafficLight> __Game_Objects_TrafficLight_RW_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentTypeHandle<CustomTrafficLights> __TLE_CustomTrafficLights_RO_ComponentTypeHandle;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void __AssignHandles(ref SystemState state)
@@ -440,6 +470,8 @@ public class PatchedTrafficLightSystem : GameSystemBase
             __Game_Net_TrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<TrafficLights>();
             __Game_Net_LaneSignal_RW_ComponentLookup = state.GetComponentLookup<LaneSignal>();
             __Game_Objects_TrafficLight_RW_ComponentLookup = state.GetComponentLookup<TrafficLight>();
+            __TLE_ExtraLaneSignal_RW_ComponentLookup = state.GetComponentLookup<ExtraLaneSignal>();
+            __TLE_CustomTrafficLights_RO_ComponentTypeHandle = state.GetComponentTypeHandle<CustomTrafficLights>(isReadOnly: true);
         }
     }
 
@@ -461,7 +493,7 @@ public class PatchedTrafficLightSystem : GameSystemBase
     {
         base.OnCreate();
         m_SimulationSystem = base.World.GetOrCreateSystemManaged<SimulationSystem>();
-        m_TrafficLightQuery = GetEntityQuery(ComponentType.ReadWrite<TrafficLights>(), ComponentType.ReadOnly<UpdateFrame>(), ComponentType.Exclude<Deleted>(), ComponentType.Exclude<Destroyed>(), ComponentType.Exclude<Temp>());
+        m_TrafficLightQuery = GetEntityQuery(ComponentType.ReadWrite<TrafficLights>(), ComponentType.ReadOnly<CustomTrafficLights>(), ComponentType.ReadOnly<UpdateFrame>(), ComponentType.Exclude<Deleted>(), ComponentType.Exclude<Destroyed>(), ComponentType.Exclude<Temp>());
         RequireForUpdate(m_TrafficLightQuery);
     }
 
@@ -475,17 +507,21 @@ public class PatchedTrafficLightSystem : GameSystemBase
         __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Objects_SubObject_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
+        __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup.Update(ref base.CheckedStateRef);
+        __TypeHandle.__TLE_CustomTrafficLights_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         UpdateTrafficLightsJob jobData = default(UpdateTrafficLightsJob);
         jobData.m_SubLaneType = __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle;
         jobData.m_SubObjectType = __TypeHandle.__Game_Objects_SubObject_RO_BufferTypeHandle;
         jobData.m_TrafficLightsType = __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle;
         jobData.m_LaneSignalData = __TypeHandle.__Game_Net_LaneSignal_RW_ComponentLookup;
         jobData.m_TrafficLightData = __TypeHandle.__Game_Objects_TrafficLight_RW_ComponentLookup;
+        jobData.m_ExtraLaneSignalData = __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup;
+        jobData.m_CustomTrafficLightsType = __TypeHandle.__TLE_CustomTrafficLights_RO_ComponentTypeHandle;
         JobHandle dependency = JobChunkExtensions.ScheduleParallel(jobData, m_TrafficLightQuery, base.Dependency);
         base.Dependency = dependency;
     }
 
-    public static void UpdateLaneSignal(TrafficLights trafficLights, ref LaneSignal laneSignal)
+    public static void UpdateLaneSignal(TrafficLights trafficLights, ref LaneSignal laneSignal, ref ExtraLaneSignal extraLaneSignal)
     {
         int num = 0;
         int num2 = 0;
@@ -497,6 +533,13 @@ public class PatchedTrafficLightSystem : GameSystemBase
         if (trafficLights.m_NextSignalGroup > 0)
         {
             num2 |= 1 << trafficLights.m_NextSignalGroup - 1;
+        }
+
+        LaneSignalType goSignalType = LaneSignalType.Go;
+
+        if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.Yield) != 0)
+        {
+            goSignalType = LaneSignalType.Yield;
         }
 
         switch (trafficLights.m_State)
@@ -518,7 +561,7 @@ public class PatchedTrafficLightSystem : GameSystemBase
             case Game.Net.TrafficLightState.Ongoing:
                 if ((laneSignal.m_GroupMask & num) != 0)
                 {
-                    laneSignal.m_Signal = LaneSignalType.Go;
+                    laneSignal.m_Signal = goSignalType;
                 }
                 else
                 {
@@ -531,7 +574,7 @@ public class PatchedTrafficLightSystem : GameSystemBase
                 {
                     if ((laneSignal.m_GroupMask & num) != 0)
                     {
-                        laneSignal.m_Signal = LaneSignalType.Go;
+                        laneSignal.m_Signal = goSignalType;
                     }
                     else
                     {
@@ -554,7 +597,7 @@ public class PatchedTrafficLightSystem : GameSystemBase
             case Game.Net.TrafficLightState.Extended:
                 if ((laneSignal.m_Flags & LaneSignalFlags.CanExtend) != 0 && (laneSignal.m_GroupMask & num) != 0)
                 {
-                    laneSignal.m_Signal = LaneSignalType.Go;
+                    laneSignal.m_Signal = goSignalType;
                 }
                 else
                 {

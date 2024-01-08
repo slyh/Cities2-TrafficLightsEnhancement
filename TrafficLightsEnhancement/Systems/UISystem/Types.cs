@@ -92,6 +92,29 @@ public static class Types
         public string notificationType;
     }
 
+    public struct ItemRange {
+        [JsonProperty]
+        const string itemType = "range";
+
+        public string key;
+
+        public string label;
+
+        public float value;
+
+        public string valuePrefix;
+
+        public string valueSuffix;
+
+        public float min;
+
+        public float max;
+
+        public float step;
+
+        public string engineEventName;
+    }
+
     public struct WorldPosition
     {
         public float x;
@@ -162,12 +185,12 @@ public static class Types
         public bool banUTurn;
     };
 
-    public static ItemRadio MainPanelItemPattern(string label, int pattern, uint selectedPattern)
+    public static ItemRadio MainPanelItemPattern(string label, uint pattern, uint selectedPattern)
     {
         return new ItemRadio{label = label, key = "pattern", value = pattern.ToString(), engineEventName = "C2VM-TLE-Call-MainPanel-UpdatePattern", isChecked = (selectedPattern & 0xFFFF) == pattern};
     }
 
-    public static ItemCheckbox MainPanelItemOption(string label, int option, uint selectedPattern)
+    public static ItemCheckbox MainPanelItemOption(string label, uint option, uint selectedPattern)
     {
         return new ItemCheckbox{label = label, key = option.ToString(), value = ((selectedPattern & option) != 0).ToString(), isChecked = (selectedPattern & option) != 0, engineEventName = "C2VM-TLE-Call-MainPanel-UpdateOption"};
     }

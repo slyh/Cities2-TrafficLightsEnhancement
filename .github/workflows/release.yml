@@ -29,8 +29,9 @@ jobs:
 
     - name: Retrieve dependencies
       run: |
-        wget ${{ secrets.DependenciesUrl }}/Managed.zip
+        wget --quiet --output-document=Managed.zip ${{ secrets.DependenciesUrl }}/Managed.zip
         unzip Managed.zip -d .
+        sha256sum ./Managed/*
         mkdir C2VM.TrafficLightsEnhancement
         mkdir C2VM.CommonLibraries
 
@@ -70,4 +71,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        sha256sum C2VM.TrafficLightsEnhancement-*.zip
         gh release create ${{ inputs.tag }} C2VM.TrafficLightsEnhancement-BepInEx5.zip C2VM.TrafficLightsEnhancement-BepInEx6.zip

@@ -3,7 +3,7 @@ using HarmonyLib;
 using System.Reflection;
 
 #if BEPINEX6
-    using BepInEx.Unity.Mono;
+using BepInEx.Unity.Mono;
 #endif
 
 namespace C2VM.TrafficLightsEnhancement;

@@ -23,13 +23,13 @@ public class UISystem : GameSystemBase
 
     public bool m_ShowNotificationUnsaved;
 
-    public uint m_SelectedPattern;
-
     public Entity m_SelectedEntity;
 
     private View m_View;
 
     private int m_Ways;
+
+    private CustomTrafficLights m_CustomTrafficLights;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
@@ -90,12 +90,14 @@ public class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-Call-MainPanel-Update", CallMainPanelUpdate);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdatePattern", CallMainPanelUpdatePattern);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateOption", CallMainPanelUpdateOption);
+        m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateValue", CallMainPanelUpdateValue);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-Save", CallMainPanelSave);
         m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Open", CallLaneDirectionToolOpen);
         m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Close", CallLaneDirectionToolClose);
         m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Reset", CallLaneDirectionToolReset);
         m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Panel-Save", CallLaneDirectionToolPanelSave);
 
+        m_View.BindCall("C2VM-TLE-Call-KeyPress", CallKeyPress);
         m_View.BindCall("C2VM-TLE-Call-TranslatePosition", CallTranslatePosition);
         m_View.ExecuteScript(Payload.payload);
     }
@@ -122,7 +124,11 @@ public class UISystem : GameSystemBase
     protected void CallMainPanelUpdatePattern(string input)
     {
         Types.ItemRadio pattern = JsonConvert.DeserializeObject<Types.ItemRadio>(input);
-        m_SelectedPattern = (m_SelectedPattern & 0xFFFF0000) | uint.Parse(pattern.value);
+        m_CustomTrafficLights.SetPattern(((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF0000) | uint.Parse(pattern.value));
+        if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) != (uint)TrafficLightPatterns.Pattern.Vanilla)
+        {
+            m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern(m_Ways) & ~TrafficLightPatterns.Pattern.CentreTurnGiveWay);
+        }
         UpdateEntity();
         UpdateMainPanel();
     }
@@ -134,12 +140,26 @@ public class UISystem : GameSystemBase
         {
             if (((uint) pattern & 0xFFFF0000) != 0)
             {
-                if (uint.Parse(option.key) == (uint) pattern)
+                if (uint.Parse(option.key) == (uint)pattern)
                 {
                     // Toggle the option
-                    m_SelectedPattern ^= (uint) pattern;
+                    m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern(m_Ways) ^ pattern);
                 }
             }
+        }
+        UpdateEntity();
+        UpdateMainPanel();
+    }
+
+    protected void CallMainPanelUpdateValue(string jsonString)
+    {
+        var keyDefinition = new { key = "" };
+        var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
+        if (parsedKey.key == "CustomPedestrianDurationMultiplier")
+        {
+            var valueDefinition = new { value = 0.0f };
+            var parsedValue = JsonConvert.DeserializeAnonymousType(jsonString, valueDefinition);
+            m_CustomTrafficLights.SetPedestrianPhaseDurationMultiplier(parsedValue.value);
         }
         UpdateEntity();
         UpdateMainPanel();
@@ -162,36 +182,48 @@ public class UISystem : GameSystemBase
         if (m_SelectedEntity != Entity.Null)
         {
             menu.items.Add(new Types.ItemTitle{title = "TrafficSignal"});
-            menu.items.Add(Types.MainPanelItemPattern("Vanilla", (int) TrafficLightPatterns.Pattern.Vanilla, m_SelectedPattern));
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasing))
+            menu.items.Add(Types.MainPanelItemPattern("Vanilla", (uint)TrafficLightPatterns.Pattern.Vanilla, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.SplitPhasing))
             {
-                menu.items.Add(Types.MainPanelItemPattern("SplitPhasing", (int) TrafficLightPatterns.Pattern.SplitPhasing, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemPattern("SplitPhasing", (uint)TrafficLightPatterns.Pattern.SplitPhasing, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
             }
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced))
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.SplitPhasingAdvanced))
             {
-                menu.items.Add(Types.MainPanelItemPattern("AdvancedSplitPhasing", (int) TrafficLightPatterns.Pattern.SplitPhasingAdvanced, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemPattern("AdvancedSplitPhasing", (uint)TrafficLightPatterns.Pattern.SplitPhasingAdvanced, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
             }
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn))
+            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.ProtectedCentreTurn))
             {
                 if (m_CityConfigurationSystem.leftHandTraffic)
                 {
-                    menu.items.Add(Types.MainPanelItemPattern("ProtectedRightTurns", (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
+                    menu.items.Add(Types.MainPanelItemPattern("ProtectedRightTurns", (uint)TrafficLightPatterns.Pattern.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
                 }
                 else
                 {
-                    menu.items.Add(Types.MainPanelItemPattern("ProtectedLeftTurns", (int) TrafficLightPatterns.Pattern.ProtectedCentreTurn, m_SelectedPattern));
+                    menu.items.Add(Types.MainPanelItemPattern("ProtectedLeftTurns", (uint)TrafficLightPatterns.Pattern.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
                 }
             }
             menu.items.Add(default(Types.ItemDivider));
             menu.items.Add(new Types.ItemTitle{title = "Options"});
-            menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (int) TrafficLightPatterns.Pattern.ExclusivePedestrian, m_SelectedPattern));
-            if (m_CityConfigurationSystem.leftHandTraffic)
+            menu.items.Add(Types.MainPanelItemOption("AllowTurningOnRed", (uint)TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) == (uint)TrafficLightPatterns.Pattern.Vanilla)
             {
-                menu.items.Add(Types.MainPanelItemOption("AlwaysGreenLeftTurns", (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
+                menu.items.Add(Types.MainPanelItemOption("GiveWayToOncomingVehicles", (uint)TrafficLightPatterns.Pattern.CentreTurnGiveWay, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
             }
-            else
+            menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
             {
-                menu.items.Add(Types.MainPanelItemOption("AlwaysGreenRightTurns", (int) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, m_SelectedPattern));
+                menu.items.Add(default(Types.ItemDivider));
+                menu.items.Add(new Types.ItemRange
+                {
+                    key = "CustomPedestrianDurationMultiplier",
+                    label = "CustomPedestrianDurationMultiplier",
+                    valueSuffix = "CustomPedestrianDurationMultiplierSuffix",
+                    min = 0.5f,
+                    max = 8,
+                    step = 0.5f,
+                    value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
+                    engineEventName = "C2VM-TLE-Call-MainPanel-UpdateValue"
+                });
             }
             menu.items.Add(default(Types.ItemDivider));
             menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
@@ -429,6 +461,23 @@ public class UISystem : GameSystemBase
         UpdateEntity();
     }
 
+    protected void CallKeyPress(string value)
+    {
+        var definition = new { ctrlKey = false, key = "" };
+        var keyPressEvent = JsonConvert.DeserializeAnonymousType(value, definition);
+        if (keyPressEvent.ctrlKey && keyPressEvent.key == "S")
+        {
+            if (m_IsLaneManagementToolOpen)
+            {
+                CallLaneDirectionToolClose("");
+            }
+            else if (!m_SelectedEntity.Equals(Entity.Null))
+            {
+                CallMainPanelSave("");
+            }
+        }
+    }
+
     protected string CallTranslatePosition(string input)
     {
         Types.WorldPosition worldPos = JsonConvert.DeserializeObject<Types.WorldPosition>(input);
@@ -442,13 +491,11 @@ public class UISystem : GameSystemBase
         {
             if (!m_CustomTrafficLightsLookup.HasComponent(m_SelectedEntity))
             {
-                EntityManager.AddComponentData(m_SelectedEntity, new CustomTrafficLights(m_SelectedPattern));
+                EntityManager.AddComponentData(m_SelectedEntity, m_CustomTrafficLights);
             }
             else
             {
-                CustomTrafficLights customTrafficLights = m_CustomTrafficLightsLookup[m_SelectedEntity];
-                customTrafficLights.SetPattern(m_SelectedPattern);
-                m_CustomTrafficLightsLookup[m_SelectedEntity] = customTrafficLights;
+                m_CustomTrafficLightsLookup[m_SelectedEntity] = m_CustomTrafficLights;
             }
 
             if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
@@ -483,11 +530,11 @@ public class UISystem : GameSystemBase
     {
         m_IsLaneManagementToolOpen = false;
 
-        m_SelectedPattern = 0;
+        m_CustomTrafficLights = new CustomTrafficLights();
 
         if (m_CustomTrafficLightsLookup.HasComponent(m_SelectedEntity))
         {
-            m_SelectedPattern = m_CustomTrafficLightsLookup[m_SelectedEntity].GetPattern(m_Ways);
+            m_CustomTrafficLights = m_CustomTrafficLightsLookup[m_SelectedEntity];
         }
     }
 
@@ -519,7 +566,7 @@ public class UISystem : GameSystemBase
 
             m_Ways = 0;
 
-            m_SelectedPattern = 0;
+            m_CustomTrafficLights = new CustomTrafficLights();
 
             // Retrieve info of new entity
             if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
