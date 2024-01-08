@@ -572,7 +572,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
         m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
         m_TrafficLightsQuery = GetEntityQuery(new EntityQueryDesc
         {
-            All = new ComponentType[2] { ComponentType.ReadOnly<TrafficLights>(), ComponentType.ReadWrite<CustomTrafficLights>() },
+            All = new ComponentType[1] { ComponentType.ReadOnly<TrafficLights>() },
             Any = new ComponentType[1] { ComponentType.ReadOnly<Updated>() }
         });
         RequireForUpdate(m_TrafficLightsQuery);
