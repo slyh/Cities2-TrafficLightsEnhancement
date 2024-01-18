@@ -143,6 +143,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                         value2.m_IsUnsafe = (carLane.m_Flags & CarLaneFlags.Unsafe) != 0;
                         value2.m_IsTurnLeft = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0;
                         value2.m_IsTurnRight = (carLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnRight)) != 0;
+                        value2.m_IsUTurn = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
                     }
                     else
                     {
@@ -363,6 +364,12 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                 return;
             }
 
+            if (customTrafficLights.GetPattern(ways) != TrafficLightPatterns.Pattern.Vanilla)
+            {
+                TrafficLightPatterns.ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, m_LeftHandTraffic, m_Overlaps, ref customTrafficLights, ways, pattern);
+                return;
+            }
+
             int length = groups.Length;
             int num2 = -1;
             float4 x = default(float4);
@@ -415,11 +422,6 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                     }
                 }
 
-                if (((uint)pattern & (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
-                {
-                    value2.m_GroupMask = 0;
-                }
-
                 if (value2.m_GroupMask == 0)
                 {
                     if (num2 == -1)
@@ -428,14 +430,6 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                     }
 
                     value2.m_GroupMask = (ushort)(1 << (num2 & 0xF));
-                }
-
-                if ((pattern & TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
-                {
-                    customTrafficLights.SetPedestrianPhaseGroupMask(customTrafficLights.m_PedestrianPhaseGroupMask | value2.m_GroupMask);
-#if VERBOSITY_DEBUG
-                    System.Console.WriteLine($"TrafficLightPatterns.Pattern.ExclusivePedestrian m_GroupIndex {value2.m_GroupIndex} m_GroupMask {value2.m_GroupMask} groups.Length {groups.Length}");
-#endif
                 }
 
                 groups.Add(in value2);
@@ -536,7 +530,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
 
         public ComponentLookup<ExtraLaneSignal> __TLE_ExtraLaneSignal_RW_ComponentLookup;
 
-        public ComponentTypeHandle<CustomTrafficLights> __CustomTrafficLights_RW_ComponentTypeHandle;
+        public ComponentTypeHandle<CustomTrafficLights> __TLE_CustomTrafficLights_RW_ComponentTypeHandle;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void __AssignHandles(ref SystemState state)
@@ -551,7 +545,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
             __Game_Net_Curve_RO_ComponentLookup = state.GetComponentLookup<Curve>(isReadOnly: true);
             __Game_Net_LaneOverlap_RO_BufferLookup = state.GetBufferLookup<LaneOverlap>(isReadOnly: true);
             __Game_Net_LaneSignal_RW_ComponentLookup = state.GetComponentLookup<LaneSignal>();
-            __CustomTrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<CustomTrafficLights>();
+            __TLE_CustomTrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<CustomTrafficLights>();
             __TLE_ExtraLaneSignal_RW_ComponentLookup = state.GetComponentLookup<ExtraLaneSignal>();
         }
     }
@@ -591,14 +585,9 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
         __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
-        __TypeHandle.__CustomTrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
+        __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
         __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup.Update(ref base.CheckedStateRef);
-        InitializeTrafficLightsJob jobData = new InitializeTrafficLightsJob{
-            m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic,
-            m_CustomTrafficLightsType = __TypeHandle.__CustomTrafficLights_RW_ComponentTypeHandle,
-            m_ExtraLaneSignalData = __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup,
-            m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer()
-        };
+        InitializeTrafficLightsJob jobData = default(InitializeTrafficLightsJob);
         jobData.m_SubLaneType = __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle;
         jobData.m_TrafficLightsType = __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle;
         jobData.m_MasterLaneData = __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup;
@@ -609,6 +598,10 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
         jobData.m_CurveData = __TypeHandle.__Game_Net_Curve_RO_ComponentLookup;
         jobData.m_Overlaps = __TypeHandle.__Game_Net_LaneOverlap_RO_BufferLookup;
         jobData.m_LaneSignalData = __TypeHandle.__Game_Net_LaneSignal_RW_ComponentLookup;
+        jobData.m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic;
+        jobData.m_CustomTrafficLightsType = __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle;
+        jobData.m_ExtraLaneSignalData = __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup;
+        jobData.m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
         JobHandle dependency = JobChunkExtensions.ScheduleParallel(jobData, m_TrafficLightsQuery, base.Dependency);
         m_ModificationBarrier.AddJobHandleForProducer(dependency);
         base.Dependency = dependency;

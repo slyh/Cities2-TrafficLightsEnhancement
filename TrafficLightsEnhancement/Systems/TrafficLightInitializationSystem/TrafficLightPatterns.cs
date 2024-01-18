@@ -1,5 +1,7 @@
-using System;
+using C2VM.TrafficLightsEnhancement.Components;
+using Game.Net;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
@@ -291,10 +293,79 @@ public class TrafficLightPatterns {
         // }
     }
 
-    // public static void ProcessPedestrianLaneGroups(DynamicBuffer<Game.Net.SubLane> subLanes, NativeList<TrafficLightInitializationSystem.LaneGroup> pedestrianLanes, NativeList<TrafficLightInitializationSystem.LaneGroup> groups, bool isLevelCrossing, ref int groupCount)
-    // {
+    public static void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, BufferLookup<LaneOverlap> overlaps, ref CustomTrafficLights customTrafficLights, int ways, Pattern pattern)
+    {
+        int newGroup = -1;
+        for (int i = 0; i < pedestrianLanes.Length; i++)
+        {
+            LaneGroup pedLane = pedestrianLanes[i];
+            pedLane.m_GroupMask = (ushort)((1 << math.min(16, groupCount)) - 1);
+            Entity subLane = subLanes[pedLane.m_LaneRange.x].m_SubLane;
+            if (!pedLane.m_IsUnsafe && overlaps.HasBuffer(subLane))
+            {
+                #if VERBOSITY_DEBUG
+                System.Console.WriteLine($"ProcessPedestrianLaneGroups groupCount {groupCount} pedLane.m_GroupMask {pedLane.m_GroupMask} groups.Length {groups.Length}");
+                #endif
+                DynamicBuffer<LaneOverlap> dynamicBuffer = overlaps[subLane];
+                for (int j = 0; j < groups.Length; j++)
+                {
+                    LaneGroup laneGroup = groups[j];
+                    bool shouldRed;
+                    if (isLevelCrossing)
+                    {
+                        shouldRed = laneGroup.m_IsTrack;
+                    }
+                    else
+                    {
+                        shouldRed = laneGroup.m_IsStraight;
+                    }
+                    if (((uint)pattern & 0xFFFF) != (uint)Pattern.Vanilla)
+                    {
+                        shouldRed |= (leftHandTraffic && laneGroup.m_IsTurnRight && !laneGroup.m_IsUTurn) || (!leftHandTraffic && laneGroup.m_IsTurnLeft && !laneGroup.m_IsUTurn);
+                    }
 
-    // }
+                    bool isOverlap = false;
+                    for (int k = laneGroup.m_LaneRange.x; k <= laneGroup.m_LaneRange.y; k++)
+                    {
+                        for (int m = 0; m < dynamicBuffer.Length; m++)
+                        {
+                            isOverlap |= dynamicBuffer[m].m_Other == subLanes[k].m_SubLane;
+                        }
+                    }
+
+                    if (shouldRed && isOverlap)
+                    {
+                        pedLane.m_GroupMask &= (ushort)(~laneGroup.m_GroupMask);
+                    }
+                }
+            }
+
+            if ((pattern & Pattern.ExclusivePedestrian) != 0)
+            {
+                pedLane.m_GroupMask = 0;
+            }
+
+            if (pedLane.m_GroupMask == 0)
+            {
+                if (newGroup == -1)
+                {
+                    newGroup = groupCount++;
+                }
+
+                pedLane.m_GroupMask = (ushort)(1 << (newGroup & 0xF));
+            }
+
+            if ((pattern & Pattern.ExclusivePedestrian) != 0)
+            {
+                customTrafficLights.SetPedestrianPhaseGroupMask(customTrafficLights.m_PedestrianPhaseGroupMask | pedLane.m_GroupMask);
+                #if VERBOSITY_DEBUG
+                System.Console.WriteLine($"TrafficLightPatterns.Pattern.ExclusivePedestrian m_GroupIndex {pedLane.m_GroupIndex} m_GroupMask {pedLane.m_GroupMask} groups.Length {groups.Length}");
+                #endif
+            }
+
+            groups.Add(in pedLane);
+        }
+    }
 }
 
 
