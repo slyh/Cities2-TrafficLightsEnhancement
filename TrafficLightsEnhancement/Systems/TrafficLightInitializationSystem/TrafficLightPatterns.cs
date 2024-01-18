@@ -293,7 +293,7 @@ public class TrafficLightPatterns {
         // }
     }
 
-    public static void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, BufferLookup<LaneOverlap> overlaps, ref CustomTrafficLights customTrafficLights, int ways, Pattern pattern)
+    public static void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, ref BufferLookup<LaneOverlap> overlaps, ref CustomTrafficLights customTrafficLights, int ways, Pattern pattern)
     {
         int newGroup = -1;
         for (int i = 0; i < pedestrianLanes.Length; i++)
@@ -353,6 +353,18 @@ public class TrafficLightPatterns {
                 }
 
                 pedLane.m_GroupMask = (ushort)(1 << (newGroup & 0xF));
+            }
+
+            pedestrianLanes[i] = pedLane;
+        }
+
+        for (int i = 0; i < pedestrianLanes.Length; i++)
+        {
+            LaneGroup pedLane = pedestrianLanes[i];
+
+            if (newGroup != -1)
+            {
+                pedLane.m_GroupMask |= (ushort)(1 << (newGroup & 0xF));
             }
 
             if ((pattern & Pattern.ExclusivePedestrian) != 0)

@@ -366,7 +366,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
 
             if (customTrafficLights.GetPattern(ways) != TrafficLightPatterns.Pattern.Vanilla)
             {
-                TrafficLightPatterns.ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, m_LeftHandTraffic, m_Overlaps, ref customTrafficLights, ways, pattern);
+                TrafficLightPatterns.ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, m_LeftHandTraffic, ref m_Overlaps, ref customTrafficLights, ways, pattern);
                 return;
             }
 
