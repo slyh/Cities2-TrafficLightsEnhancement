@@ -462,28 +462,14 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                         laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
                     }
 
-                    ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
-
+                    ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal(laneGroup);
                     if (m_ExtraLaneSignalData.HasComponent(subLane))
                     {
-                        extraLaneSignal = m_ExtraLaneSignalData[subLane];
-                        if (laneGroup.m_IsYield)
-                        {
-                            extraLaneSignal.m_Flags |= ExtraLaneSignal.Flags.Yield;
-                        }
-                        else
-                        {
-                            extraLaneSignal.m_Flags &= ~ExtraLaneSignal.Flags.Yield;
-                        }
                         m_ExtraLaneSignalData[subLane] = extraLaneSignal;
                     }
                     else
                     {
-                        if (laneGroup.m_IsYield)
-                        {
-                            extraLaneSignal.m_Flags |= ExtraLaneSignal.Flags.Yield;
-                            m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
-                        }
+                        m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
                     }
 
                     TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);

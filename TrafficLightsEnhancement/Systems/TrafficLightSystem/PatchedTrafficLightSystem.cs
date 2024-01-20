@@ -110,9 +110,9 @@ public class PatchedTrafficLightSystem : GameSystemBase
                     {
                         greenDuration *= customTrafficLights.m_PedestrianPhaseDurationMultiplier;
                     }
-#if VERBOSITY_DEBUG
+                    #if VERBOSITY_DEBUG
                     System.Console.WriteLine($"UpdateTrafficLightState m_CurrentSignalGroup {trafficLights.m_CurrentSignalGroup} greenDuration {greenDuration} m_PedestrianPhaseGroupMask {customTrafficLights.m_PedestrianPhaseGroupMask}");
-#endif
+                    #endif
                     if (++trafficLights.m_Timer >= greenDuration)
                     {
                         bool canExtend2;
@@ -308,7 +308,21 @@ public class PatchedTrafficLightSystem : GameSystemBase
                 if (m_LaneSignalData.HasComponent(subLane))
                 {
                     LaneSignal value = m_LaneSignalData[subLane];
-                    if (value.m_Priority > num)
+
+                    ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
+                    if (m_ExtraLaneSignalData.HasComponent(subLane))
+                    {
+                        extraLaneSignal = m_ExtraLaneSignalData[subLane];
+                    }
+
+                    if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.IgnorePriority) != 0)
+                    {
+                        // Don't consider lanes with IgnorePriority flag
+                        #if VERBOSITY_DEBUG
+                        System.Console.WriteLine($"GetNextSignalGroup ExtraLaneSignal.Flags.IgnorePriority");
+                        #endif
+                    }
+                    else if (value.m_Priority > num)
                     {
                         entity = value.m_Petitioner;
                         num = value.m_Priority;
@@ -540,6 +554,9 @@ public class PatchedTrafficLightSystem : GameSystemBase
         if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.Yield) != 0)
         {
             goSignalType = LaneSignalType.Yield;
+            #if VERBOSITY_DEBUG
+            System.Console.WriteLine($"UpdateLaneSignal goSignalType = LaneSignalType.Yield");
+            #endif
         }
 
         switch (trafficLights.m_State)

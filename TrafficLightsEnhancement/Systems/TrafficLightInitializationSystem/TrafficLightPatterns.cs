@@ -263,6 +263,7 @@ public class TrafficLightPatterns {
                 {
                     group.m_GroupMask |= allGroupMask;
                     group.m_IsYield = true;
+                    group.m_IgnorePriority = true;
                 }
                 groups[i] = group;
             }

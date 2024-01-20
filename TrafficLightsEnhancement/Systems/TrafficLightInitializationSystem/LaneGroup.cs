@@ -31,4 +31,6 @@ public struct LaneGroup
     public bool m_IsUTurn;
 
     public bool m_IsYield;
+
+    public bool m_IgnorePriority;
 }

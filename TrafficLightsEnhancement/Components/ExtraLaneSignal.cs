@@ -1,3 +1,4 @@
+using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 using Colossal.Serialization.Entities;
 using Unity.Entities;
 
@@ -7,7 +8,9 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
 {
     public enum Flags : uint
     {
-        Yield = 1 << 0
+        Yield = 1 << 0,
+
+        IgnorePriority = 1 << 1
     }
 
     private int m_SchemaVersion;
@@ -31,5 +34,19 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
     {
         m_SchemaVersion = 1;
         m_Flags = 0;
+    }
+
+    public ExtraLaneSignal(LaneGroup laneGroup)
+    {
+        m_SchemaVersion = 1;
+        m_Flags = 0;
+        if (laneGroup.m_IsYield)
+        {
+            m_Flags |= Flags.Yield;
+        }
+        if (laneGroup.m_IgnorePriority)
+        {
+            m_Flags |= Flags.IgnorePriority;
+        }
     }
 }
