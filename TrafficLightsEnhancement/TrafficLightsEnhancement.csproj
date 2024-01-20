@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
     <Description>C2VM.TrafficLightsEnhancement</Description>
-    <Version>0.2.12</Version>
+    <Version>0.2.13</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>

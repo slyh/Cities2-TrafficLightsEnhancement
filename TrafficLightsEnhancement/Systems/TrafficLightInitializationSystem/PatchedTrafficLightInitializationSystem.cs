@@ -469,7 +469,13 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                     }
                     else
                     {
-                        m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
+                        // Temp fix for issue #72
+                        // Maybe this function was called with deleted or temp SubLane
+                        // And the game crashed when components were added to it
+                        if (extraLaneSignal.m_Flags != 0)
+                        {
+                            m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
+                        }
                     }
 
                     TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
