@@ -472,7 +472,8 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                         // Temp fix for issue #72
                         // Maybe this function was called with deleted or temp SubLane
                         // And the game crashed when components were added to it
-                        if (extraLaneSignal.m_Flags != 0)
+                        // Not sure why checking if LaneSignal exists helps reduce crashes
+                        if (extraLaneSignal.m_Flags != 0 && m_LaneSignalData.HasComponent(subLane))
                         {
                             m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
                         }
