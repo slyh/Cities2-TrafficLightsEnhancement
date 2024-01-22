@@ -61,7 +61,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
 
         public bool m_LeftHandTraffic;
 
-        public EntityCommandBuffer m_CommandBuffer;
+        public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
         public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
@@ -89,7 +89,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
                 ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref customTrafficLights, out int ways, out TrafficLightPatterns.Pattern pattern);
                 ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, ref customTrafficLights, ways, pattern);
-                InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
+                InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights, unfilteredChunkIndex);
                 nativeArray[i] = trafficLights;
                 if (i < customTrafficLightsArray.Length)
                 {
@@ -436,7 +436,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, ref TrafficLights trafficLights)
+        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, ref TrafficLights trafficLights, int unfilteredChunkIndex)
         {
             trafficLights.m_SignalGroupCount = (byte)math.min(16, groupCount);
             if (trafficLights.m_CurrentSignalGroup > trafficLights.m_SignalGroupCount || trafficLights.m_NextSignalGroup > trafficLights.m_SignalGroupCount)
@@ -469,14 +469,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
                     }
                     else
                     {
-                        // Temp fix for issue #72
-                        // Maybe this function was called with deleted or temp SubLane
-                        // And the game crashed when components were added to it
-                        // Not sure why checking if LaneSignal exists helps reduce crashes
-                        if (extraLaneSignal.m_Flags != 0 && m_LaneSignalData.HasComponent(subLane))
-                        {
-                            m_CommandBuffer.AddComponent(subLane, extraLaneSignal);
-                        }
+                        m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
                     }
 
                     TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
@@ -594,7 +587,7 @@ public class PatchedTrafficLightInitializationSystem : GameSystemBase
         jobData.m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic;
         jobData.m_CustomTrafficLightsType = __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle;
         jobData.m_ExtraLaneSignalData = __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup;
-        jobData.m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
+        jobData.m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer().AsParallelWriter();
         JobHandle dependency = JobChunkExtensions.ScheduleParallel(jobData, m_TrafficLightsQuery, base.Dependency);
         m_ModificationBarrier.AddJobHandleForProducer(dependency);
         base.Dependency = dependency;
