@@ -248,6 +248,10 @@ public class UISystem : GameSystemBase
         {
             menu.items.Add(new Types.ItemMessage{message = "PleaseSelectJunction"});
         }
+        #if SHOW_CANARY_BUILD_WARNING
+        menu.items.Add(default(Types.ItemDivider));
+        menu.items.Add(new Types.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
+        #endif
         string result = JsonConvert.SerializeObject(menu);
         m_View.TriggerEvent("C2VM-TLE-Event-UpdateMainPanel", result);
     }

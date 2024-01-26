@@ -4,9 +4,9 @@
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
 * Compatible with version 1.0.18f1
 
-The mod will save extra data to your saves, which it relies on to provide additional functionality. Generally, traffic lights and junctions will revert to vanilla settings when the mod is removed, but this cannot be guaranteed.
+This mod stores extra data in your saves to provide additional functionality. Once removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
-You cannot downgrade the mod to an older version. Cities saved with the new version are not compatible with previous versions.
+You cannot downgrade this mod to an older version. Cities saved with the new version are not compatible with previous versions.
 
 > [!WARNING]
 > These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.
@@ -69,7 +69,7 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Korean: [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything)
 
-* Portuguese: [djotabr](https://github.com/djotabr)
+* Portuguese (Brazil): [djotabr](https://github.com/djotabr) and [lucianoedipo](https://github.com/lucianoedipo)
 
 * Russian: [Mellaway](https://github.com/Mellaway) and [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder)
 

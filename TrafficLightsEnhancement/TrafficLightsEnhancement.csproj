@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
     <Description>C2VM.TrafficLightsEnhancement</Description>
-    <Version>0.2.16</Version>
+    <Version>0.2.17</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -67,6 +67,10 @@
 
   <PropertyGroup Condition="'$(Verbosity)' == 'Debug'">
     <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE;VERBOSITY_DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(ShowCanaryBuildWarning)' == 'true'">
+    <DefineConstants>$(DefineConstants);SHOW_CANARY_BUILD_WARNING</DefineConstants>
   </PropertyGroup>
 
 </Project>
