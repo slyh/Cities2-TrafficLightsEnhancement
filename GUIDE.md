@@ -42,5 +42,5 @@ This mod introduces advanced traffic light controls for Cities: Skylines II, all
 
 ![Screenshot 2023-12-10 103213](https://github.com/primeinc/Cities2-Various-Mods/assets/80482978/ee258c53-0ab4-43a2-a9b8-2ed07a792c1a)
 
-[^1]: Advanced Split Phasing and Protected Left/Right-Turns are only available on certain intersections and are never available on intersections with tram tracks.
+[^1]: Advanced Split Phasing and Protected Left/Right-Turns are unavailable at complex junctions, such as those with tram tracks.
 [^2]: This advanced split phasing handles traffic light groups dynamically, considering traffic direction and neighboring lane groups.
