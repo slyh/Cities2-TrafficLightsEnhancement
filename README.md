@@ -4,7 +4,7 @@
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
 * Compatible with version 1.0.18f1
 
-This mod stores extra data in your saves to provide additional functionality. Once removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
+This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
 You cannot downgrade this mod to an older version. Cities saved with the new version are not compatible with previous versions.
 
@@ -51,7 +51,7 @@ This mod would not have reached its current stage without help from the followin
 
 [PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insights into the lane system's inner workings.
 
-[Primeinc](https://github.com/primeinc) for the [guide](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md).
+[Primeinc](https://github.com/primeinc) and [Windows200000](https://github.com/Windows200000) for the [guide](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md).
 
 Additionally, gratitude is extended to the individuals listed below for their translation contributions:
 
