@@ -1,6 +1,6 @@
 ## Build Instructions
 
-1. Install [Node.js](https://nodejs.org/) and [.NET SDK](https://dotnet.microsoft.com/download)
+1. Install [Node.js 20](https://nodejs.org/), [.NET 8.0 SDK](https://dotnet.microsoft.com/download) and Modding Toolchain in-game
 
 2. Clone the repository
 
@@ -10,20 +10,9 @@ cd Cities2-TrafficLightsEnhancement
 git submodule update --init --recursive
 ```
 
-3. Copy the `Cities Skylines II/Cities2_Data/Managed/` folder to `Cities2-TrafficLightsEnhancement/`
-
-4. Build the plugin
-
-* For BepInEx 5
+3. Build the plugin
 
 ```shell
 dotnet restore
-dotnet build --configuration Release --property:BepInExVersion=5
-```
-
-* For BepInEx 6
-
-```shell
-dotnet restore
-dotnet build --configuration Release --property:BepInExVersion=6
+dotnet build --configuration Release
 ```

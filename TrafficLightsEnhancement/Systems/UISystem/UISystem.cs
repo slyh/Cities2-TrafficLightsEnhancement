@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public class UISystem : GameSystemBase
+public partial class UISystem : GameSystemBase
 {
     public bool m_IsLaneManagementToolOpen;
 

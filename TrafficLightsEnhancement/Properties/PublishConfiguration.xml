@@ -1,0 +1,103 @@
+﻿<Publish>
+    <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
+    <ModId Value="" />
+    <!--Name of the mod to display to players-->
+    <DisplayName Value="Traffic Lights Enhancement Alpha" />
+    <!--Short description of the mod-->
+    <ShortDescription Value="Advanced traffic lights" />
+    <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
+    <!--LongDescription Value="This is a long description" /-->
+    <LongDescription>
+        ## Traffic Lights Enhancement Alpha
+
+        * Set traffic lights to various predefined signal modes
+        * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
+        * Compatible with version 1.1.1f1
+
+        This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
+
+        You cannot downgrade this mod to an older version. Cities saved with the new version are not compatible with previous versions.
+
+        If you found any issues within the mod, please report them on [the issue tracker](https://github.com/slyh/Cities2-TrafficLightsEnhancement/issues).
+
+        **Warning: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
+
+        ## Known Issues
+
+        * Lane Direction Tool
+
+        * Does not support merge lanes
+
+        * Does not support roundabouts
+
+        * When an entire direction is banned, some traffic may still proceed through the banned direction
+
+        ## Acknowledgements
+
+        This mod would not have reached its current stage without help from the following people and projects:
+
+        Cities2Modding: An example mod for starting modding in Cities: Skylines II
+
+        BepInEx: Unity / XNA game patcher and plugin framework
+
+        Harmony: A library for patching, replacing and decorating .NET and Mono methods during runtime
+
+        PickledDragon and Rebecca for their insights into the lane system's inner workings.
+
+        Primeinc and Windows200000 for the guide.
+
+        Additionally, gratitude is extended to the individuals listed below for their translation contributions:
+
+        * Chinese (Simplified): SuperYYT
+
+        * Chinese (Traditional): angel84326 and the Taiwanese Cities: Skylines community
+
+        * Dutch: Jord38, Randy von der Weide and starrysum
+
+        * French: PsykotropyK, Edou24 and Clark
+
+        * German: TheL0ki, Simanova86 and Mark
+
+        * Japanese: macoto-hino
+
+        * Korean: Twotoolus-FLY-LShst and DevelopmentAnything
+
+        * Polish: karmel68
+
+        * Portuguese (Brazil): djotabr and lucianoedipo
+
+        * Russian: Mellaway, BuiIdTheBuilder and Alex Motor
+
+        * Spanish: Fabio Rodriguez
+
+        Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.
+    </LongDescription>
+    <!--Thumbnail-->
+    <Thumbnail Value="Properties/Thumbnail.png" />
+    <!--Screenshot, can be set multiple times-->
+    <Screenshot Value="" />
+    <!--Tag, can be set multiple times-->
+    <Tag Value="" />
+    <!--Link to the forum post where the mod can be discussed-->
+    <ForumLink Value="https://github.com/slyh/Cities2-TrafficLightsEnhancement/discussions" />
+    <!--Version of the mod-->
+    <ModVersion Value="0.2.20" />
+    <!--Recommended version of the base game to use the mod-->
+    <GameVersion Value="1.1.1f1" />
+    <!--Dependency for the mod, can be set multiple times-->
+    <Dependency Id="" />
+    <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
+    <ChangeLog>
+        * Updated to be compatible with version 1.1.1f1
+
+        * Migrated to IMod
+
+        * Fixed issue #91: Compatibility issue with custom road assets
+
+        * Translation updates (Credit: Edou24)
+
+        The full change log can be found on the [GitHub releases page](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases).
+    </ChangeLog>
+    <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
+    <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
+</Publish>
