@@ -357,7 +357,7 @@ public partial class UISystem : GameSystemBase
                     });
                     for (int j = i; j < connectPositionSourceBuffer.Length; j++)
                     {
-                        if (connectPositionSourceBuffer[j].m_Owner != connectPositionSourceBuffer[i].m_Owner)
+                        if (connectPositionSourceBuffer[j].m_Owner != connectPositionSourceBuffer[i].m_Owner || connectPositionSourceBuffer[j].m_GroupIndex != connectPositionSourceBuffer[i].m_GroupIndex)
                         {
                             i = j - 1;
                             break;
