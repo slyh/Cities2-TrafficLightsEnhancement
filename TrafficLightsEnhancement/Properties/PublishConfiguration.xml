@@ -8,69 +8,71 @@
     <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
     <!--LongDescription Value="This is a long description" /-->
     <LongDescription>
-        ## Traffic Lights Enhancement Alpha
+## Traffic Lights Enhancement Alpha
 
-        * Set traffic lights to various predefined signal modes
-        * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-        * Compatible with version 1.1.1f1
+* Set traffic lights to various predefined signal modes
+* Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
+* Compatible with version 1.1.1f1
 
-        This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
+This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
-        You cannot downgrade this mod to an older version. Cities saved with the new version are not compatible with previous versions.
+You cannot downgrade this mod to an older version. Cities saved with the new version are not compatible with previous versions.
 
-        If you found any issues within the mod, please report them on [the issue tracker](https://github.com/slyh/Cities2-TrafficLightsEnhancement/issues).
+The full change log can be found on the [GitHub releases page](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases).
 
-        **Warning: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
+If you found any issues within the mod, please report them on [the issue tracker](https://github.com/slyh/Cities2-TrafficLightsEnhancement/issues).
 
-        ## Known Issues
+**Warning: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
 
-        * Lane Direction Tool
+## Known Issues
 
-        * Does not support merge lanes
+* Lane Direction Tool
 
-        * Does not support roundabouts
+* Does not support merge lanes
 
-        * When an entire direction is banned, some traffic may still proceed through the banned direction
+* Does not support roundabouts
 
-        ## Acknowledgements
+* When an entire direction is banned, some traffic may still proceed through the banned direction
 
-        This mod would not have reached its current stage without help from the following people and projects:
+## Acknowledgements
 
-        Cities2Modding: An example mod for starting modding in Cities: Skylines II
+This mod would not have reached its current stage without help from the following people and projects:
 
-        BepInEx: Unity / XNA game patcher and plugin framework
+Cities2Modding: An example mod for starting modding in Cities: Skylines II
 
-        Harmony: A library for patching, replacing and decorating .NET and Mono methods during runtime
+BepInEx: Unity / XNA game patcher and plugin framework
 
-        PickledDragon and Rebecca for their insights into the lane system's inner workings.
+Harmony: A library for patching, replacing and decorating .NET and Mono methods during runtime
 
-        Primeinc and Windows200000 for the guide.
+PickledDragon and Rebecca for their insights into the lane system's inner workings.
 
-        Additionally, gratitude is extended to the individuals listed below for their translation contributions:
+Primeinc and Windows200000 for the guide.
 
-        * Chinese (Simplified): SuperYYT
+Additionally, gratitude is extended to the individuals listed below for their translation contributions:
 
-        * Chinese (Traditional): angel84326 and the Taiwanese Cities: Skylines community
+* Chinese (Simplified): SuperYYT
 
-        * Dutch: Jord38, Randy von der Weide and starrysum
+* Chinese (Traditional): angel84326 and the Taiwanese Cities: Skylines community
 
-        * French: PsykotropyK, Edou24 and Clark
+* Dutch: Jord38, Randy von der Weide and starrysum
 
-        * German: TheL0ki, Simanova86 and Mark
+* French: PsykotropyK, Edou24 and Clark
 
-        * Japanese: macoto-hino
+* German: TheL0ki, Simanova86 and Mark
 
-        * Korean: Twotoolus-FLY-LShst and DevelopmentAnything
+* Japanese: macoto-hino
 
-        * Polish: karmel68
+* Korean: Twotoolus-FLY-LShst and DevelopmentAnything
 
-        * Portuguese (Brazil): djotabr and lucianoedipo
+* Polish: karmel68
 
-        * Russian: Mellaway, BuiIdTheBuilder and Alex Motor
+* Portuguese (Brazil): djotabr and lucianoedipo
 
-        * Spanish: Fabio Rodriguez
+* Russian: Mellaway, BuiIdTheBuilder and Alex Motor
 
-        Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.
+* Spanish: Fabio Rodriguez
+
+Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.
     </LongDescription>
     <!--Thumbnail-->
     <Thumbnail Value="Properties/Thumbnail.png" />
@@ -79,24 +81,22 @@
     <!--Tag, can be set multiple times-->
     <Tag Value="" />
     <!--Link to the forum post where the mod can be discussed-->
-    <ForumLink Value="https://github.com/slyh/Cities2-TrafficLightsEnhancement/discussions" />
+    <ForumLink Value="" />
     <!--Version of the mod-->
     <ModVersion Value="0.2.20" />
     <!--Recommended version of the base game to use the mod-->
-    <GameVersion Value="1.1.1f1" />
+    <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-        * Updated to be compatible with version 1.1.1f1
+* Updated to be compatible with version 1.1.1f1
 
-        * Migrated to IMod
+* Migrated to IMod
 
-        * Fixed issue #91: Compatibility issue with custom road assets
+* Fixed issue #91: Compatibility issue with custom road assets
 
-        * Translation updates (Credit: Edou24)
-
-        The full change log can be found on the [GitHub releases page](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases).
+* Translation updates (Credit: Edou24)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
