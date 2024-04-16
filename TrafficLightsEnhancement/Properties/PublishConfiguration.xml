@@ -26,7 +26,7 @@ If you found any issues within the mod, please report them on [the issue tracker
 
 ## Known Issues
 
-* Lane Direction Tool
+Lane Direction Tool
 
 * Does not support merge lanes
 
@@ -97,6 +97,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 * Fixed issue #91: Compatibility issue with custom road assets
 
 * Translation updates (Credit: Edou24)
+
+* Fixed an issue that prevented the Polish translation from loading (Credit: karmel68)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
