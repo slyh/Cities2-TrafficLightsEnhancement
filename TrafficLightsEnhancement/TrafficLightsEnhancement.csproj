@@ -91,13 +91,20 @@
 
     <ItemGroup>
         <PackageReference Include="Lib.Harmony" Version="2.2.2" />
-        <ProjectReference Include="../CommonLibraries/LaneSystem/LaneSystem.csproj" />
-        <Compile Include="../TLEFrontend/dist/assets/Payload.cs" />
+        <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
+        <Compile Include="..\TLEFrontend\dist\assets\Payload.cs" />
     </ItemGroup>
 
     <Target Name="BuildFrontend" BeforeTargets="CoreCompile" Condition="'$(DisableBuildFrontend)' != 'true'">
-        <Exec Command="npm install --prefer-offline --no-audit" WorkingDirectory="../TLEFrontend/" />
-        <Exec Command="npm run build" WorkingDirectory="../TLEFrontend/" />
+        <Exec Command="npm install --prefer-offline --no-audit" WorkingDirectory="..\TLEFrontend\" />
+        <Exec Command="npm run build" WorkingDirectory="..\TLEFrontend\" />
+    </Target>
+
+    <Target Name="CopyLaneSystem" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <LaneSystemFiles Include="..\CommonLibraries\LaneSystem\bin\$(Configuration)\**\*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(LaneSystemFiles)" DestinationFolder="$(OutDir)\" />
     </Target>
 
     <PropertyGroup Condition="'$(Verbosity)' == 'Verbose'">
