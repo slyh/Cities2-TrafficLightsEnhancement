@@ -15,7 +15,7 @@ Do you have any suggestion on the translations? You could submit them on [Crowdi
 
 ## Installation
 
-You can download the mod from Paradox Mods or install it manually as a [local mod](https://cs2.paradoxwikis.com/Modding_Toolchain#Local_Mods_Location).
+You can download the mod from [Paradox Mods](https://mods.paradoxplaza.com/mods/78960/Windows) or install it manually as a [local mod](https://cs2.paradoxwikis.com/Modding_Toolchain#Local_Mods_Location).
 
 The instructions for building the mod yourself are available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/BUILD.md).
 

@@ -1,6 +1,6 @@
 ﻿<Publish>
     <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-    <ModId Value="" />
+    <ModId Value="78960" />
     <!--Name of the mod to display to players-->
     <DisplayName Value="Traffic Lights Enhancement Alpha" />
     <!--Short description of the mod-->
@@ -81,7 +81,7 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Tag, can be set multiple times-->
     <Tag Value="" />
     <!--Link to the forum post where the mod can be discussed-->
-    <ForumLink Value="" />
+    <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
     <ModVersion Value="0.2.20" />
     <!--Recommended version of the base game to use the mod-->
