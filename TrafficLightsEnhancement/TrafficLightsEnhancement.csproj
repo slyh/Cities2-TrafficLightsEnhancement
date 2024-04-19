@@ -102,7 +102,7 @@
 
     <Target Name="CopyLaneSystem" BeforeTargets="CoreCompile">
         <ItemGroup>
-            <LaneSystemFiles Include="..\CommonLibraries\LaneSystem\bin\$(Configuration)\**\*.*" />
+            <LaneSystemFiles Include="..\CommonLibraries\LaneSystem\bin\$(Configuration)\$(TargetFramework)\*.*" />
         </ItemGroup>
         <Copy SourceFiles="@(LaneSystemFiles)" DestinationFolder="$(OutDir)\" />
     </Target>

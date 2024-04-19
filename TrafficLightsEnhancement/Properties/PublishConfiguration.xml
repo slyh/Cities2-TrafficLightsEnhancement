@@ -99,6 +99,10 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 * Translation updates (Credit: Edou24)
 
 * Fixed an issue that prevented the Polish translation from loading (Credit: karmel68)
+
+* Fixed a system update order issue (Credits: HideoKuze2501, Steallays, krzychu124, DanielNotFound22, Tandent-zz)
+
+Thank you to all the testers who participated in the IMod migration testing!
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
