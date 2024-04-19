@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public class UISystem : GameSystemBase
+public partial class UISystem : GameSystemBase
 {
     public bool m_IsLaneManagementToolOpen;
 
@@ -357,7 +357,7 @@ public class UISystem : GameSystemBase
                     });
                     for (int j = i; j < connectPositionSourceBuffer.Length; j++)
                     {
-                        if (connectPositionSourceBuffer[j].m_Owner != connectPositionSourceBuffer[i].m_Owner)
+                        if (connectPositionSourceBuffer[j].m_Owner != connectPositionSourceBuffer[i].m_Owner || connectPositionSourceBuffer[j].m_GroupIndex != connectPositionSourceBuffer[i].m_GroupIndex)
                         {
                             i = j - 1;
                             break;

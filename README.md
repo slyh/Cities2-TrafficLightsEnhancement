@@ -2,7 +2,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.1.0f1
+* Compatible with version 1.1.1f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -15,27 +15,7 @@ Do you have any suggestion on the translations? You could submit them on [Crowdi
 
 ## Installation
 
-1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 4
-
-2. Install [BepInEx 5](https://github.com/BepInEx/BepInEx/releases)
-
-   * Download `BepInEx_x64_5.4.22.0.zip`, and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
-
-   * The installation directory should now have the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file
-
-3. Run the game once, then close it. You can close it when the main menu appears
-
-4. Download the mod
-
-   * For BepInEx 5 users, download [C2VM.TrafficLightsEnhancement-BepInEx5.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx5.zip)
-
-   * For BepInEx 6 users, download [C2VM.TrafficLightsEnhancement-BepInEx6.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx6.zip)
-
-5. Unzip the downloaded file into the `Cities Skylines II/BepInEx/plugins` folder
-
-   * Don't forget to uninstall the old version of the mod to avoid conflicts
-
-6. Launch the game, the mod should be loaded automatically
+You can download the mod from Paradox Mods or install it manually as a [local mod](https://cs2.paradoxwikis.com/Modding_Toolchain#Local_Mods_Location).
 
 The instructions for building the mod yourself are available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/BUILD.md).
 

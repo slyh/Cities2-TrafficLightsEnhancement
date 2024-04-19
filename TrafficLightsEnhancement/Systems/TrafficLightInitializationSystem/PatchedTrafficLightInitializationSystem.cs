@@ -21,9 +21,9 @@ using UnityEngine.Scripting;
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 [CompilerGenerated]
-public class PatchedTrafficLightInitializationSystem : GameSystemBase
+public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
 {
-    [BurstCompile]
+    // [BurstCompile]
     private struct InitializeTrafficLightsJob : IJobChunk
     {
         [ReadOnly]

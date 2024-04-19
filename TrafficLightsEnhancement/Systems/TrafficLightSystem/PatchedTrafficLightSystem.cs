@@ -22,7 +22,7 @@ using UnityEngine.Scripting;
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem;
 
 [CompilerGenerated]
-public class PatchedTrafficLightSystem : GameSystemBase
+public partial class PatchedTrafficLightSystem : GameSystemBase
 {
     [BurstCompile]
     private struct UpdateTrafficLightsJob : IJobChunk
