@@ -46,16 +46,4 @@ class Patches
             uiSystem.ChangeSelectedEntity(entity);
         }
     }
-
-    [HarmonyPatch(typeof(Game.Audio.AudioManager), "OnGameLoadingComplete")]
-    [HarmonyPostfix]
-    static void OnGameLoadingComplete(Game.Audio.AudioManager __instance, ref Game.GameMode mode)
-    {
-        if ((mode & Game.GameMode.GameOrEditor) == 0)
-        {
-            return;
-        }
-
-        __instance.World.GetOrCreateSystem<UISystem>();
-    }
 }

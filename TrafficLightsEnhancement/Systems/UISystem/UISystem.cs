@@ -25,7 +25,7 @@ public partial class UISystem : GameSystemBase
 
     public Entity m_SelectedEntity;
 
-    private View m_View;
+    private static View m_View;
 
     private int m_Ways;
 
@@ -86,7 +86,6 @@ public partial class UISystem : GameSystemBase
 
         m_View = GameManager.instance.userInterface.view.View;
 
-        m_View.BindCall("C2VM-TLE-Call-GetLocale", CallGetLocale);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-Update", CallMainPanelUpdate);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdatePattern", CallMainPanelUpdatePattern);
         m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateOption", CallMainPanelUpdateOption);
@@ -99,6 +98,10 @@ public partial class UISystem : GameSystemBase
 
         m_View.BindCall("C2VM-TLE-Call-KeyPress", CallKeyPress);
         m_View.BindCall("C2VM-TLE-Call-TranslatePosition", CallTranslatePosition);
+
+        m_View.BindCall("C2VM-TLE-Call-UpdateLocale", UpdateLocale);
+        m_View.RegisterForEvent("l10n.activeDictionaryChanged.update", UpdateLocale);
+
         m_View.ExecuteScript(Payload.payload);
     }
 
@@ -106,14 +109,25 @@ public partial class UISystem : GameSystemBase
     {
     }
 
-    protected string CallGetLocale()
+    public static void UpdateLocale()
     {
         var result = new
         {
-            culture = CultureInfo.CurrentCulture.Name,
-            locale = GameManager.instance.localizationManager.activeLocaleId,
+            locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name)
         };
-        return JsonConvert.SerializeObject(result);
+
+        if (Mod.settings.locale != "auto")
+        {
+            result = new
+            {
+                locale = Mod.settings.locale,
+            };
+        }
+
+        Localisations.Helper localisationsHelper = new Localisations.Helper(result.locale);
+        localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
+
+        m_View.TriggerEvent("C2VM-TLE-Event-UpdateLocale", JsonConvert.SerializeObject(result));
     }
 
     protected void CallMainPanelUpdate()

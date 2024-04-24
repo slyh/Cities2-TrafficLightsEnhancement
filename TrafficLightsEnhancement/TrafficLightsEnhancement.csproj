@@ -7,7 +7,7 @@
 
         <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
         <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
-        <Version>0.2.20</Version>
+        <Version>0.2.21</Version>
 
         <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
         <CustomManagedPath></CustomManagedPath>
@@ -87,6 +87,14 @@
     <ItemGroup>
         <None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
         <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Localisations/*.restext">
+            <StronglyTypedLanguage>C#</StronglyTypedLanguage>
+            <StronglyTypedNamespace>$(RootNamespace).Localisations</StronglyTypedNamespace>
+            <StronglyTypedClassName>%(Filename)</StronglyTypedClassName>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

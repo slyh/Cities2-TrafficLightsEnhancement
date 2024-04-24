@@ -20,7 +20,7 @@ You cannot downgrade this mod to an older version. Cities saved with the new ver
 
 The full change log can be found on the [GitHub releases page](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases).
 
-If you found any issues within the mod, please report them on [the issue tracker](https://github.com/slyh/Cities2-TrafficLightsEnhancement/issues).
+If you find any issues within the mod, please report them on [the issue tracker](https://github.com/slyh/Cities2-TrafficLightsEnhancement/issues).
 
 **Warning: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
 
@@ -83,26 +83,16 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.20" />
+    <ModVersion Value="0.2.21" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Updated to be compatible with version 1.1.1f1
+* Added language selection menu
 
-* Migrated to IMod
-
-* Fixed issue #91: Compatibility issue with custom road assets
-
-* Translation updates (Credit: Edou24)
-
-* Fixed an issue that prevented the Polish translation from loading (Credit: karmel68)
-
-* Fixed a system update order issue (Credits: HideoKuze2501, Steallays, krzychu124, DanielNotFound22, Tandent-zz)
-
-Thank you to all the testers who participated in the IMod migration testing!
+* Translation updates (Credit: Sivenesis, karmel68)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
