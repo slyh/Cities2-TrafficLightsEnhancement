@@ -33,56 +33,11 @@ public partial class UISystem : GameSystemBase
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
-    private BufferLookup<ConnectPositionSource> m_ConnectPositionSourceLookup;
-
-    private BufferLookup<ConnectPositionTarget> m_ConnectPositionTargetLookup;
-
-    private BufferLookup<CustomLaneDirection> m_CustomLaneDirectionLookup;
-
-    private BufferLookup<ConnectedEdge> m_ConnectedEdgeLookup;
-
-    private ComponentLookup<CarLane> m_CarLaneLookup;
-
-    private ComponentLookup<Curve> m_CurveLookup;
-
-    private ComponentLookup<CustomTrafficLights> m_CustomTrafficLightsLookup;
-
-    private ComponentLookup<Edge> m_EdgeLookup;
-
-    private ComponentLookup<LaneSignal> m_LaneSignalLookup;
-
-    private ComponentLookup<MasterLane> m_MasterLaneLookup;
-
-    private ComponentLookup<PedestrianLane> m_PedestrianLaneLookup;
-
-    private ComponentLookup<SlaveLane> m_SlaveLaneLookup;
-
-    private ComponentLookup<SecondaryLane> m_SecondaryLaneLookup;
-
-    private BufferLookup<SubLane> m_SubLaneLookup;
-
-    private ComponentLookup<TrackLane> m_TrackLaneLookup;
-
     protected override void OnCreate()
     {
         base.OnCreate();
 
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
-        m_ConnectPositionSourceLookup = GetBufferLookup<ConnectPositionSource>(false);
-        m_ConnectPositionTargetLookup = GetBufferLookup<ConnectPositionTarget>(false);
-        m_CustomLaneDirectionLookup = GetBufferLookup<CustomLaneDirection>(false);
-        m_CustomTrafficLightsLookup = GetComponentLookup<CustomTrafficLights>(false);
-        m_ConnectedEdgeLookup = GetBufferLookup<ConnectedEdge>(false);
-        m_CarLaneLookup = GetComponentLookup<CarLane>(true);
-        m_CurveLookup = GetComponentLookup<Curve>(true);
-        m_EdgeLookup = GetComponentLookup<Edge>(false);
-        m_LaneSignalLookup = GetComponentLookup<LaneSignal>(true);
-        m_MasterLaneLookup = GetComponentLookup<MasterLane>(true);
-        m_PedestrianLaneLookup = GetComponentLookup<PedestrianLane>(true);
-        m_SlaveLaneLookup = GetComponentLookup<SlaveLane>(true);
-        m_SecondaryLaneLookup = GetComponentLookup<SecondaryLane>(true);
-        m_SubLaneLookup = GetBufferLookup<SubLane>(false);
-        m_TrackLaneLookup = GetComponentLookup<TrackLane>(true);
 
         m_View = GameManager.instance.userInterface.view.View;
 
@@ -305,9 +260,9 @@ public partial class UISystem : GameSystemBase
 
         if (m_IsLaneManagementToolOpen && m_SelectedEntity != Entity.Null)
         {
-            if (m_ConnectPositionSourceLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
             {
-                DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = m_ConnectPositionSourceLookup[m_SelectedEntity];
+                DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = EntityManager.GetBuffer<ConnectPositionSource>(m_SelectedEntity);
                 Dictionary<float3, bool> sourceExist = new Dictionary<float3, bool>();
                 for (int i = 0; i < connectPositionSourceBuffer.Length; i++)
                 {
@@ -316,9 +271,9 @@ public partial class UISystem : GameSystemBase
 
                 DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer;
                 // Remove CustomLaneDirection that is no longer exists
-                if (m_CustomLaneDirectionLookup.HasBuffer(m_SelectedEntity))
+                if (EntityManager.HasBuffer<CustomLaneDirection>(m_SelectedEntity))
                 {
-                    customLaneDirectionBuffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
+                    customLaneDirectionBuffer = EntityManager.GetBuffer<CustomLaneDirection>(m_SelectedEntity);
                     for (int i = 0; i < customLaneDirectionBuffer.Length; i++)
                     {
                         float3 customLaneDirectionPosition = customLaneDirectionBuffer[i].m_Position;
@@ -429,9 +384,9 @@ public partial class UISystem : GameSystemBase
                 }
             };
 
-            if (m_ConnectPositionSourceLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
             {
-                DynamicBuffer<ConnectPositionSource> sourcePosBuffer = m_ConnectPositionSourceLookup[m_SelectedEntity];
+                DynamicBuffer<ConnectPositionSource> sourcePosBuffer = EntityManager.GetBuffer<ConnectPositionSource>(m_SelectedEntity);
                 for (int i = 0; i < sourcePosBuffer.Length; i++)
                 {
                     if (sourcePosBuffer[i].m_Position.Equals(direction.m_Position))
@@ -450,9 +405,9 @@ public partial class UISystem : GameSystemBase
                 continue;
             }
 
-            if (m_CustomLaneDirectionLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<CustomLaneDirection>(m_SelectedEntity))
             {
-                DynamicBuffer<CustomLaneDirection> buffer = m_CustomLaneDirectionLookup[m_SelectedEntity];
+                DynamicBuffer<CustomLaneDirection> buffer = EntityManager.GetBuffer<CustomLaneDirection>(m_SelectedEntity);
                 bool foundExistingDirection = false;
                 for (int i = 0; i < buffer.Length; i++)
                 {
@@ -466,7 +421,7 @@ public partial class UISystem : GameSystemBase
                 }
                 if (!foundExistingDirection)
                 {
-                    m_CustomLaneDirectionLookup[m_SelectedEntity].Add(direction);
+                    buffer.Add(direction);
                 }
             }
             else
@@ -507,33 +462,33 @@ public partial class UISystem : GameSystemBase
     {
         if (m_SelectedEntity != Entity.Null)
         {
-            if (!m_CustomTrafficLightsLookup.HasComponent(m_SelectedEntity))
+            if (!EntityManager.HasComponent<CustomTrafficLights>(m_SelectedEntity))
             {
                 EntityManager.AddComponentData(m_SelectedEntity, m_CustomTrafficLights);
             }
             else
             {
-                m_CustomTrafficLightsLookup[m_SelectedEntity] = m_CustomTrafficLights;
+                EntityManager.SetComponentData<CustomTrafficLights>(m_SelectedEntity, m_CustomTrafficLights);
             }
 
-            if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
             {
-                DynamicBuffer<SubLane> buffer = m_SubLaneLookup[m_SelectedEntity];
+                DynamicBuffer<SubLane> buffer = EntityManager.GetBuffer<SubLane>(m_SelectedEntity);
                 foreach (SubLane subLane in buffer)
                 {
                     EntityManager.AddComponentData(subLane.m_SubLane, default(Updated));
                 }
             }
 
-            if (m_ConnectedEdgeLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<ConnectedEdge>(m_SelectedEntity))
             {
-                DynamicBuffer<ConnectedEdge> buffer = m_ConnectedEdgeLookup[m_SelectedEntity];
+                DynamicBuffer<ConnectedEdge> buffer = EntityManager.GetBuffer<ConnectedEdge>(m_SelectedEntity);
                 foreach (ConnectedEdge connectedEdge in buffer)
                 {
                     EntityManager.AddComponentData(connectedEdge.m_Edge, default(Updated));
-                    if (m_EdgeLookup.HasComponent(connectedEdge.m_Edge))
+                    if (EntityManager.HasComponent<Edge>(connectedEdge.m_Edge))
                     {
-                        Edge edge = m_EdgeLookup[connectedEdge.m_Edge];
+                        Edge edge = EntityManager.GetComponentData<Edge>(connectedEdge.m_Edge);
                         EntityManager.AddComponentData(edge.m_Start, default(Updated));
                         EntityManager.AddComponentData(edge.m_End, default(Updated));
                     }
@@ -550,9 +505,9 @@ public partial class UISystem : GameSystemBase
 
         m_CustomTrafficLights = new CustomTrafficLights();
 
-        if (m_CustomTrafficLightsLookup.HasComponent(m_SelectedEntity))
+        if (EntityManager.HasComponent<CustomTrafficLights>(m_SelectedEntity))
         {
-            m_CustomTrafficLights = m_CustomTrafficLightsLookup[m_SelectedEntity];
+            m_CustomTrafficLights = EntityManager.GetComponentData<CustomTrafficLights>(m_SelectedEntity);
         }
     }
 
@@ -570,12 +525,12 @@ public partial class UISystem : GameSystemBase
             m_ShowNotificationUnsaved = false;
 
             // Clean up old entity
-            if (m_ConnectPositionSourceLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
             {
                 EntityManager.RemoveComponent<ConnectPositionSource>(m_SelectedEntity);
             }
 
-            if (m_ConnectPositionTargetLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<ConnectPositionTarget>(m_SelectedEntity))
             {
                 EntityManager.RemoveComponent<ConnectPositionTarget>(m_SelectedEntity);
             }
@@ -587,32 +542,32 @@ public partial class UISystem : GameSystemBase
             m_CustomTrafficLights = new CustomTrafficLights();
 
             // Retrieve info of new entity
-            if (m_SubLaneLookup.HasBuffer(m_SelectedEntity))
+            if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
             {
                 Dictionary<float3, bool> lanes = new Dictionary<float3, bool>();
-                DynamicBuffer<SubLane> buffer = m_SubLaneLookup[m_SelectedEntity];
+                DynamicBuffer<SubLane> buffer = EntityManager.GetBuffer<SubLane>(m_SelectedEntity);
                 foreach (SubLane subLane in buffer)
                 {
-                    if (m_SecondaryLaneLookup.HasComponent(subLane.m_SubLane))
+                    if (EntityManager.HasComponent<SecondaryLane>(subLane.m_SubLane))
                     {
                         continue;
                     }
 
-                    if (m_PedestrianLaneLookup.HasComponent(subLane.m_SubLane))
+                    if (EntityManager.HasComponent<PedestrianLane>(subLane.m_SubLane))
                     {
                         continue;
                     }
 
-                    if (!m_CarLaneLookup.HasComponent(subLane.m_SubLane) && !m_TrackLaneLookup.HasComponent(subLane.m_SubLane))
+                    if (!EntityManager.HasComponent<CarLane>(subLane.m_SubLane) && !EntityManager.HasComponent<TrackLane>(subLane.m_SubLane))
                     {
                         continue;
                     }
 
-                    if (m_MasterLaneLookup.HasComponent(subLane.m_SubLane) || !m_SlaveLaneLookup.HasComponent(subLane.m_SubLane))
+                    if (EntityManager.HasComponent<MasterLane>(subLane.m_SubLane) || !EntityManager.HasComponent<SlaveLane>(subLane.m_SubLane))
                     {
-                        if (m_CurveLookup.HasComponent(subLane.m_SubLane))
+                        if (EntityManager.HasComponent<Curve>(subLane.m_SubLane))
                         {
-                            Curve curve = m_CurveLookup[subLane.m_SubLane];
+                            Curve curve = EntityManager.GetComponentData<Curve>(subLane.m_SubLane);
                             if (lanes.ContainsKey(curve.m_Bezier.a))
                             {
                                 continue;
