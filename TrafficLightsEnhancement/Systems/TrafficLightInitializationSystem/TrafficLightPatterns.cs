@@ -55,9 +55,9 @@ public class TrafficLightPatterns {
 
     public static void ProcessVehicleLaneGroups(ref NativeList<LaneGroup> vehicleLanes, ref NativeList<LaneGroup> groups, ref bool isLevelCrossing, ref int groupCount, bool leftHandTraffic, int ways, Pattern pattern)
     {
-        int[] groupLeft = new int[groups.Length];
-        int[] groupRight = new int[groups.Length];
-        int[] groupStraight = new int[groups.Length];
+        NativeArray<int> groupLeft = new NativeArray<int>(groups.Length, Allocator.Temp);
+        NativeArray<int> groupRight = new NativeArray<int>(groups.Length, Allocator.Temp);
+        NativeArray<int> groupStraight = new NativeArray<int>(groups.Length, Allocator.Temp);
 
         for (int i = 0; i < groups.Length; i++)
         {

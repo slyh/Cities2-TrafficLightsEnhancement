@@ -36,10 +36,13 @@ public class Mod : IMod
         m_Settings = new Settings(this);
         m_Settings.RegisterInOptionsUI();
 
+        updateSystem.World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = false;
+        updateSystem.World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = false;
+
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
 
-        updateSystem.World.GetOrCreateSystem<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
+        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
 
         Colossal.IO.AssetDatabase.AssetDatabase.global.LoadSettings(typeof(Settings).GetCustomAttribute<Colossal.IO.AssetDatabase.FileLocationAttribute>().fileName, m_Settings);
     }

@@ -36,7 +36,7 @@ public class Settings : ModSetting
     public string m_TleVersion => Mod.m_InformationalVersion.Substring(0, 20);
 
     [SettingsUISection("Version")]
-    public string m_LaneSystemVersion => ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(C2VM.CommonLibraries.LaneSystem.Mod)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion.Substring(0, 20);
+    public string m_LaneSystemVersion => C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion.Substring(0, 20);
 
     [SettingsUISection("Default")]
     public bool m_DefaultSplitPhasing { get; set; }
