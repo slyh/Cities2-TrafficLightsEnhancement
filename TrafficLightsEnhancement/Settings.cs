@@ -1,25 +1,68 @@
 using System.Reflection;
 using Colossal.IO.AssetDatabase;
 using Game.Modding;
+using Game.SceneFlow;
 using Game.Settings;
 using Game.UI.Widgets;
+using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement;
 
 [FileLocation("C2VM-TrafficLightsEnhancement")]
-[SettingsUIGroupOrder(["locale", "version"])]
+[SettingsUIGroupOrder(["General", "Default", "Version"])]
 [SettingsUIShowGroupName]
 public class Settings : ModSetting
 {
-    [SettingsUISection("locale")]
+    [SettingsUISection("General")]
     [SettingsUIDropdown(typeof(Settings), "GetLanguageValues")]
-    public string locale { get; set; }
+    public string m_LocaleOption
+    {
+        get
+        {
+            return m_Locale;
+        }
+        set
+        {
+            m_Locale = value;
+            C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+            Colossal.Localization.LocalizationManager localizationManager = Game.SceneFlow.GameManager.instance.localizationManager;
+            localizationManager.GetType().GetTypeInfo().GetDeclaredMethod("NotifyActiveDictionaryChanged").Invoke(localizationManager, null);
+        }
+    }
 
-    [SettingsUISection("version")]
-    public string tleVersion => Mod.informationalVersion.Substring(0, 20);
+    public string m_Locale;
 
-    [SettingsUISection("version")]
-    public string laneSystemVersion => ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(C2VM.CommonLibraries.LaneSystem.Mod)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion.Substring(0, 20);
+    [SettingsUISection("Version")]
+    public string m_TleVersion => Mod.m_InformationalVersion.Substring(0, 20);
+
+    [SettingsUISection("Version")]
+    public string m_LaneSystemVersion => ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(C2VM.CommonLibraries.LaneSystem.Mod)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion.Substring(0, 20);
+
+    [SettingsUISection("Default")]
+    public bool m_DefaultSplitPhasing { get; set; }
+
+    [SettingsUISection("Default")]
+    public bool m_DefaultAlwaysGreenKerbsideTurn { get; set; }
+
+    [SettingsUISection("Default")]
+    public bool m_DefaultExclusivePedestrian { get; set; }
+
+    [SettingsUISection("Default")]
+    [SettingsUIButton]
+    [SettingsUIConfirmation(null, null)]
+    [SettingsUIDisableByCondition(typeof(Settings), "IsNotInGame")]
+    public bool m_ForceNodeUpdate
+    {
+        get
+        {
+            return false;
+        }
+        set
+        {
+            EntityQuery entityQuery = Mod.m_World.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<Game.Net.TrafficLights>());
+            Mod.m_World.EntityManager.AddComponent<Game.Common.Updated>(entityQuery);
+        }
+    }
 
     public Settings(IMod mod) : base(mod)
     {
@@ -28,15 +71,15 @@ public class Settings : ModSetting
 
     public override void SetDefaults()
     {
-        locale = "auto";
+        m_Locale = "auto";
+        m_DefaultSplitPhasing = false;
+        m_DefaultAlwaysGreenKerbsideTurn = false;
+        m_DefaultExclusivePedestrian = false;
     }
 
     public override void Apply()
     {
         base.Apply();
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
-        Colossal.Localization.LocalizationManager localizationManager = Game.SceneFlow.GameManager.instance.localizationManager;
-        localizationManager.GetType().GetTypeInfo().GetDeclaredMethod("NotifyActiveDictionaryChanged").Invoke(localizationManager, null);
     }
 
     public static DropdownItem<string>[] GetLanguageValues()
@@ -124,5 +167,10 @@ public class Settings : ModSetting
             }
         ];
         return list;
+    }
+
+    public bool IsNotInGame()
+    {
+        return GameManager.instance.gameMode != Game.GameMode.Game;
     }
 }

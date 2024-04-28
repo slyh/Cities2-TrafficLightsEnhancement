@@ -71,11 +71,11 @@ public partial class UISystem : GameSystemBase
             locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name)
         };
 
-        if (Mod.settings.locale != "auto")
+        if (Mod.m_Settings.m_Locale != "auto")
         {
             result = new
             {
-                locale = Mod.settings.locale,
+                locale = Mod.m_Settings.m_Locale,
             };
         }
 

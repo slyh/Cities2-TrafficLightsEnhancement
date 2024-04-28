@@ -83,6 +83,20 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                 else
                 {
                     customTrafficLights = new CustomTrafficLights();
+                    uint defaultPattern = (uint) TrafficLightPatterns.Pattern.Vanilla;
+                    if (Mod.m_Settings.m_DefaultSplitPhasing)
+                    {
+                        defaultPattern = (uint) TrafficLightPatterns.Pattern.SplitPhasing;
+                    }
+                    if (Mod.m_Settings.m_DefaultAlwaysGreenKerbsideTurn)
+                    {
+                        defaultPattern |= (uint) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
+                    }
+                    if (Mod.m_Settings.m_DefaultExclusivePedestrian)
+                    {
+                        defaultPattern |= (uint) TrafficLightPatterns.Pattern.ExclusivePedestrian;
+                    }
+                    customTrafficLights.SetPattern(defaultPattern);
                 }
                 customTrafficLights.SetPedestrianPhaseGroupMask(0);
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;

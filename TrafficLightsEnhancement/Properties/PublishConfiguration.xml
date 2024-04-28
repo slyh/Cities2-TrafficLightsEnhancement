@@ -92,7 +92,9 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <ChangeLog>
 * Added language selection menu
 
-* Translation updates (Credit: Sivenesis, karmel68)
+* Added default settings for unconfigured traffic lights
+
+* Translation updates (Credit: Sivenesis, karmel68, Edou24)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

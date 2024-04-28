@@ -56,7 +56,7 @@ public class Helper
         }
         catch (System.Exception e)
         {
-            Mod.log.Error(e);
+            Mod.m_Log.Error(e);
             m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_DefaultLocale, typeof(Helper).Assembly);
         }
     }
@@ -80,14 +80,24 @@ public class Helper
 
     public void AddToDictionary(Colossal.Localization.LocalizationDictionary dictionary)
     {
-        dictionary.Add(Mod.settings.GetSettingsLocaleID(), "Traffic Lights Enhancement");
-        dictionary.Add(Mod.settings.GetOptionGroupLocaleID("locale"), this.GetString("LocaleLabel"));
-        dictionary.Add(Mod.settings.GetOptionLabelLocaleID("locale"), this.GetString("LocaleLabel"));
-        dictionary.Add(Mod.settings.GetOptionDescLocaleID("locale"), this.GetString("LocaleDesc"));
-        dictionary.Add(Mod.settings.GetOptionGroupLocaleID("version"), this.GetString("Version"));
-        dictionary.Add(Mod.settings.GetOptionLabelLocaleID("tleVersion"), Mod.id);
-        dictionary.Add(Mod.settings.GetOptionDescLocaleID("tleVersion"), Mod.informationalVersion);
-        dictionary.Add(Mod.settings.GetOptionLabelLocaleID("laneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.id);
-        dictionary.Add(Mod.settings.GetOptionDescLocaleID("laneSystemVersion"), ((System.Reflection.AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(System.Reflection.Assembly.GetAssembly(typeof(C2VM.CommonLibraries.LaneSystem.Mod)), typeof(System.Reflection.AssemblyInformationalVersionAttribute))).InformationalVersion);
+        dictionary.Add(Mod.m_Settings.GetSettingsLocaleID(), "Traffic Lights Enhancement");
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("General"), this.GetString("General"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("Default"), this.GetString("Default"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("Version"), this.GetString("Version"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LocaleOption"), this.GetString("LocaleLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_TleVersion"), Mod.m_Id);
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.id);
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LocaleOption"), this.GetString("LocaleDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_TleVersion"), Mod.m_InformationalVersion);
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LaneSystemVersion"), ((System.Reflection.AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(System.Reflection.Assembly.GetAssembly(typeof(C2VM.CommonLibraries.LaneSystem.Mod)), typeof(System.Reflection.AssemblyInformationalVersionAttribute))).InformationalVersion);
+        dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));
     }
 }
