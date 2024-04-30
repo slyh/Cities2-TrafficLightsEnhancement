@@ -8,6 +8,13 @@ namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 [HarmonyPatch]
 class Patches
 {
+    [HarmonyPatch(typeof(Game.Common.SystemOrder), "Initialize")]
+    [HarmonyPostfix]
+    static void Initialize(Game.UpdateSystem updateSystem)
+    {
+        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
+    }
+
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
     [HarmonyPostfix]
     static void NetToolSystemSetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)

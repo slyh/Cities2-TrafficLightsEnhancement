@@ -84,7 +84,7 @@ public partial class UISystem : GameSystemBase
             locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name)
         };
 
-        if (Mod.m_Settings.m_Locale != "auto")
+        if (Mod.m_Settings != null && Mod.m_Settings.m_Locale != "auto")
         {
             result = new
             {
@@ -95,7 +95,10 @@ public partial class UISystem : GameSystemBase
         Localisations.Helper localisationsHelper = new Localisations.Helper(result.locale);
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
 
-        m_View.TriggerEvent("C2VM-TLE-Event-UpdateLocale", JsonConvert.SerializeObject(result));
+        if (m_View != null)
+        {
+            m_View.TriggerEvent("C2VM-TLE-Event-UpdateLocale", JsonConvert.SerializeObject(result));
+        }
     }
 
     protected void CallMainPanelUpdate()

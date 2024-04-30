@@ -80,6 +80,10 @@ public class Helper
 
     public void AddToDictionary(Colossal.Localization.LocalizationDictionary dictionary)
     {
+        if (Mod.m_Settings == null)
+        {
+            return;
+        }
         dictionary.Add(Mod.m_Settings.GetSettingsLocaleID(), "Traffic Lights Enhancement");
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("General"), this.GetString("General"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("Default"), this.GetString("Default"));
