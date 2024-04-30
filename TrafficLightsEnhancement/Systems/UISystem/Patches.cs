@@ -10,7 +10,7 @@ class Patches
 {
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
     [HarmonyPostfix]
-    static void SetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)
+    static void NetToolSystemSetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)
     {
         if (removing)
         {
@@ -45,5 +45,22 @@ class Patches
             UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
             uiSystem.ChangeSelectedEntity(entity);
         }
+    }
+
+    [HarmonyPatch(typeof(Game.UI.InGame.ToolbarUISystem), "Apply")]
+    [HarmonyPostfix]
+    static void ToolbarUISystemApply(Game.UI.InGame.ToolbarUISystem __instance, Entity themeEntity, Entity assetMenuEntity, Entity assetCategoryEntity, Entity assetEntity)
+    {
+        UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
+        if (__instance.EntityManager.HasComponent<PlaceableNetData>(assetEntity))
+        {
+            PlaceableNetData placeableNetData = __instance.EntityManager.GetComponentData<PlaceableNetData>(assetEntity);
+            if ((placeableNetData.m_SetUpgradeFlags.m_General & CompositionFlags.General.TrafficLights) != 0)
+            {
+                uiSystem.ShouldShowPanel(true);
+                return;
+            }
+        }
+        uiSystem.ShouldShowPanel(false);
     }
 }

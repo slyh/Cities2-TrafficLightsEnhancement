@@ -23,6 +23,8 @@ public partial class UISystem : GameSystemBase
 
     public bool m_ShowNotificationUnsaved;
 
+    private bool m_ShouldShowPanel;
+
     public Entity m_SelectedEntity;
 
     private static View m_View;
@@ -56,12 +58,23 @@ public partial class UISystem : GameSystemBase
 
         m_View.BindCall("C2VM-TLE-Call-UpdateLocale", UpdateLocale);
         m_View.RegisterForEvent("l10n.activeDictionaryChanged.update", UpdateLocale);
-
-        m_View.ExecuteScript(Payload.payload);
     }
 
     protected override void OnUpdate()
     {
+    }
+
+    public void ShouldShowPanel(bool should)
+    {
+        m_ShouldShowPanel = should;
+        if (m_ShouldShowPanel)
+        {
+            UpdateMainPanel();
+        }
+        else
+        {
+            CallMainPanelSave("");
+        }
     }
 
     public static void UpdateLocale()
@@ -146,6 +159,7 @@ public partial class UISystem : GameSystemBase
         var menu = new {
             title = "Traffic Lights Enhancement",
             image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
+            shouldShowPanel = m_ShouldShowPanel,
             items = new ArrayList()
         };
         if (m_SelectedEntity != Entity.Null)

@@ -100,12 +100,12 @@
     <ItemGroup>
         <PackageReference Include="Lib.Harmony" Version="2.2.2" />
         <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
-        <Compile Include="..\TLEFrontend\dist\assets\Payload.cs" />
     </ItemGroup>
 
     <Target Name="BuildFrontend" BeforeTargets="CoreCompile" Condition="'$(DisableBuildFrontend)' != 'true'">
         <Exec Command="npm install --prefer-offline --no-audit" WorkingDirectory="..\TLEFrontend\" />
         <Exec Command="npm run build" WorkingDirectory="..\TLEFrontend\" />
+        <Copy SourceFiles="..\TLEFrontend\dist\C2VM.TLEFrontend.mjs" DestinationFolder="$(OutDir)\" />
     </Target>
 
     <Target Name="CopyLaneSystem" BeforeTargets="CoreCompile">

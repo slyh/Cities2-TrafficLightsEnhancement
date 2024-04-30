@@ -12,7 +12,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.1.1f1
+* Compatible with version 1.1.2f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -68,7 +68,7 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Portuguese (Brazil): djotabr and lucianoedipo
 
-* Russian: Mellaway, BuiIdTheBuilder and Alex Motor
+* Russian: Mellaway, BuiIdTheBuilder, Alex Motor and Sivenesis
 
 * Spanish: Fabio Rodriguez
 
@@ -95,6 +95,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 * Added default settings for unconfigured traffic lights
 
 * Enabled Burst Compilation for LaneSystem
+
+* Changed UI loading method
 
 * Translation updates (Credit: Sivenesis, karmel68, Edou24)
     </ChangeLog>
