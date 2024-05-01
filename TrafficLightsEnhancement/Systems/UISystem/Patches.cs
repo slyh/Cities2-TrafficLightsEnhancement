@@ -15,6 +15,13 @@ class Patches
         updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
     }
 
+    [HarmonyPatch(typeof(Colossal.Localization.LocalizationManager), "NotifyActiveDictionaryChanged")]
+    [HarmonyPostfix]
+    static void NotifyActiveDictionaryChanged()
+    {
+        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+    }
+
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
     [HarmonyPostfix]
     static void NetToolSystemSetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)

@@ -57,7 +57,6 @@ public partial class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-Call-TranslatePosition", CallTranslatePosition);
 
         m_View.BindCall("C2VM-TLE-Call-UpdateLocale", UpdateLocale);
-        m_View.RegisterForEvent("l10n.activeDictionaryChanged.update", UpdateLocale);
     }
 
     protected override void OnUpdate()

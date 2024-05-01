@@ -24,7 +24,6 @@ public class Settings : ModSetting
         set
         {
             m_Locale = value;
-            C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
             Colossal.Localization.LocalizationManager localizationManager = Game.SceneFlow.GameManager.instance.localizationManager;
             localizationManager.GetType().GetTypeInfo().GetDeclaredMethod("NotifyActiveDictionaryChanged").Invoke(localizationManager, null);
         }
@@ -71,7 +70,7 @@ public class Settings : ModSetting
 
     public override void SetDefaults()
     {
-        m_Locale = "auto";
+        m_LocaleOption = "auto";
         m_DefaultSplitPhasing = false;
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;

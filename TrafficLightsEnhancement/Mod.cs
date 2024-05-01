@@ -45,6 +45,7 @@ public class Mod : IMod
         // updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
 
         Colossal.IO.AssetDatabase.AssetDatabase.global.LoadSettings(typeof(Settings).GetCustomAttribute<Colossal.IO.AssetDatabase.FileLocationAttribute>().fileName, m_Settings);
+        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
     }
 
     public void OnDispose()
