@@ -32,6 +32,19 @@ public class Settings : ModSetting
     public string m_Locale;
 
     [SettingsUISection("Version")]
+    public string m_ReleaseChannel
+    {
+        get
+        {
+            #if SHOW_CANARY_BUILD_WARNING
+            return "Canary";
+            #else
+            return "Alpha";
+            #endif
+        }
+    }
+
+    [SettingsUISection("Version")]
     public string m_TleVersion => Mod.m_InformationalVersion.Substring(0, 20);
 
     [SettingsUISection("Version")]

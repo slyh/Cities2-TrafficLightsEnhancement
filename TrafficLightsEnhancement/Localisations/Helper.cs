@@ -75,7 +75,20 @@ public class Helper
 
     public string GetString(string key)
     {
-        return m_ResourceManager.GetString(key);
+        try
+        {
+            string result = m_ResourceManager.GetString(key);
+            if (result == null)
+            {
+                throw new System.Exception($"m_ResourceManager.GetString({key}) returns null");
+            }
+            return result;
+        }
+        catch (System.Exception e)
+        {
+            Mod.m_Log.Error(e);
+        }
+        return key;
     }
 
     public void AddToDictionary(Colossal.Localization.LocalizationDictionary dictionary)
@@ -93,6 +106,7 @@ public class Helper
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ReleaseChannel"), this.GetString("ReleaseChannel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_TleVersion"), Mod.m_Id);
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_Id);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LocaleOption"), this.GetString("LocaleDesc"));
@@ -100,6 +114,7 @@ public class Helper
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ReleaseChannel"), Mod.m_Settings.m_ReleaseChannel);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_TleVersion"), Mod.m_InformationalVersion);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion);
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));

@@ -12,3 +12,4 @@ DefaultExclusivePedestrianDesc=Dodaj dedykowaną fazę dla pieszych do wszystkic
 ForceAllNodesUpdateLabel=Wymuś aktualizację wszystkich węzłów
 ForceAllNodesUpdateDesc=Wymuś aktualizację wszystkich węzłów (skrzyżowań), stosując domyślne ustawienia w tym modzie do wszystkich sygnalizacji świetlnych bez konfiguracji. Ta funkcja jest dostępna tylko po załadowaniu miasta.
 ForceAllNodesUpdateWarning=Wszystkie węzły zostaną zaktualizowane. Domyślne ustawienia w tym modzie zostaną ustawione do wszystkich sygnalizacji świetlnych bez konfiguracji.
+ReleaseChannel=Wersja wydania
