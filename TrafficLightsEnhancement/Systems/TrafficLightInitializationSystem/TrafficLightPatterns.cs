@@ -17,6 +17,8 @@ public class TrafficLightPatterns {
 
         SplitPhasingAdvanced = 3,
 
+        ModDefault = 4,
+
         ExclusivePedestrian = 1 << 16,
 
         AlwaysGreenKerbsideTurn = 1 << 17,

@@ -94,6 +94,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 
 * Added default settings for unconfigured traffic lights
 
+* Added "Default" pattern, which will deconfigure the traffic lights
+
 * Enabled Burst Compilation for LaneSystem
 
 * Changed UI loading method

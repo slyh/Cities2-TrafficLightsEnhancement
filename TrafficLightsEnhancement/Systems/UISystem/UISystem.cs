@@ -167,6 +167,7 @@ public partial class UISystem : GameSystemBase
         if (m_SelectedEntity != Entity.Null)
         {
             menu.items.Add(new Types.ItemTitle{title = "TrafficSignal"});
+            menu.items.Add(Types.MainPanelItemPattern("ModDefault", (uint)TrafficLightPatterns.Pattern.ModDefault, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
             menu.items.Add(Types.MainPanelItemPattern("Vanilla", (uint)TrafficLightPatterns.Pattern.Vanilla, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
             if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.SplitPhasing))
             {
@@ -187,28 +188,31 @@ public partial class UISystem : GameSystemBase
                     menu.items.Add(Types.MainPanelItemPattern("ProtectedLeftTurns", (uint)TrafficLightPatterns.Pattern.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
                 }
             }
-            menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemTitle{title = "Options"});
-            menu.items.Add(Types.MainPanelItemOption("AllowTurningOnRed", (uint)TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) == (uint)TrafficLightPatterns.Pattern.Vanilla)
-            {
-                menu.items.Add(Types.MainPanelItemOption("GiveWayToOncomingVehicles", (uint)TrafficLightPatterns.Pattern.CentreTurnGiveWay, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            }
-            menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
+            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) != (uint)TrafficLightPatterns.Pattern.ModDefault)
             {
                 menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemRange
+                menu.items.Add(new Types.ItemTitle{title = "Options"});
+                menu.items.Add(Types.MainPanelItemOption("AllowTurningOnRed", (uint)TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) == (uint)TrafficLightPatterns.Pattern.Vanilla)
                 {
-                    key = "CustomPedestrianDurationMultiplier",
-                    label = "CustomPedestrianDurationMultiplier",
-                    valueSuffix = "CustomPedestrianDurationMultiplierSuffix",
-                    min = 0.5f,
-                    max = 10,
-                    step = 0.5f,
-                    value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
-                    engineEventName = "C2VM-TLE-Call-MainPanel-UpdateValue"
-                });
+                    menu.items.Add(Types.MainPanelItemOption("GiveWayToOncomingVehicles", (uint)TrafficLightPatterns.Pattern.CentreTurnGiveWay, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                }
+                menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
+                {
+                    menu.items.Add(default(Types.ItemDivider));
+                    menu.items.Add(new Types.ItemRange
+                    {
+                        key = "CustomPedestrianDurationMultiplier",
+                        label = "CustomPedestrianDurationMultiplier",
+                        valueSuffix = "CustomPedestrianDurationMultiplierSuffix",
+                        min = 0.5f,
+                        max = 10,
+                        step = 0.5f,
+                        value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
+                        engineEventName = "C2VM-TLE-Call-MainPanel-UpdateValue"
+                    });
+                }
             }
             menu.items.Add(default(Types.ItemDivider));
             menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
@@ -487,6 +491,11 @@ public partial class UISystem : GameSystemBase
                 EntityManager.SetComponentData<CustomTrafficLights>(m_SelectedEntity, m_CustomTrafficLights);
             }
 
+            if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF) == (uint)TrafficLightPatterns.Pattern.ModDefault)
+            {
+                EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
+            }
+
             if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
             {
                 DynamicBuffer<SubLane> buffer = EntityManager.GetBuffer<SubLane>(m_SelectedEntity);
@@ -519,7 +528,7 @@ public partial class UISystem : GameSystemBase
     {
         m_IsLaneManagementToolOpen = false;
 
-        m_CustomTrafficLights = new CustomTrafficLights();
+        m_CustomTrafficLights = new CustomTrafficLights(TrafficLightPatterns.Pattern.ModDefault);
 
         if (EntityManager.HasComponent<CustomTrafficLights>(m_SelectedEntity))
         {
@@ -555,7 +564,7 @@ public partial class UISystem : GameSystemBase
 
             m_Ways = 0;
 
-            m_CustomTrafficLights = new CustomTrafficLights();
+            m_CustomTrafficLights = new CustomTrafficLights(TrafficLightPatterns.Pattern.ModDefault);
 
             // Retrieve info of new entity
             if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
