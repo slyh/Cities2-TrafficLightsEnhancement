@@ -50,7 +50,7 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * German: TheL0ki, Simanova86 and Mark
 
-* Japanese: macoto-hino
+* Japanese: macoto-hino and amanao
 
 * Korean: Twotoolus-FLY-LShst and DevelopmentAnything
 
@@ -73,26 +73,16 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.21" />
+    <ModVersion Value="0.2.22" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Added language selection menu
+* Fixed an issue where traffic lights wouldn't turn green when U-turns or unsafe lanes were removed (Credit: gaborposz)
 
-* Added default settings for unconfigured traffic lights
-
-* Added "Default" pattern, which will deconfigure the traffic lights
-
-* Enabled Burst Compilation for LaneSystem
-
-* Changed UI loading method
-
-* Retirement of Lane Direction Tool
-
-* Translation updates (Credit: Sivenesis, karmel68, Edou24)
+* Translation updates (Credit: amanao)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

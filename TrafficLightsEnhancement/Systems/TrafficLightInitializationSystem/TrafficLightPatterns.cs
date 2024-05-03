@@ -76,13 +76,13 @@ public class TrafficLightPatterns {
             {
                 LaneGroup group2 = groups[j];
 
-                if (group.m_IsStraight && math.dot(group.m_EndDirection, group2.m_EndDirection) > 0.999f && math.dot(group.m_EndDirection, group2.m_StartDirection) > 0.999f)
+                if (math.dot(group.m_EndDirection, group2.m_StartDirection) > 0.999f && math.dot(group.m_StartDirection, group2.m_EndDirection) > 0.999f)
                 {
-                    groupStraight[group.m_GroupIndex] = group2.m_GroupIndex;
-                }
+                    if (group.m_IsStraight)
+                    {
+                        groupStraight[group.m_GroupIndex] = group2.m_GroupIndex;
+                    }
 
-                if (math.dot(group.m_EndDirection, group2.m_StartDirection) > 0.999f)
-                {
                     if (group.m_IsTurnLeft)
                     {
                         groupLeft[group.m_GroupIndex] = group2.m_GroupIndex;

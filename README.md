@@ -45,7 +45,7 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86) and [Mark](https://crowdin.com/profile/randomkuchen)
 
-* Japanese: [macoto-hino](https://github.com/macoto-hino)
+* Japanese: [macoto-hino](https://github.com/macoto-hino) and [amanao](https://crowdin.com/profile/amanao)
 
 * Korean: [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything)
 
