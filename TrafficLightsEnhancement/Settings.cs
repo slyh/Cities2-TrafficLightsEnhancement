@@ -76,6 +76,9 @@ public class Settings : ModSetting
         }
     }
 
+    [SettingsUIHidden]
+    public bool m_HasReadLdtRetirementNotice { get; set; }
+
     public Settings(IMod mod) : base(mod)
     {
         SetDefaults();
@@ -87,6 +90,7 @@ public class Settings : ModSetting
         m_DefaultSplitPhasing = false;
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;
+        m_HasReadLdtRetirementNotice = false;
     }
 
     public override void Apply()

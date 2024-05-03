@@ -13,3 +13,5 @@ ForceAllNodesUpdateLabel=Forcer la mise à jour de tous les nœuds
 ForceAllNodesUpdateDesc=Force tous les nœuds (intersections routières) à se mettre à jour, en appliquant les paramètres par défaut de ce mod à tous les feux de circulation sans configuration personnalisée. Cette fonctionnalité n'est disponible qu'après le chargement d'une ville.
 ForceAllNodesUpdateWarning=Tous les nœuds seront mis à jour. Les paramètres par défaut de ce mod s'appliquent à tous les feux de signalisation sans configuration personnalisée.
 ReleaseChannel=Release Channel
+LdtMigrationNotificationTitle=Important message from Traffic Lights Enhancement
+LdtMigrationNotificationText=Click here to read (Open in web browser)

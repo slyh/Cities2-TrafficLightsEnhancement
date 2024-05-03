@@ -35,11 +35,14 @@ public partial class UISystem : GameSystemBase
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
+    private LDTRetirementSystem m_LdtRetirementSystem;
+
     protected override void OnCreate()
     {
         base.OnCreate();
 
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
+        m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
 
         m_View = GameManager.instance.userInterface.view.View;
 
@@ -56,7 +59,9 @@ public partial class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-Call-KeyPress", CallKeyPress);
         m_View.BindCall("C2VM-TLE-Call-TranslatePosition", CallTranslatePosition);
 
-        m_View.BindCall("C2VM-TLE-Call-UpdateLocale", UpdateLocale);
+        m_View.BindCall("C2VM-TLE-Call-UpdateLocale", CallUpdateLocale);
+
+        m_View.BindCall("C2VM-TLE-Call-OpenBrowser", CallOpenBrowser);
     }
 
     protected override void OnUpdate()
@@ -76,7 +81,7 @@ public partial class UISystem : GameSystemBase
         }
     }
 
-    public static void UpdateLocale()
+    public static void CallUpdateLocale()
     {
         var result = new
         {
@@ -98,6 +103,13 @@ public partial class UISystem : GameSystemBase
         {
             m_View.TriggerEvent("C2VM-TLE-Event-UpdateLocale", JsonConvert.SerializeObject(result));
         }
+    }
+
+    protected void CallOpenBrowser(string jsonString)
+    {
+        var keyDefinition = new { key = "", value = "" };
+        var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
+        System.Diagnostics.Process.Start(parsedKey.value);
     }
 
     protected void CallMainPanelUpdate()
@@ -215,17 +227,19 @@ public partial class UISystem : GameSystemBase
                 }
             }
             menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
-            if (m_IsLaneManagementToolOpen)
+            if (m_LdtRetirementSystem.m_UnmigratedNodeCount > 0)
             {
-                menu.items.Add(new Types.ItemButton{label = "Close", key = "status", value = "1", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Close"});
+                menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
+                menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Reset"});
+                menu.items.Add(default(Types.ItemDivider));
+                menu.items.Add(new Types.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LDTRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM-TLE-Call-OpenBrowser"});
+                menu.items.Add(default(Types.ItemDivider));
             }
-            else
+            else if (Mod.m_Settings != null && !Mod.m_Settings.m_HasReadLdtRetirementNotice)
             {
-                menu.items.Add(new Types.ItemButton{label = "Open", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Open"});
+                menu.items.Add(new Types.ItemNotification{label = "LdtRetirementNotice", notificationType = "notice"});
+                menu.items.Add(default(Types.ItemDivider));
             }
-            menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Reset"});
-            menu.items.Add(default(Types.ItemDivider));
             menu.items.Add(new Types.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM-TLE-Call-MainPanel-Save"});
             if (m_ShowNotificationUnsaved)
             {

@@ -19,7 +19,7 @@ class Patches
     [HarmonyPostfix]
     static void NotifyActiveDictionaryChanged()
     {
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.CallUpdateLocale();
     }
 
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]

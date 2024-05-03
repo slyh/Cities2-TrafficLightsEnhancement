@@ -90,6 +90,12 @@ public static class Types
         public string label;
 
         public string notificationType;
+
+        public string key;
+
+        public string value;
+
+        public string engineEventName;
     }
 
     public struct ItemRange {
