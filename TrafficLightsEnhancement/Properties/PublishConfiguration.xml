@@ -24,16 +24,6 @@ If you find any issues within the mod, please report them on [the issue tracker]
 
 **Warning: These modifications are highly experimental. Your game may crash more frequently, and your save files could be corrupted.**
 
-## Known Issues
-
-Lane Direction Tool
-
-* Does not support merge lanes
-
-* Does not support roundabouts
-
-* When an entire direction is banned, some traffic may still proceed through the banned direction
-
 ## Acknowledgements
 
 This mod would not have reached its current stage without help from the following people and projects:
@@ -99,6 +89,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 * Enabled Burst Compilation for LaneSystem
 
 * Changed UI loading method
+
+* Retirement of Lane Direction Tool
 
 * Translation updates (Credit: Sivenesis, karmel68, Edou24)
     </ChangeLog>
