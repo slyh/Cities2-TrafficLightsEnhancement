@@ -1,0 +1,19 @@
+{
+    "LocaleLabel": "Langue",
+    "LocaleDesc": "Définissez la langue pour ce mod. Si vous choisissez \"Auto\", il sélectionnera automatiquement une langue en fonction de vos paramètres en jeu et de votre système local.",
+    "Version": "Version",
+    "General": "Général",
+    "Default": "Défaut",
+    "DefaultSplitPhasingLabel": "Phase fractionnée",
+    "DefaultSplitPhasingDesc": "Met tous les feux de circulation sans configuration personnalisée en mode de phasage fractionné. Il s'applique aux routes nouvellement construites et s'appliquera aux routes existantes lors d'une mise à jour de l'état du jeu.",
+    "DefaultAlwaysGreenKerbsideTurnLabel": "Autoriser les virages lorsque le feu est rouge",
+    "DefaultAlwaysGreenKerbsideTurnDesc": "Configure tous les feux de circulation sans configuration personnalisée pour permettre de tourner au feu rouge. Il s'applique aux routes nouvellement construites et s'appliquera aux routes existantes lors d'une mise à jour de l'état du jeu.",
+    "DefaultExclusivePedestrianLabel": "Feux exclusifs piétons",
+    "DefaultExclusivePedestrianDesc": "Ajout d'une phase piétonne exclusive à tous les feux de circulation sans configuration personnalisée. Elle s'applique aux routes nouvellement construites et s'appliquera aux routes existantes lors d'une mise à jour de l'état du jeu.",
+    "ForceAllNodesUpdateLabel": "Forcer la mise à jour de tous les nœuds",
+    "ForceAllNodesUpdateDesc": "Force tous les nœuds (intersections routières) à se mettre à jour, en appliquant les paramètres par défaut de ce mod à tous les feux de circulation sans configuration personnalisée. Cette fonctionnalité n'est disponible qu'après le chargement d'une ville.",
+    "ForceAllNodesUpdateWarning": "Tous les nœuds seront mis à jour. Les paramètres par défaut de ce mod s'appliquent à tous les feux de signalisation sans configuration personnalisée.",
+    "ReleaseChannel": "Release Channel",
+    "LdtMigrationNotificationTitle": "Important message from Traffic Lights Enhancement",
+    "LdtMigrationNotificationText": "Click here to read (Open in web browser)"
+}

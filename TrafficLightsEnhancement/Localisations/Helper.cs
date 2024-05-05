@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Resources;
+using System.Reflection;
+using Newtonsoft.Json;
 
 namespace C2VM.TrafficLightsEnhancement.Localisations;
 
@@ -32,10 +34,10 @@ public class Helper
         { "en-US", ["nl-NL"] },
         { "zh-HANT", ["zh-HK", "zh-TW"] }
     };
-
-    private ResourceManager m_ResourceManager;
     
     public string m_Locale { get; private set; }
+
+    private Dictionary<string, string> m_Dictionary = new Dictionary<string, string>();
 
     public Helper(string locale)
     {
@@ -51,13 +53,19 @@ public class Helper
         }
         try
         {
-            m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_Locale, typeof(Helper).Assembly);
-            m_ResourceManager.GetString(""); // Test if the requested resource exists
+            string resourceName = "C2VM.TrafficLightsEnhancement.Localisations." + m_Locale + ".json";
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+            if (stream == null)
+            {
+                throw new System.Exception($"{resourceName} does not exist.");
+            }
+            StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+            string jsonString = reader.ReadToEnd();
+            m_Dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
         }
         catch (System.Exception e)
         {
             Mod.m_Log.Error(e);
-            m_ResourceManager = new ResourceManager("C2VM.TrafficLightsEnhancement.Localisations." + m_DefaultLocale, typeof(Helper).Assembly);
         }
     }
 
@@ -77,16 +85,11 @@ public class Helper
     {
         try
         {
-            string result = m_ResourceManager.GetString(key);
-            if (result == null)
-            {
-                throw new System.Exception($"m_ResourceManager.GetString({key}) returns null");
-            }
-            return result;
+            return m_Dictionary[key];
         }
-        catch (System.Exception e)
+        catch (System.Exception)
         {
-            Mod.m_Log.Error(e);
+            // Mod.m_Log.Error(e);
         }
         return key;
     }

@@ -1,0 +1,19 @@
+{
+    "LocaleLabel": "語言",
+    "LocaleDesc": "設定此模組的語言。若你選擇「自動」，它將根據遊戲和系統的語言設定自動選擇語言。",
+    "Version": "版本",
+    "General": "一般",
+    "Default": "預設",
+    "DefaultSplitPhasingLabel": "區隔式信號",
+    "DefaultSplitPhasingDesc": "將所有未經設定的交通燈設定為區隔式信號。此選項適用於新建的道路，在遊戲數據更新時，亦會變更現有道路。",
+    "DefaultAlwaysGreenKerbsideTurnLabel": "容許於紅燈時轉彎",
+    "DefaultAlwaysGreenKerbsideTurnDesc": "所有未經設定的交通燈將容許車輛於紅燈時轉彎。此選項適用於新建的道路，在遊戲數據更新時，亦會變更現有道路。",
+    "DefaultExclusivePedestrianLabel": "行人專用過路時段",
+    "DefaultExclusivePedestrianDesc": "在所有未經設定的交通燈增設行人專用過路時段。此選項適用於新建的道路，在遊戲數據更新時，亦會變更現有道路。",
+    "ForceAllNodesUpdateLabel": "強制更新所有節點",
+    "ForceAllNodesUpdateDesc": "強制更新所有節點（道路交界處），將此模組的預設選項套用至所有未經設定的交通燈。此功能要待城市載入後方可使用。",
+    "ForceAllNodesUpdateWarning": "所有節點將被更新，此模組的預設選項會套用至所有未經設定的交通燈。",
+    "ReleaseChannel": "發布版本",
+    "LdtMigrationNotificationTitle": "來自 TLE 的重要訊息",
+    "LdtMigrationNotificationText": "點擊此處閱讀（在網頁瀏覽器中開啟）"
+}

@@ -93,11 +93,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Localisations/*.restext">
-            <StronglyTypedLanguage>C#</StronglyTypedLanguage>
-            <StronglyTypedNamespace>$(RootNamespace).Localisations</StronglyTypedNamespace>
-            <StronglyTypedClassName>%(Filename)</StronglyTypedClassName>
-        </EmbeddedResource>
+        <EmbeddedResource Include="Localisations\**\*.json" />
     </ItemGroup>
 
     <ItemGroup>
