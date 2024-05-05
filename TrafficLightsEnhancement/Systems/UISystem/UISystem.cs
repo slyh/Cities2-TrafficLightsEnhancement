@@ -6,10 +6,10 @@ using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 using cohtml.Net;
-using Game;
 using Game.Common;
 using Game.Net;
 using Game.SceneFlow;
+using Game.UI;
 using Newtonsoft.Json;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public partial class UISystem : GameSystemBase
+public partial class UISystem : UISystemBase
 {
     public bool m_IsLaneManagementToolOpen;
 
@@ -43,7 +43,14 @@ public partial class UISystem : GameSystemBase
 
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
+    }
 
+    protected override void OnUpdate()
+    {
+    }
+
+    protected void AddCallBinding()
+    {
         m_View = GameManager.instance.userInterface.view.View;
 
         m_View.BindCall("C2VM-TLE-Call-MainPanel-Update", CallMainPanelUpdate);
@@ -64,8 +71,13 @@ public partial class UISystem : GameSystemBase
         m_View.BindCall("C2VM-TLE-Call-OpenBrowser", CallOpenBrowser);
     }
 
-    protected override void OnUpdate()
+    protected override void OnGamePreload(Colossal.Serialization.Entities.Purpose purpose, Game.GameMode mode)
     {
+        base.OnGamePreload(purpose, mode);
+        if (m_View == null)
+        {
+            AddCallBinding();
+        }
     }
 
     public void ShouldShowPanel(bool should)

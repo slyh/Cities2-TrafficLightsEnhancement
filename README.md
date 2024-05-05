@@ -35,7 +35,7 @@ This mod would not have reached its current stage without help from the followin
 
 Additionally, gratitude is extended to the individuals listed below for their translation contributions:
 
-* Chinese (Simplified): [SuperYYT](https://github.com/SuperYYT)
+* Chinese (Simplified): [SuperYYT](https://github.com/SuperYYT) and [RilkeXS](https://crowdin.com/profile/rilkexs)
 
 * Chinese (Traditional): [angel84326](https://github.com/angel84326) and the Taiwanese Cities: Skylines community
 

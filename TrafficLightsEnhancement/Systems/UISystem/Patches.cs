@@ -8,13 +8,6 @@ namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 [HarmonyPatch]
 class Patches
 {
-    [HarmonyPatch(typeof(Game.Common.SystemOrder), "Initialize")]
-    [HarmonyPostfix]
-    static void Initialize(Game.UpdateSystem updateSystem)
-    {
-        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
-    }
-
     [HarmonyPatch(typeof(Colossal.Localization.LocalizationManager), "NotifyActiveDictionaryChanged")]
     [HarmonyPostfix]
     static void NotifyActiveDictionaryChanged()

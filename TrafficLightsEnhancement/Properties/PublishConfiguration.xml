@@ -40,7 +40,7 @@ Primeinc and Windows200000 for the guide.
 
 Additionally, gratitude is extended to the individuals listed below for their translation contributions:
 
-* Chinese (Simplified): SuperYYT
+* Chinese (Simplified): SuperYYT and RilkeXS
 
 * Chinese (Traditional): angel84326 and the Taiwanese Cities: Skylines community
 
@@ -80,9 +80,9 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Fixed an issue where traffic lights wouldn't turn green when U-turns or unsafe lanes were removed (Credit: gaborposz)
+* Changed when UI bindings are added
 
-* Translation updates (Credit: amanao)
+* Translation updates (Credit: Twotoolus-FLY-LShst, RilkeXS)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
