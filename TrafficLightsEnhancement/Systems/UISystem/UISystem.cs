@@ -522,30 +522,6 @@ public partial class UISystem : UISystemBase
                 EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
             }
 
-            if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
-            {
-                DynamicBuffer<SubLane> buffer = EntityManager.GetBuffer<SubLane>(m_SelectedEntity);
-                foreach (SubLane subLane in buffer)
-                {
-                    EntityManager.AddComponentData(subLane.m_SubLane, default(Updated));
-                }
-            }
-
-            if (EntityManager.HasBuffer<ConnectedEdge>(m_SelectedEntity))
-            {
-                DynamicBuffer<ConnectedEdge> buffer = EntityManager.GetBuffer<ConnectedEdge>(m_SelectedEntity);
-                foreach (ConnectedEdge connectedEdge in buffer)
-                {
-                    EntityManager.AddComponentData(connectedEdge.m_Edge, default(Updated));
-                    if (EntityManager.HasComponent<Edge>(connectedEdge.m_Edge))
-                    {
-                        Edge edge = EntityManager.GetComponentData<Edge>(connectedEdge.m_Edge);
-                        EntityManager.AddComponentData(edge.m_Start, default(Updated));
-                        EntityManager.AddComponentData(edge.m_End, default(Updated));
-                    }
-                }
-            }
-
             EntityManager.AddComponentData(m_SelectedEntity, default(Updated));
         }
     }

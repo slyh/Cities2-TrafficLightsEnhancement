@@ -82,7 +82,9 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <ChangeLog>
 * Changed when UI bindings are added
 
-* Fixed an issue where vehicles waiting to turn did not trigger the green light
+* Fixed an issue where vehicles waiting to turn did not trigger the green light (Credit: zimmy🫨, HarryBotter2333)
+
+* Removed SubLane and Edge updates
 
 * Translation updates (Credit: Twotoolus-FLY-LShst, RilkeXS)
     </ChangeLog>
