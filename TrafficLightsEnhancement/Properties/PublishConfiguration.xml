@@ -73,7 +73,7 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.22" />
+    <ModVersion Value="0.2.23" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
@@ -81,6 +81,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
 * Changed when UI bindings are added
+
+* Fixed an issue where vehicles waiting to turn did not trigger the green light
 
 * Translation updates (Credit: Twotoolus-FLY-LShst, RilkeXS)
     </ChangeLog>

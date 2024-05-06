@@ -77,7 +77,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     {
                         trafficLights.m_State = Game.Net.TrafficLightState.Beginning;
                         trafficLights.m_CurrentSignalGroup = 0;
-                        trafficLights.m_NextSignalGroup = (byte)GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend);
+                        trafficLights.m_NextSignalGroup = (byte)GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend, ref customTrafficLights);
                         trafficLights.m_Timer = 0;
                         UpdateLaneSignals(subLanes, trafficLights);
                         UpdateTrafficLightObjects(subObjects, trafficLights);
@@ -116,7 +116,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     if (++trafficLights.m_Timer >= greenDuration)
                     {
                         bool canExtend2;
-                        int nextSignalGroup3 = GetNextSignalGroup(subLanes, trafficLights, trafficLights.m_Timer >= 6, out canExtend2);
+                        int nextSignalGroup3 = GetNextSignalGroup(subLanes, trafficLights, trafficLights.m_Timer >= 6, out canExtend2, ref customTrafficLights);
                         if (nextSignalGroup3 != trafficLights.m_CurrentSignalGroup)
                         {
                             if (canExtend2)
@@ -147,7 +147,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     if (++trafficLights.m_Timer >= 2)
                     {
                         bool canExtend3;
-                        int nextSignalGroup4 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend3);
+                        int nextSignalGroup4 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend3, ref customTrafficLights);
                         if (nextSignalGroup4 == trafficLights.m_CurrentSignalGroup)
                         {
                             trafficLights.m_State = Game.Net.TrafficLightState.Beginning;
@@ -177,7 +177,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     if (++trafficLights.m_Timer >= 2)
                     {
                         bool canExtend4;
-                        int nextSignalGroup5 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend4);
+                        int nextSignalGroup5 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend4, ref customTrafficLights);
                         if (nextSignalGroup5 == trafficLights.m_CurrentSignalGroup)
                         {
                             trafficLights.m_State = Game.Net.TrafficLightState.Beginning;
@@ -205,7 +205,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                 case Game.Net.TrafficLightState.Ending:
                     if (++trafficLights.m_Timer >= 2)
                     {
-                        int nextSignalGroup2 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend);
+                        int nextSignalGroup2 = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend, ref customTrafficLights);
                         if (nextSignalGroup2 != trafficLights.m_NextSignalGroup)
                         {
                             if (RequireEnding(subLanes, nextSignalGroup2))
@@ -237,7 +237,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                 case Game.Net.TrafficLightState.Changing:
                     if (++trafficLights.m_Timer >= 1)
                     {
-                        int nextSignalGroup = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend);
+                        int nextSignalGroup = GetNextSignalGroup(subLanes, trafficLights, preferChange: true, out canExtend, ref customTrafficLights);
                         if (nextSignalGroup != trafficLights.m_NextSignalGroup)
                         {
                             if (RequireEnding(subLanes, nextSignalGroup))
@@ -294,7 +294,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
             return false;
         }
 
-        private int GetNextSignalGroup(DynamicBuffer<SubLane> subLanes, TrafficLights trafficLights, bool preferChange, out bool canExtend)
+        private int GetNextSignalGroup(DynamicBuffer<SubLane> subLanes, TrafficLights trafficLights, bool preferChange, out bool canExtend, ref CustomTrafficLights customTrafficLights)
         {
             Entity entity = Entity.Null;
             Entity entity2 = Entity.Null;
@@ -315,14 +315,22 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                         extraLaneSignal = m_ExtraLaneSignalData[subLane];
                     }
 
-                    if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.IgnorePriority) != 0)
+                    if ((value.m_GroupMask & (1 << trafficLights.m_CurrentSignalGroup - 1)) != 0)
                     {
-                        // Don't consider lanes with IgnorePriority flag
-                        #if VERBOSITY_DEBUG
-                        System.Console.WriteLine($"GetNextSignalGroup ExtraLaneSignal.Flags.IgnorePriority");
-                        #endif
+                        // Reduce priority if the lane has IgnorePriority flag
+                        if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.IgnorePriority) != 0)
+                        {
+                            value.m_Priority = value.m_Default;
+                        }
+
+                        // Stop pedestrian phase from hogging the green light
+                        if ((customTrafficLights.m_PedestrianPhaseGroupMask & value.m_GroupMask) != 0)
+                        {
+                            value.m_Priority = value.m_Default;
+                        }
                     }
-                    else if (value.m_Priority > num)
+
+                    if (value.m_Priority > num)
                     {
                         entity = value.m_Petitioner;
                         num = value.m_Priority;
