@@ -29,6 +29,9 @@ public class Settings : ModSetting
         }
     }
 
+    [SettingsUISection("General")]
+    public bool m_ShowFloatingButton { get; set; }
+
     public string m_Locale;
 
     [SettingsUISection("Version")]
@@ -87,6 +90,7 @@ public class Settings : ModSetting
     public override void SetDefaults()
     {
         m_LocaleOption = "auto";
+        m_ShowFloatingButton = true;
         m_DefaultSplitPhasing = false;
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;

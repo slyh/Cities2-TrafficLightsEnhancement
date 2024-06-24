@@ -1,6 +1,8 @@
 {
     "LocaleLabel": "语言",
     "LocaleDesc": "设定此模组的语言。若你选择「自动」，它将根据游戏和系统的语言设定自动选择语言。",
+    "ShowFloatingButtonLabel": "悬浮按钮",
+    "ShowFloatingButtonDesc": "在萤幕左上角显示按钮，用作开关主面板。",
     "Version": "版本",
     "General": "常规设置",
     "Default": "默认设定",

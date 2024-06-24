@@ -1,6 +1,8 @@
 {
     "LocaleLabel": "言語",
     "LocaleDesc": "このMODの言語を設定します。Auto を選択すると、ゲーム内の設定とシステムの設定言語に基づいて自動的に選択されます。",
+    "ShowFloatingButtonLabel": "Floating Button",
+    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
     "Version": "バージョン",
     "General": "一般",
     "Default": "デフォルト",

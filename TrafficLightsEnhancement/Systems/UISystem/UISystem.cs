@@ -11,6 +11,7 @@ using Game.Net;
 using Game.SceneFlow;
 using Game.UI;
 using Newtonsoft.Json;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -37,12 +38,26 @@ public partial class UISystem : UISystemBase
 
     private LDTRetirementSystem m_LdtRetirementSystem;
 
+    private Entity m_TrafficLightsAssetEntity = Entity.Null;
+
     protected override void OnCreate()
     {
         base.OnCreate();
 
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
+
+        NativeArray<Entity> placeablePrefabsList = GetEntityQuery(ComponentType.ReadOnly<Game.Prefabs.PlaceableNetData>()).ToEntityArray(Allocator.Temp);
+        for (int i = 0; i < placeablePrefabsList.Length; i++)
+        {
+            Entity entity = placeablePrefabsList[i];
+            Game.Prefabs.PlaceableNetData placeableNetData = EntityManager.GetComponentData<Game.Prefabs.PlaceableNetData>(entity);
+            if ((placeableNetData.m_SetUpgradeFlags.m_General & Game.Prefabs.CompositionFlags.General.TrafficLights) != 0)
+            {
+                m_TrafficLightsAssetEntity = entity;
+                break;
+            }
+        }
     }
 
     protected override void OnUpdate()
@@ -185,7 +200,10 @@ public partial class UISystem : UISystemBase
         var menu = new {
             title = "Traffic Lights Enhancement",
             image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
-            shouldShowPanel = m_ShouldShowPanel,
+            showPanel = m_ShouldShowPanel,
+            showFloatingButton = Mod.m_Settings != null && Mod.m_Settings.m_ShowFloatingButton,
+            trafficLightsAssetEntityIndex = m_TrafficLightsAssetEntity.Index,
+            trafficLightsAssetEntityVersion = m_TrafficLightsAssetEntity.Version,
             items = new ArrayList()
         };
         if (m_SelectedEntity != Entity.Null)

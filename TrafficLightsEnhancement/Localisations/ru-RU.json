@@ -1,6 +1,8 @@
 {
     "LocaleLabel": "Язык",
     "LocaleDesc": "Выберите язык для этого мода. Если вы выберете \"Авто\", он автоматически выберет язык, на основе настроек игры и системы.",
+    "ShowFloatingButtonLabel": "Floating Button",
+    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
     "Version": "Версия",
     "General": "Общее",
     "Default": "По-умолчанию",

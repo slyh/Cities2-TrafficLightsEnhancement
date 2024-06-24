@@ -1,6 +1,8 @@
 {
     "LocaleLabel": "Język",
     "LocaleDesc": "Ustaw język dla tego moda. Jeśli wybierzesz \"Auto\", automatycznie wybierze język na podstawie ustawień gry i ustawień regionalnych systemu.",
+    "ShowFloatingButtonLabel": "Floating Button",
+    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
     "Version": "Wersja",
     "General": "Ogólne",
     "Default": "Domyślne",

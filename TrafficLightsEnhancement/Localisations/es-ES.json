@@ -1,6 +1,8 @@
 {
     "LocaleLabel": "Idioma",
     "LocaleDesc": "Establece el idioma de este mod. Si eliges \"Auto\", automáticamente seleccionará un idioma basado en tu configuración del juego y la configuración del sistema.",
+    "ShowFloatingButtonLabel": "Floating Button",
+    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
     "Version": "Versión",
     "General": "General",
     "Default": "Por defecto",
