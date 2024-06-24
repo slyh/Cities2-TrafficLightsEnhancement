@@ -12,7 +12,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.1.2f1
+* Compatible with version 1.1.5f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -46,9 +46,9 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Dutch: Jord38, Randy von der Weide and starrysum
 
-* French: PsykotropyK, Edou24 and Clark
+* French: PsykotropyK, Edou24, Clark and rorobuibui
 
-* German: TheL0ki, Simanova86 and Mark
+* German: TheL0ki, Simanova86, Mark and fahei
 
 * Japanese: macoto-hino and amanao
 
@@ -60,7 +60,7 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Russian: Mellaway, BuiIdTheBuilder, Alex Motor and Sivenesis
 
-* Spanish: Fabio Rodriguez
+* Spanish: Fabio Rodriguez and elGendo87
 
 Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.
     </LongDescription>
@@ -73,20 +73,18 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.23" />
+    <ModVersion Value="0.2.24" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Changed when UI bindings are added
+* Translation updates (Credit: Twotoolus-FLY-LShst, Edou24, Alex Motor, rorobuibui, elGendo87, fahei)
 
-* Fixed an issue where vehicles waiting to turn did not trigger the green light (Credit: zimmy🫨, HarryBotter2333)
+* Disabled C2VMPatchedLaneSystem by default
 
-* Removed SubLane and Edge updates
-
-* Translation updates (Credit: Twotoolus-FLY-LShst, RilkeXS)
+* Updated to be compatible with version 1.1.5f1
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

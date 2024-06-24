@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using C2VM.CommonLibraries.LaneSystem;
 using Game.Prefabs;
 using HarmonyLib;
@@ -56,7 +57,7 @@ class Patches
 
     [HarmonyPatch(typeof(Game.UI.InGame.ToolbarUISystem), "Apply")]
     [HarmonyPostfix]
-    static void ToolbarUISystemApply(Game.UI.InGame.ToolbarUISystem __instance, Entity themeEntity, Entity assetMenuEntity, Entity assetCategoryEntity, Entity assetEntity)
+    static void ToolbarUISystemApply(Game.UI.InGame.ToolbarUISystem __instance, List<Entity> themes, List<Entity> packs, Entity assetMenuEntity, Entity assetCategoryEntity, Entity assetEntity)
     {
         UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
         if (__instance.EntityManager.HasComponent<PlaceableNetData>(assetEntity))

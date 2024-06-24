@@ -2,7 +2,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.1.2f1
+* Compatible with version 1.1.5f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -41,9 +41,9 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Dutch: [Jord38](https://github.com/Jord38), [Randy von der Weide](https://crowdin.com/profile/thesonnyx) and [starrysum](https://crowdin.com/profile/starrysum)
 
-* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24) and [Clark](https://crowdin.com/profile/clarkent)
+* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24), [Clark](https://crowdin.com/profile/clarkent) and [rorobuibui](https://crowdin.com/profile/rorobuibui)
 
-* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86) and [Mark](https://crowdin.com/profile/randomkuchen)
+* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen) and [fahei](https://github.com/fahei)
 
 * Japanese: [macoto-hino](https://github.com/macoto-hino) and [amanao](https://crowdin.com/profile/amanao)
 
@@ -55,6 +55,6 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Russian: [Mellaway](https://github.com/Mellaway), [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder), [Alex Motor](https://crowdin.com/profile/orwester) and [Sivenesis](https://crowdin.com/profile/sivenesis)
 
-* Spanish: [Fabio Rodriguez](https://crowdin.com/profile/elwingcr)
+* Spanish: [Fabio Rodriguez](https://crowdin.com/profile/elwingcr) and [elGendo87](https://crowdin.com/profile/elgendo87)
 
 Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.
