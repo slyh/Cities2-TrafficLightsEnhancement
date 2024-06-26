@@ -80,9 +80,11 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Translation updates (Credit: Twotoolus-FLY-LShst, Edou24, Alex Motor, rorobuibui, elGendo87, fahei)
+* Translation updates (Credit: karmel68)
 
 * Added a floating button to toggle the main panel
+
+* Fixed the "no handler registered" error that was preventing the UI from functioning (Credit: Abooda, Bruceyboy24804)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

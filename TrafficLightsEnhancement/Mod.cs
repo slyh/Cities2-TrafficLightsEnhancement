@@ -19,6 +19,8 @@ public class Mod : IMod
 
     public static Unity.Entities.World m_World;
 
+    public static C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem m_UISystem;
+
     public void OnLoad(UpdateSystem updateSystem)
     {
         m_Log.Info($"Loading {m_Id} v{m_InformationalVersion}");
@@ -47,6 +49,8 @@ public class Mod : IMod
 
         updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.LDTRetirementSystem>();
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>(SystemUpdatePhase.UIUpdate);
+
+        m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
     }
 
     public void OnDispose()

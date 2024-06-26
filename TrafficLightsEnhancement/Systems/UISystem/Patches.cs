@@ -16,6 +16,16 @@ class Patches
         C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.CallUpdateLocale();
     }
 
+    [HarmonyPatch(typeof(Game.SceneFlow.UserInterface), "OnReadyForBindings")]
+    [HarmonyPostfix]
+    static void OnReadyForBindings()
+    {
+        if (Mod.m_UISystem != null)
+        {
+            Mod.m_UISystem.AddCallBinding();
+        }
+    }
+
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
     [HarmonyPostfix]
     static void NetToolSystemSetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)
