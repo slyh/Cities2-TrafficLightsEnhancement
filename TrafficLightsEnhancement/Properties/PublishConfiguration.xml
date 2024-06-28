@@ -80,7 +80,7 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Translation updates (Credit: karmel68)
+* Translation updates (Credit: karmel68, Fabio Rodriguez)
 
 * Added a floating button to toggle the main panel
 
