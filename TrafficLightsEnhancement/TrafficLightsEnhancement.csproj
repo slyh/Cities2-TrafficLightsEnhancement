@@ -7,17 +7,10 @@
 
         <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
         <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
-        <Version>0.2.25</Version>
+        <Version>0.2.26</Version>
 
         <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
         <CustomManagedPath></CustomManagedPath>
-
-        <!--Path to the text file where PDX account data is stored which is required to publish the mod-->
-        <!--Keep it outside of project in order to not commit it or share accidentally-->
-        <!--The file should contain 2 lines:-->
-        <!--Your.PDX@Account.login-->
-        <!--Your-PDX-Account-Pa$$word-->
-        <PDXAccountDataPath>$(USERPROFILE)\Desktop\pdx_account.txt</PDXAccountDataPath>
 
         <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
         <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -37,6 +30,9 @@
         <Reference Include="Colossal.Core">
             <Private>false</Private>
         </Reference>
+        <Reference Include="Colossal.IO.AssetDatabase">
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Colossal.Localization">
             <Private>false</Private>
         </Reference>
@@ -52,13 +48,10 @@
         <Reference Include="Colossal.UI">
             <Private>false</Private>
         </Reference>
-        <Reference Include="Colossal.IO.AssetDatabase">
+        <Reference Include="Colossal.UI.Binding">
             <Private>false</Private>
         </Reference>
         <Reference Include="Newtonsoft.Json">
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="UnityEngine.CoreModule">
             <Private>false</Private>
         </Reference>
         <Reference Include="Unity.Burst">
@@ -71,6 +64,9 @@
             <Private>false</Private>
         </Reference>
         <Reference Include="Unity.Mathematics">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
             <Private>false</Private>
         </Reference>
     </ItemGroup>

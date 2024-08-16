@@ -5,11 +5,12 @@ using System.Globalization;
 using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
-using cohtml.Net;
+using Colossal.UI.Binding;
 using Game;
 using Game.Common;
 using Game.Net;
 using Game.SceneFlow;
+using Game.UI;
 using Newtonsoft.Json;
 using Unity.Collections;
 using Unity.Entities;
@@ -18,7 +19,7 @@ using UnityEngine;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public partial class UISystem : GameSystemBase
+public partial class UISystem : UISystemBase
 {
     public bool m_IsLaneManagementToolOpen;
 
@@ -27,8 +28,6 @@ public partial class UISystem : GameSystemBase
     private bool m_ShouldShowPanel;
 
     public Entity m_SelectedEntity;
-
-    private static View m_View;
 
     private int m_Ways;
 
@@ -40,14 +39,32 @@ public partial class UISystem : GameSystemBase
 
     private Entity m_TrafficLightsAssetEntity = Entity.Null;
 
+    private GetterValueBinding<string> m_MainPanelBinding;
+
+    private static GetterValueBinding<string> m_LocaleBinding;
+
     protected override void OnCreate()
     {
         base.OnCreate();
 
-        this.AddCallBinding();
-
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
+
+        AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetterMainPanel", GetterMainPanel));
+        AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetterLocale", GetterLocale));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateOption", CallMainPanelUpdateOption));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateValue", CallMainPanelUpdateValue));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelSave", CallMainPanelSave));
+        // AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolOpen", CallLaneDirectionToolOpen));
+        // AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolClose", CallLaneDirectionToolClose));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolReset", CallLaneDirectionToolReset));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolPanelSave", CallLaneDirectionToolPanelSave));
+
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallKeyPress", CallKeyPress));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallTranslatePosition", CallTranslatePosition));
+
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallOpenBrowser", CallOpenBrowser));
     }
 
     protected override void OnUpdate()
@@ -67,29 +84,7 @@ public partial class UISystem : GameSystemBase
                 break;
             }
         }
-        CallMainPanelUpdate();
-    }
-
-    public void AddCallBinding()
-    {
-        m_View = GameManager.instance.userInterface.view.View;
-
-        m_View.BindCall("C2VM-TLE-Call-MainPanel-Update", CallMainPanelUpdate);
-        m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdatePattern", CallMainPanelUpdatePattern);
-        m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateOption", CallMainPanelUpdateOption);
-        m_View.BindCall("C2VM-TLE-Call-MainPanel-UpdateValue", CallMainPanelUpdateValue);
-        m_View.BindCall("C2VM-TLE-Call-MainPanel-Save", CallMainPanelSave);
-        m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Open", CallLaneDirectionToolOpen);
-        m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Close", CallLaneDirectionToolClose);
-        m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Reset", CallLaneDirectionToolReset);
-        m_View.BindCall("C2VM-TLE-Call-LaneDirectionTool-Panel-Save", CallLaneDirectionToolPanelSave);
-
-        m_View.BindCall("C2VM-TLE-Call-KeyPress", CallKeyPress);
-        m_View.BindCall("C2VM-TLE-Call-TranslatePosition", CallTranslatePosition);
-
-        m_View.BindCall("C2VM-TLE-Call-UpdateLocale", CallUpdateLocale);
-
-        m_View.BindCall("C2VM-TLE-Call-OpenBrowser", CallOpenBrowser);
+        m_MainPanelBinding.Update();
     }
 
     public void ShouldShowPanel(bool should)
@@ -97,7 +92,7 @@ public partial class UISystem : GameSystemBase
         m_ShouldShowPanel = should;
         if (m_ShouldShowPanel)
         {
-            UpdateMainPanel();
+            m_MainPanelBinding.Update();
         }
         else
         {
@@ -105,43 +100,48 @@ public partial class UISystem : GameSystemBase
         }
     }
 
-    public static void CallUpdateLocale()
+    public static string GetLocale()
+    {
+        string locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name);
+        if (Mod.m_Settings != null && Mod.m_Settings.m_Locale != "auto")
+        {
+            locale = Mod.m_Settings.m_Locale;
+        }
+        return locale;
+    }
+
+    public static string GetterLocale()
     {
         var result = new
         {
-            locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name)
+            locale = GetLocale(),
         };
 
-        if (Mod.m_Settings != null && Mod.m_Settings.m_Locale != "auto")
-        {
-            result = new
-            {
-                locale = Mod.m_Settings.m_Locale,
-            };
-        }
+        return JsonConvert.SerializeObject(result);
+    }
 
-        Localisations.Helper localisationsHelper = new Localisations.Helper(result.locale);
+    public static void UpdateLocale()
+    {
+        Localisations.Helper localisationsHelper = new Localisations.Helper(GetLocale());
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
 
-        if (m_View != null)
+        if (m_LocaleBinding != null)
         {
-            m_View.TriggerEvent("C2VM-TLE-Event-UpdateLocale", JsonConvert.SerializeObject(result));
+            m_LocaleBinding.Update();
         }
     }
 
-    protected void CallOpenBrowser(string jsonString)
+    protected string CallOpenBrowser(string jsonString)
     {
-        var keyDefinition = new { key = "", value = "" };
+        var keyDefinition = new {
+            data = new { key = "", value = "" }
+        };
         var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
-        System.Diagnostics.Process.Start(parsedKey.value);
+        System.Diagnostics.Process.Start(parsedKey.data.value);
+        return "";
     }
 
-    protected void CallMainPanelUpdate()
-    {
-        UpdateMainPanel();
-    }
-
-    protected void CallMainPanelUpdatePattern(string input)
+    protected string CallMainPanelUpdatePattern(string input)
     {
         Types.ItemRadio pattern = JsonConvert.DeserializeObject<Types.ItemRadio>(input);
         m_CustomTrafficLights.SetPattern(((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF0000) | uint.Parse(pattern.value));
@@ -150,10 +150,11 @@ public partial class UISystem : GameSystemBase
             m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern(m_Ways) & ~TrafficLightPatterns.Pattern.CentreTurnGiveWay);
         }
         UpdateEntity();
-        UpdateMainPanel();
+        m_MainPanelBinding.Update();
+        return "";
     }
 
-    protected void CallMainPanelUpdateOption(string input)
+    protected string CallMainPanelUpdateOption(string input)
     {
         Types.ItemCheckbox option = JsonConvert.DeserializeObject<Types.ItemCheckbox>(input);
         foreach (TrafficLightPatterns.Pattern pattern in Enum.GetValues(typeof(TrafficLightPatterns.Pattern)))
@@ -168,10 +169,11 @@ public partial class UISystem : GameSystemBase
             }
         }
         UpdateEntity();
-        UpdateMainPanel();
+        m_MainPanelBinding.Update();
+        return "";
     }
 
-    protected void CallMainPanelUpdateValue(string jsonString)
+    protected string CallMainPanelUpdateValue(string jsonString)
     {
         var keyDefinition = new { key = "" };
         var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
@@ -182,17 +184,19 @@ public partial class UISystem : GameSystemBase
             m_CustomTrafficLights.SetPedestrianPhaseDurationMultiplier(parsedValue.value);
         }
         UpdateEntity();
-        UpdateMainPanel();
+        m_MainPanelBinding.Update();
+        return "";
     }
 
-    protected void CallMainPanelSave(string value)
+    protected string CallMainPanelSave(string value)
     {
         ChangeSelectedEntity(Entity.Null);
-        UpdateMainPanel();
-        CallLaneDirectionToolClose("");
+        m_MainPanelBinding.Update();
+        // CallLaneDirectionToolClose("");
+        return "";
     }
 
-    protected void UpdateMainPanel()
+    protected string GetterMainPanel()
     {
         var menu = new {
             title = "Traffic Lights Enhancement",
@@ -249,7 +253,7 @@ public partial class UISystem : GameSystemBase
                         max = 10,
                         step = 0.5f,
                         value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
-                        engineEventName = "C2VM-TLE-Call-MainPanel-UpdateValue"
+                        engineEventName = "C2VM.TLE.CallMainPanelUpdateValue"
                     });
                 }
             }
@@ -257,9 +261,9 @@ public partial class UISystem : GameSystemBase
             if (m_LdtRetirementSystem.m_UnmigratedNodeCount > 0)
             {
                 menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
-                menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Reset"});
+                menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM.TLE.CallLaneDirectionToolReset"});
                 menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LDTRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM-TLE-Call-OpenBrowser"});
+                menu.items.Add(new Types.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LDTRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM.TLE.CallOpenBrowser"});
                 menu.items.Add(default(Types.ItemDivider));
             }
             else if (Mod.m_Settings != null && !Mod.m_Settings.m_HasReadLdtRetirementNotice)
@@ -267,7 +271,7 @@ public partial class UISystem : GameSystemBase
                 menu.items.Add(new Types.ItemNotification{label = "LdtRetirementNotice", notificationType = "notice"});
                 menu.items.Add(default(Types.ItemDivider));
             }
-            menu.items.Add(new Types.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM-TLE-Call-MainPanel-Save"});
+            menu.items.Add(new Types.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM.TLE.CallMainPanelSave"});
             if (m_ShowNotificationUnsaved)
             {
                 menu.items.Add(default(Types.ItemDivider));
@@ -283,32 +287,35 @@ public partial class UISystem : GameSystemBase
         menu.items.Add(new Types.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
         #endif
         string result = JsonConvert.SerializeObject(menu);
-        m_View.TriggerEvent("C2VM-TLE-Event-UpdateMainPanel", result);
+        return result;
     }
 
-    protected void CallLaneDirectionToolOpen(string input)
-    {
-        m_IsLaneManagementToolOpen = true;
-        UpdateLaneDirectionTool();
-        UpdateMainPanel();
-        UpdateEntity();
-    }
+    // protected string CallLaneDirectionToolOpen(string input)
+    // {
+    //     m_IsLaneManagementToolOpen = true;
+    //     UpdateLaneDirectionTool();
+    //     UpdateMainPanel();
+    //     UpdateEntity();
+    //     return "";
+    // }
 
-    protected void CallLaneDirectionToolClose(string input)
-    {
-        m_IsLaneManagementToolOpen = false;
-        UpdateLaneDirectionTool();
-        UpdateMainPanel();
-        UpdateEntity();
-    }
+    // protected string CallLaneDirectionToolClose(string input)
+    // {
+    //     m_IsLaneManagementToolOpen = false;
+    //     UpdateLaneDirectionTool();
+    //     UpdateMainPanel();
+    //     UpdateEntity();
+    //     return "";
+    // }
 
-    protected void CallLaneDirectionToolReset(string input)
+    protected string CallLaneDirectionToolReset(string input)
     {
         if (m_SelectedEntity != Entity.Null)
         {
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
-            CallLaneDirectionToolClose("");
+            // CallLaneDirectionToolClose("");
         }
+        return "";
     }
 
     protected void UpdateLaneDirectionTool()
@@ -381,7 +388,7 @@ public partial class UISystem : GameSystemBase
                             new Types.ItemButton
                             {
                                 label = "Save",
-                                engineEventName = "C2VM-TLE-Call-LaneDirectionTool-Panel-Save"
+                                engineEventName = "C2VM.TLE.CallLaneDirectionToolPanelSave"
                             }
                         ]
                     });
@@ -419,16 +426,16 @@ public partial class UISystem : GameSystemBase
             }
         }
 
-        m_View.TriggerEvent("C2VM-TLE-Event-UpdateLaneDirectionTool", JsonConvert.SerializeObject(result));
+        // m_View.TriggerEvent("C2VM-TLE-Event-UpdateLaneDirectionTool", JsonConvert.SerializeObject(result));
     }
 
-    protected void CallLaneDirectionToolPanelSave(string input)
+    protected string CallLaneDirectionToolPanelSave(string input)
     {
         Types.LaneDirection[] panel = JsonConvert.DeserializeObject<Types.LaneDirection[]>(input);
 
         if (m_SelectedEntity == Entity.Null)
         {
-            return;
+            return "";
         }
 
         foreach (Types.LaneDirection lane in panel)
@@ -493,9 +500,11 @@ public partial class UISystem : GameSystemBase
         }
 
         UpdateEntity();
+
+        return "";
     }
 
-    protected void CallKeyPress(string value)
+    protected string CallKeyPress(string value)
     {
         var definition = new { ctrlKey = false, key = "" };
         var keyPressEvent = JsonConvert.DeserializeAnonymousType(value, definition);
@@ -503,13 +512,14 @@ public partial class UISystem : GameSystemBase
         {
             if (m_IsLaneManagementToolOpen)
             {
-                CallLaneDirectionToolClose("");
+                // CallLaneDirectionToolClose("");
             }
             else if (!m_SelectedEntity.Equals(Entity.Null))
             {
                 CallMainPanelSave("");
             }
         }
+        return "";
     }
 
     protected string CallTranslatePosition(string input)
@@ -558,7 +568,7 @@ public partial class UISystem : GameSystemBase
         if (entity != m_SelectedEntity && entity != Entity.Null && m_SelectedEntity != Entity.Null)
         {
             m_ShowNotificationUnsaved = true;
-            UpdateMainPanel();
+            m_MainPanelBinding.Update();
             return;
         }
 
@@ -623,9 +633,9 @@ public partial class UISystem : GameSystemBase
 
             ResetMainPanelState();
 
-            UpdateMainPanel();
+            m_MainPanelBinding.Update();
 
-            UpdateLaneDirectionTool();
+            // UpdateLaneDirectionTool();
         }
     }
 }

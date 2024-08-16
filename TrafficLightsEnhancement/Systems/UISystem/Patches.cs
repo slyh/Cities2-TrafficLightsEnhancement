@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using C2VM.CommonLibraries.LaneSystem;
 using Game.Prefabs;
 using HarmonyLib;
 using Unity.Entities;
@@ -13,17 +12,7 @@ class Patches
     [HarmonyPostfix]
     static void NotifyActiveDictionaryChanged()
     {
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.CallUpdateLocale();
-    }
-
-    [HarmonyPatch(typeof(Game.SceneFlow.UserInterface), "OnReadyForBindings")]
-    [HarmonyPostfix]
-    static void OnReadyForBindings()
-    {
-        if (Mod.m_UISystem != null)
-        {
-            Mod.m_UISystem.AddCallBinding();
-        }
+        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
     }
 
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
