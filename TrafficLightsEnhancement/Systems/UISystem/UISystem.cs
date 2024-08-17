@@ -50,16 +50,13 @@ public partial class UISystem : UISystemBase
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
 
-        AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetterMainPanel", GetterMainPanel));
-        AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetterLocale", GetterLocale));
+        AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
+        AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetLocale", GetLocale));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateOption", CallMainPanelUpdateOption));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateValue", CallMainPanelUpdateValue));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelSave", CallMainPanelSave));
-        // AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolOpen", CallLaneDirectionToolOpen));
-        // AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolClose", CallLaneDirectionToolClose));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolReset", CallLaneDirectionToolReset));
-        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallLaneDirectionToolPanelSave", CallLaneDirectionToolPanelSave));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallKeyPress", CallKeyPress));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallTranslatePosition", CallTranslatePosition));
@@ -100,7 +97,7 @@ public partial class UISystem : UISystemBase
         }
     }
 
-    public static string GetLocale()
+    public static string GetLocaleCode()
     {
         string locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name);
         if (Mod.m_Settings != null && Mod.m_Settings.m_Locale != "auto")
@@ -110,11 +107,11 @@ public partial class UISystem : UISystemBase
         return locale;
     }
 
-    public static string GetterLocale()
+    public static string GetLocale()
     {
         var result = new
         {
-            locale = GetLocale(),
+            locale = GetLocaleCode(),
         };
 
         return JsonConvert.SerializeObject(result);
@@ -122,7 +119,7 @@ public partial class UISystem : UISystemBase
 
     public static void UpdateLocale()
     {
-        Localisations.Helper localisationsHelper = new Localisations.Helper(GetLocale());
+        Localisations.Helper localisationsHelper = new Localisations.Helper(GetLocaleCode());
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
 
         if (m_LocaleBinding != null)
@@ -196,7 +193,7 @@ public partial class UISystem : UISystemBase
         return "";
     }
 
-    protected string GetterMainPanel()
+    protected string GetMainPanel()
     {
         var menu = new {
             title = "Traffic Lights Enhancement",
@@ -290,24 +287,6 @@ public partial class UISystem : UISystemBase
         return result;
     }
 
-    // protected string CallLaneDirectionToolOpen(string input)
-    // {
-    //     m_IsLaneManagementToolOpen = true;
-    //     UpdateLaneDirectionTool();
-    //     UpdateMainPanel();
-    //     UpdateEntity();
-    //     return "";
-    // }
-
-    // protected string CallLaneDirectionToolClose(string input)
-    // {
-    //     m_IsLaneManagementToolOpen = false;
-    //     UpdateLaneDirectionTool();
-    //     UpdateMainPanel();
-    //     UpdateEntity();
-    //     return "";
-    // }
-
     protected string CallLaneDirectionToolReset(string input)
     {
         if (m_SelectedEntity != Entity.Null)
@@ -315,192 +294,6 @@ public partial class UISystem : UISystemBase
             EntityManager.RemoveComponent<CustomLaneDirection>(m_SelectedEntity);
             // CallLaneDirectionToolClose("");
         }
-        return "";
-    }
-
-    protected void UpdateLaneDirectionTool()
-    {
-        var result = new
-        {
-            buttons = new List<Types.LaneToolButton>(),
-            panels = new List<Types.LaneDirectionToolPanel>()
-        };
-
-        if (m_IsLaneManagementToolOpen && m_SelectedEntity != Entity.Null)
-        {
-            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
-            {
-                DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = EntityManager.GetBuffer<ConnectPositionSource>(m_SelectedEntity);
-                Dictionary<float3, bool> sourceExist = new Dictionary<float3, bool>();
-                for (int i = 0; i < connectPositionSourceBuffer.Length; i++)
-                {
-                    sourceExist.Add(connectPositionSourceBuffer[i].m_Position, true);
-                }
-
-                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer;
-                // Remove CustomLaneDirection that is no longer exists
-                if (EntityManager.HasBuffer<CustomLaneDirection>(m_SelectedEntity))
-                {
-                    customLaneDirectionBuffer = EntityManager.GetBuffer<CustomLaneDirection>(m_SelectedEntity);
-                    for (int i = 0; i < customLaneDirectionBuffer.Length; i++)
-                    {
-                        float3 customLaneDirectionPosition = customLaneDirectionBuffer[i].m_Position;
-                        if (!sourceExist.ContainsKey(customLaneDirectionPosition))
-                        {
-                            customLaneDirectionBuffer.RemoveAt(i);
-                            i--;
-                        }
-                    }
-                }
-                // Build default config if CustomLaneDirection doesn't exist
-                else
-                {
-                    customLaneDirectionBuffer = EntityManager.AddBuffer<CustomLaneDirection>(m_SelectedEntity);
-                    DefaultLaneDirection.Build(ref customLaneDirectionBuffer, ref connectPositionSourceBuffer);
-                }
-
-                for (int i = 0; i < connectPositionSourceBuffer.Length; i++)
-                {
-                    result.buttons.Add(new Types.LaneToolButton(
-                        new Types.WorldPosition
-                        {
-                            x = connectPositionSourceBuffer[i].m_Position.x,
-                            y = connectPositionSourceBuffer[i].m_Position.y,
-                            z = connectPositionSourceBuffer[i].m_Position.z
-                        },
-                        true,
-                        ""
-                    ));
-                    result.panels.Add(new Types.LaneDirectionToolPanel
-                    {
-                        title = "Lane Direction",
-                        image = "Media/Game/Icons/RoadsServices.svg",
-                        visible = true,
-                        position = new Types.WorldPosition
-                        {
-                            x = connectPositionSourceBuffer[i].m_Position.x,
-                            y = connectPositionSourceBuffer[i].m_Position.y,
-                            z = connectPositionSourceBuffer[i].m_Position.z
-                        },
-                        lanes = [],
-                        items =
-                        [
-                            new Types.ItemButton
-                            {
-                                label = "Save",
-                                engineEventName = "C2VM.TLE.CallLaneDirectionToolPanelSave"
-                            }
-                        ]
-                    });
-                    for (int j = i; j < connectPositionSourceBuffer.Length; j++)
-                    {
-                        if (connectPositionSourceBuffer[j].m_Owner != connectPositionSourceBuffer[i].m_Owner || connectPositionSourceBuffer[j].m_GroupIndex != connectPositionSourceBuffer[i].m_GroupIndex)
-                        {
-                            i = j - 1;
-                            break;
-                        }
-                        CustomLaneDirection.Get(customLaneDirectionBuffer, connectPositionSourceBuffer[j].m_Position, connectPositionSourceBuffer[j].m_Tangent, connectPositionSourceBuffer[j].m_Owner, connectPositionSourceBuffer[j].m_GroupIndex, connectPositionSourceBuffer[j].m_LaneIndex, out CustomLaneDirection directionFound);
-                        result.panels[result.panels.Count - 1].lanes.Add(
-                            new Types.LaneDirection
-                            {
-                                position = new Types.WorldPosition
-                                {
-                                    x = connectPositionSourceBuffer[j].m_Position.x,
-                                    y = connectPositionSourceBuffer[j].m_Position.y,
-                                    z = connectPositionSourceBuffer[j].m_Position.z
-                                },
-                                leftHandTraffic = m_CityConfigurationSystem.leftHandTraffic,
-                                label = "Lane " + (j - i + 1).ToString(),
-                                banLeft = directionFound.m_Restriction.m_BanLeft,
-                                banRight = directionFound.m_Restriction.m_BanRight,
-                                banStraight = directionFound.m_Restriction.m_BanStraight,
-                                banUTurn = directionFound.m_Restriction.m_BanUTurn
-                            }
-                        );
-                        if (j == connectPositionSourceBuffer.Length - 1)
-                        {
-                            i = j;
-                        }
-                    }
-                }
-            }
-        }
-
-        // m_View.TriggerEvent("C2VM-TLE-Event-UpdateLaneDirectionTool", JsonConvert.SerializeObject(result));
-    }
-
-    protected string CallLaneDirectionToolPanelSave(string input)
-    {
-        Types.LaneDirection[] panel = JsonConvert.DeserializeObject<Types.LaneDirection[]>(input);
-
-        if (m_SelectedEntity == Entity.Null)
-        {
-            return "";
-        }
-
-        foreach (Types.LaneDirection lane in panel)
-        {
-            CustomLaneDirection direction = new CustomLaneDirection
-            {
-                m_Position = new float3(lane.position.x, lane.position.y, lane.position.z),
-                m_Restriction = new CustomLaneDirection.Restriction
-                {
-                    m_BanLeft = lane.banLeft,
-                    m_BanRight = lane.banRight,
-                    m_BanStraight = lane.banStraight,
-                    m_BanUTurn = lane.banUTurn
-                }
-            };
-
-            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
-            {
-                DynamicBuffer<ConnectPositionSource> sourcePosBuffer = EntityManager.GetBuffer<ConnectPositionSource>(m_SelectedEntity);
-                for (int i = 0; i < sourcePosBuffer.Length; i++)
-                {
-                    if (sourcePosBuffer[i].m_Position.Equals(direction.m_Position))
-                    {
-                        direction.m_Tangent = sourcePosBuffer[i].m_Tangent;
-                        direction.m_Owner = sourcePosBuffer[i].m_Owner;
-                        direction.m_GroupIndex = sourcePosBuffer[i].m_GroupIndex;
-                        direction.m_LaneIndex = sourcePosBuffer[i].m_LaneIndex;
-                        direction.m_Initialised = true;
-                    }
-                }
-            }
-
-            if (!direction.m_Initialised)
-            {
-                continue;
-            }
-
-            if (EntityManager.HasBuffer<CustomLaneDirection>(m_SelectedEntity))
-            {
-                DynamicBuffer<CustomLaneDirection> buffer = EntityManager.GetBuffer<CustomLaneDirection>(m_SelectedEntity);
-                bool foundExistingDirection = false;
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    CustomLaneDirection existingDirection = buffer[i];
-                    if (existingDirection.Equals(direction))
-                    {
-                        buffer[i] = direction;
-                        foundExistingDirection = true;
-                        break;
-                    }
-                }
-                if (!foundExistingDirection)
-                {
-                    buffer.Add(direction);
-                }
-            }
-            else
-            {
-                DynamicBuffer<CustomLaneDirection> buffer = EntityManager.AddBuffer<CustomLaneDirection>(m_SelectedEntity);
-                buffer.Add(direction);
-            }
-        }
-
-        UpdateEntity();
-
         return "";
     }
 
