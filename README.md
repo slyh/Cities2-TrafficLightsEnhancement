@@ -41,9 +41,11 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Dutch: [Jord38](https://github.com/Jord38), [Randy von der Weide](https://crowdin.com/profile/thesonnyx) and [starrysum](https://crowdin.com/profile/starrysum)
 
-* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24), [Clark](https://crowdin.com/profile/clarkent) and [rorobuibui](https://crowdin.com/profile/rorobuibui)
+* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24), [Clark](https://crowdin.com/profile/clarkent), [rorobuibui](https://crowdin.com/profile/rorobuibui) and [Morgan Touverey Quilling](https://crowdin.com/profile/mtouverey)
 
-* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen) and [fahei](https://github.com/fahei)
+* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen), [fahei](https://github.com/fahei) and [KaeseKuchen](https://crowdin.com/profile/kaesemitkuchen)
+
+* Italian: [Stefano](https://crowdin.com/profile/furios)
 
 * Japanese: [macoto-hino](https://github.com/macoto-hino) and [amanao](https://crowdin.com/profile/amanao)
 

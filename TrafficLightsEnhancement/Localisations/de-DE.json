@@ -1,8 +1,8 @@
 {
     "LocaleLabel": "Sprache",
     "LocaleDesc": "Wähle die Sprache für diesen Mod aus. Wenn du \"Auto\" wählst, wird die Sprache automatisch anhand der in-game-Einstellungen und der Systemsprache gewählt.",
-    "ShowFloatingButtonLabel": "Floating Button",
-    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
+    "ShowFloatingButtonLabel": "Schwebender Button",
+    "ShowFloatingButtonDesc": "Einen Button in der oberen linken Ecke des Bildschirms anzeigen, um das Hauptfenster ein- oder auszuschalten.",
     "Version": "Version",
     "General": "Allgemein",
     "Default": "Standard",

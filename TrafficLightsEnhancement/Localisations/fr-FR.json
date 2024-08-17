@@ -1,8 +1,8 @@
 {
     "LocaleLabel": "Langue",
     "LocaleDesc": "Définissez la langue pour ce mod. Si vous choisissez \"Auto\", il sélectionnera automatiquement une langue en fonction de vos paramètres en jeu et de votre système local.",
-    "ShowFloatingButtonLabel": "Floating Button",
-    "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
+    "ShowFloatingButtonLabel": "Bouton flottant",
+    "ShowFloatingButtonDesc": "Afficher un bouton dans le coin supérieur gauche de l’écran pour montrer/cacher le panneau principal.",
     "Version": "Version",
     "General": "Général",
     "Default": "Défaut",

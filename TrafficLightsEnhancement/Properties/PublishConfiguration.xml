@@ -46,9 +46,11 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * Dutch: Jord38, Randy von der Weide and starrysum
 
-* French: PsykotropyK, Edou24, Clark and rorobuibui
+* French: PsykotropyK, Edou24, Clark, rorobuibui and Morgan Touverey Quilling
 
-* German: TheL0ki, Simanova86, Mark and fahei
+* German: TheL0ki, Simanova86, Mark, fahei and KaeseKuchen
+
+* Italian: Stefano
 
 * Japanese: macoto-hino and amanao
 
@@ -83,6 +85,8 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
 * Added a warning for users with very old versions of TLE installed
 
 * Moved to official UI binding API
+
+* Translation updates (Credit: TwotoolusFLY_LSh.st, Stefano, Morgan Touverey Quilling, KaeseKuchen)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
