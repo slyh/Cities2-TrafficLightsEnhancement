@@ -249,12 +249,6 @@ public class TrafficLightPatterns {
         
         if (((uint)pattern & (uint)Pattern.AlwaysGreenKerbsideTurn) != 0)
         {
-            ushort allGroupMask = 0;
-            for (int i = 0; i < groups.Length; i++)
-            {
-                allGroupMask |= groups[i].m_GroupMask;
-            }
-
             for (int i = 0; i < groups.Length; i++)
             {
                 LaneGroup group = groups[i];
@@ -263,9 +257,15 @@ public class TrafficLightPatterns {
                     (!leftHandTraffic && group.m_IsTurnRight)
                 )
                 {
-                    group.m_GroupMask |= allGroupMask;
-                    group.m_IsYield = true;
-                    group.m_IgnorePriority = true;
+                    for (int j = 0; j < groupCount; j++)
+                    {
+                        if ((group.m_GroupMask & (1 << j)) == 0)
+                        {
+                            group.m_YieldGroupMask |= (ushort)(1 << j);
+                            group.m_IgnorePriorityGroupMask |= (ushort)(1 << j);
+                            group.m_GroupMask |= (ushort)(1 << j);
+                        }
+                    }
                 }
                 groups[i] = group;
             }
@@ -281,7 +281,7 @@ public class TrafficLightPatterns {
                     (!leftHandTraffic && group.m_IsTurnLeft)
                 )
                 {
-                    group.m_IsYield = true;
+                    group.m_YieldGroupMask = group.m_GroupMask;
                 }
                 groups[i] = group;
             }

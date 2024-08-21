@@ -39,11 +39,11 @@ public class Settings : ModSetting
     {
         get
         {
-            #if SHOW_CANARY_BUILD_WARNING
-            return "Canary";
-            #else
+            if (!IsNotCanary())
+            {
+                return "Canary";
+            }
             return "Alpha";
-            #endif
         }
     }
 
@@ -79,8 +79,29 @@ public class Settings : ModSetting
         }
     }
 
+    [SettingsUISection("Version")]
+    [SettingsUIButton]
+    [SettingsUIConfirmation(null, null)]
+    [SettingsUIHideByCondition(typeof(Settings), "IsNotCanary")]
+    public bool m_SuppressCanaryWarning
+    {
+        get
+        {
+            return false;
+        }
+        set
+        {
+            if (value == true)
+            {
+                m_SuppressCanaryWarningVersion = Mod.m_InformationalVersion;
+            }
+        }
+    }
+
     [SettingsUIHidden]
     public bool m_HasReadLdtRetirementNotice { get; set; }
+
+    public string m_SuppressCanaryWarningVersion;
 
     public Settings(IMod mod) : base(mod)
     {
@@ -95,6 +116,7 @@ public class Settings : ModSetting
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;
         m_HasReadLdtRetirementNotice = false;
+        m_SuppressCanaryWarningVersion = "";
     }
 
     public override void Apply()
@@ -130,11 +152,11 @@ public class Settings : ModSetting
                 value = "fr-FR",
                 displayName = "French"
             },
-            // new DropdownItem<string>
-            // {
-            //     value = "it-IT",
-            //     displayName = "Italian"
-            // },
+            new DropdownItem<string>
+            {
+                value = "it-IT",
+                displayName = "Italian"
+            },
             new DropdownItem<string>
             {
                 value = "ja-JP",
@@ -192,5 +214,10 @@ public class Settings : ModSetting
     public bool IsNotInGame()
     {
         return GameManager.instance.gameMode != Game.GameMode.Game;
+    }
+
+    public bool IsNotCanary()
+    {
+        return !Mod.IsCanary();
     }
 }

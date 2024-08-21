@@ -196,7 +196,7 @@ public partial class UISystem : UISystemBase
     protected string GetMainPanel()
     {
         var menu = new {
-            title = "Traffic Lights Enhancement",
+            title = Mod.IsCanary() ? "TLE Canary" : "Traffic Lights Enhancement",
             image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
             showPanel = m_ShouldShowPanel,
             showFloatingButton = Mod.m_Settings != null && Mod.m_Settings.m_ShowFloatingButton,
@@ -279,10 +279,11 @@ public partial class UISystem : UISystemBase
         {
             menu.items.Add(new Types.ItemMessage{message = "PleaseSelectJunction"});
         }
-        #if SHOW_CANARY_BUILD_WARNING
-        menu.items.Add(default(Types.ItemDivider));
-        menu.items.Add(new Types.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
-        #endif
+        if (Mod.IsCanary() && Mod.m_Settings != null && Mod.m_Settings.m_SuppressCanaryWarningVersion != Mod.m_InformationalVersion)
+        {
+            menu.items.Add(default(Types.ItemDivider));
+            menu.items.Add(new Types.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
+        }
         string result = JsonConvert.SerializeObject(menu);
         return result;
     }

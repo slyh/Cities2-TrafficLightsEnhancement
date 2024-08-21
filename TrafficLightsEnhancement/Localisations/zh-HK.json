@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "所有節點將被更新，此模組的預設選項會套用至所有未經設定的交通燈。",
     "ReleaseChannel": "發布版本",
     "LdtMigrationNotificationTitle": "來自 TLE 的重要訊息",
-    "LdtMigrationNotificationText": "點擊此處閱讀（在網頁瀏覽器中開啟）"
+    "LdtMigrationNotificationText": "點擊此處閱讀（在網頁瀏覽器中開啟）",
+    "SuppressCanaryWarningLabel": "暫停Canary警告",
+    "SuppressCanaryWarningDesc": "在模組更新後，該警告會被重新啟用。"
 }

@@ -113,6 +113,7 @@ public class Helper
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ReleaseChannel"), this.GetString("ReleaseChannel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_TleVersion"), Mod.m_Id);
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_Id);
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LocaleOption"), this.GetString("LocaleDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ShowFloatingButton"), this.GetString("ShowFloatingButtonDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingDesc"));
@@ -122,7 +123,9 @@ public class Helper
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ReleaseChannel"), Mod.m_Settings.m_ReleaseChannel);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_TleVersion"), Mod.m_InformationalVersion);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion);
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));
+        dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
         dictionary.Add("Menu.NOTIFICATION_TITLE[C2VM.TLE.LdtMigrationNotificationTitle]", this.GetString("LdtMigrationNotificationTitle"));
         dictionary.Add("Menu.NOTIFICATION_DESCRIPTION[C2VM.TLE.LdtMigrationNotificationText]", this.GetString("LdtMigrationNotificationText"));
     }

@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "All nodes will be updated. The default settings in this mod will apply to all traffic lights without custom configurations.",
     "ReleaseChannel": "Release Channel",
     "LdtMigrationNotificationTitle": "Important message from Traffic Lights Enhancement",
-    "LdtMigrationNotificationText": "Click here to read (Open in web browser)"
+    "LdtMigrationNotificationText": "Click here to read (Open in web browser)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

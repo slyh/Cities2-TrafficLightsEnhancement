@@ -62,4 +62,13 @@ public class Mod : IMod
     {
         m_Log.Info(nameof(OnDispose));
     }
+
+    public static bool IsCanary()
+    {
+        #if SHOW_CANARY_BUILD_WARNING
+        return true;
+        #else
+        return false;
+        #endif
+    }
 }

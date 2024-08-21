@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "Tous les nœuds seront mis à jour. Les paramètres par défaut de ce mod s'appliquent à tous les feux de signalisation sans configuration personnalisée.",
     "ReleaseChannel": "Version stable",
     "LdtMigrationNotificationTitle": "Message important de Traffic Lights Enhancement",
-    "LdtMigrationNotificationText": "Cliquez ici pour lire (Ouvrir dans le navigateur Web)"
+    "LdtMigrationNotificationText": "Cliquez ici pour lire (Ouvrir dans le navigateur Web)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "Wszystkie węzły zostaną zaktualizowane. Domyślne ustawienia w tym modzie zostaną ustawione do wszystkich sygnalizacji świetlnych bez konfiguracji.",
     "ReleaseChannel": "Wersja wydania",
     "LdtMigrationNotificationTitle": "Ważna wiadomość od Traffic Lights Enhancement",
-    "LdtMigrationNotificationText": "Kliknij tutaj, aby przeczytać. (Otwórz w przeglądarce)"
+    "LdtMigrationNotificationText": "Kliknij tutaj, aby przeczytać. (Otwórz w przeglądarce)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

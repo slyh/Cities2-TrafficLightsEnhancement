@@ -75,18 +75,16 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.26" />
+    <ModVersion Value="0.2.27" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.1.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Added a warning for users with very old versions of TLE installed
+* Allow users to temporarily suppress canary warnings
 
-* Moved to official UI binding API
-
-* Translation updates (Credit: TwotoolusFLY_LSh.st, Stefano, Morgan Touverey Quilling, KaeseKuchen)
+* Improved handling of the IgnorePriority flag (related to issue #95)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "Все узлы будут обновлены. Настройки по умолчанию в этом моде будут применяться ко всем светофорам без пользовательских настроек.",
     "ReleaseChannel": "Канал выпуска",
     "LdtMigrationNotificationTitle": "Важное сообщение от Enhancement Traffic Lights",
-    "LdtMigrationNotificationText": "Нажмите здесь, чтобы прочитать (Открыть в браузере)"
+    "LdtMigrationNotificationText": "Нажмите здесь, чтобы прочитать (Открыть в браузере)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

@@ -318,16 +318,16 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     if ((value.m_GroupMask & (1 << trafficLights.m_CurrentSignalGroup - 1)) != 0)
                     {
                         // Reduce priority if the lane has IgnorePriority flag
-                        if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.IgnorePriority) != 0)
+                        if ((extraLaneSignal.m_IgnorePriorityGroupMask & (1 << trafficLights.m_CurrentSignalGroup - 1)) != 0)
                         {
                             value.m_Priority = value.m_Default;
                         }
 
                         // Stop pedestrian phase from hogging the green light
-                        if ((customTrafficLights.m_PedestrianPhaseGroupMask & value.m_GroupMask) != 0)
-                        {
-                            value.m_Priority = value.m_Default;
-                        }
+                        // if ((customTrafficLights.m_PedestrianPhaseGroupMask & value.m_GroupMask) != 0)
+                        // {
+                        //     value.m_Priority = value.m_Default;
+                        // }
                     }
 
                     if (value.m_Priority > num)
@@ -559,12 +559,9 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
 
         LaneSignalType goSignalType = LaneSignalType.Go;
 
-        if ((extraLaneSignal.m_Flags & ExtraLaneSignal.Flags.Yield) != 0)
+        if ((extraLaneSignal.m_YieldGroupMask & (1 << trafficLights.m_CurrentSignalGroup - 1)) != 0)
         {
             goSignalType = LaneSignalType.Yield;
-            #if VERBOSITY_DEBUG
-            System.Console.WriteLine($"UpdateLaneSignal goSignalType = LaneSignalType.Yield");
-            #endif
         }
 
         switch (trafficLights.m_State)

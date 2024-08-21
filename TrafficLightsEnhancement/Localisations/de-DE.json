@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "Alle Kreuzungen (Knoten) werden aktualisiert. Die Standardeinstellungen in diesem Mod gelten für alle Ampeln ohne benutzerdefinierte Konfigurationen.",
     "ReleaseChannel": "Veröffentlichungskanal",
     "LdtMigrationNotificationTitle": "Wichtige Nachricht von Traffic Lights Enhancement",
-    "LdtMigrationNotificationText": "Klicke hier, um weiterzulesen (im Webbrowser öffnen)"
+    "LdtMigrationNotificationText": "Klicke hier, um weiterzulesen (im Webbrowser öffnen)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

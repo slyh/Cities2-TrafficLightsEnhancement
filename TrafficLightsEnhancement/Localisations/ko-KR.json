@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "모든 노드가 업데이트 됩니다. 이 기본설정은 사용자 정의 구성이 없는 모든 신호등에 적용됩니다.",
     "ReleaseChannel": "출시 단계",
     "LdtMigrationNotificationTitle": "TLE 중요사항 메시지",
-    "LdtMigrationNotificationText": "클릭하여 읽기 (웹 브라우저에서 열기)"
+    "LdtMigrationNotificationText": "클릭하여 읽기 (웹 브라우저에서 열기)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }

@@ -17,5 +17,7 @@
     "ForceAllNodesUpdateWarning": "Todos los nodos se actualizarán. La configuración por defecto de este mod se aplicará a todos los semáforos sin configuraciones personalizadas.",
     "ReleaseChannel": "Canal de lanzamientos",
     "LdtMigrationNotificationTitle": "Mensaje importante de Traffic Lights Enhancement",
-    "LdtMigrationNotificationText": "Haga clic aquí para leer (Abrir en el navegador web)"
+    "LdtMigrationNotificationText": "Haga clic aquí para leer (Abrir en el navegador web)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }
