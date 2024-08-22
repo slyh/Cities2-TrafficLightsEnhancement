@@ -35,11 +35,11 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
         {
             reader.Read(out uint flags);
             m_Flags = (Flags)flags;
-            if (m_Flags == Flags.Yield)
+            if ((m_Flags & Flags.Yield) != 0)
             {
                 m_YieldGroupMask = ushort.MaxValue;
             }
-            if (m_Flags == Flags.IgnorePriority)
+            if ((m_Flags & Flags.IgnorePriority) != 0)
             {
                 m_IgnorePriorityGroupMask = ushort.MaxValue;
             }
