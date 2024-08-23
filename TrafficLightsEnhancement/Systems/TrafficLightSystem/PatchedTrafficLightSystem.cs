@@ -569,7 +569,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
             case Game.Net.TrafficLightState.Beginning:
                 if ((laneSignal.m_GroupMask & num2) != 0)
                 {
-                    if (laneSignal.m_Signal != LaneSignalType.Go)
+                    if (laneSignal.m_Signal != goSignalType)
                     {
                         laneSignal.m_Signal = LaneSignalType.Yield;
                     }
@@ -603,7 +603,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                         laneSignal.m_Signal = LaneSignalType.Stop;
                     }
                 }
-                else if (laneSignal.m_Signal == LaneSignalType.Go)
+                else if (laneSignal.m_Signal == goSignalType)
                 {
                     if ((laneSignal.m_GroupMask & num2) == 0)
                     {
@@ -628,7 +628,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
 
                 break;
             case Game.Net.TrafficLightState.Ending:
-                if (laneSignal.m_Signal == LaneSignalType.Go)
+                if (laneSignal.m_Signal == goSignalType)
                 {
                     if ((laneSignal.m_GroupMask & num2) == 0)
                     {
@@ -642,7 +642,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
 
                 break;
             case Game.Net.TrafficLightState.Changing:
-                if (laneSignal.m_Signal != LaneSignalType.Go || (laneSignal.m_GroupMask & num2) == 0)
+                if (laneSignal.m_Signal != goSignalType || (laneSignal.m_GroupMask & num2) == 0)
                 {
                     laneSignal.m_Signal = LaneSignalType.Stop;
                 }

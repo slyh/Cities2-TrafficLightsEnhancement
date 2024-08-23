@@ -82,9 +82,13 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Allow users to temporarily suppress canary warnings
+* Allow users to temporarily suppress canary warnings (Idea: qualiall)
 
-* Improved handling of the IgnorePriority flag (related to issue #95)
+* Improved handling of the IgnorePriority flag (related to issue #95; regression possible)
+
+* Seamless transition between phases when "Allow Turning on Red" is enabled
+
+* Translation updates (Credit: karmel68, elGendo87)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />
