@@ -1,0 +1,23 @@
+{
+    "LocaleLabel": "Lingua",
+    "LocaleDesc": "Imposta la lingua per questa mod. Se scegli \"Auto\", selezionerà automaticamente una lingua in base alle tue impostazioni di gioco e impostazioni di sistema.",
+    "ShowFloatingButtonLabel": "Pulsante mobile",
+    "ShowFloatingButtonDesc": "Mostra un pulsante nell'angolo in alto a sinistra dello schermo per attivare o disattivare il pannello principale.",
+    "Version": "Versione",
+    "General": "Generale",
+    "Default": "Predefinito",
+    "DefaultSplitPhasingLabel": "Fasi separate",
+    "DefaultSplitPhasingDesc": "Impostare tutti i semafori senza configurazioni personalizzate in modalità di stadio. Si applica alle strade di nuova costruzione e si applicherà alle strade esistenti su un aggiornamento dello stato del gioco.",
+    "DefaultAlwaysGreenKerbsideTurnLabel": "Consenti svolta con rosso",
+    "DefaultAlwaysGreenKerbsideTurnDesc": "Impostare tutti i semafori senza configurazioni personalizzate in modalità di stadio. Si applica alle strade di nuova costruzione e si applicherà alle strade esistenti su un aggiornamento dello stato del gioco.",
+    "DefaultExclusivePedestrianLabel": "Fase Pedonale Esclusiva",
+    "DefaultExclusivePedestrianDesc": "Aggiungi una fase pedonale esclusiva a tutti i semafori senza configurazioni personalizzate. Si applica alle strade di nuova costruzione e si applicherà alle strade esistenti su un aggiornamento dello stato del gioco.",
+    "ForceAllNodesUpdateLabel": "Forza l'aggiornamento di tutti i nodi",
+    "ForceAllNodesUpdateDesc": "Forza tutti i nodi (giunzioni stradali) ad aggiornare, applicando le impostazioni predefinite in questa mod a tutti i semafori senza configurazioni personalizzate. Questa funzione è disponibile solo dopo che una città è stata caricata.",
+    "ForceAllNodesUpdateWarning": "Tutti i nodi saranno aggiornati. Le impostazioni predefinite in questa mod si applicheranno a tutti i semafori senza configurazioni personalizzate.",
+    "ReleaseChannel": "Canale di rilascio",
+    "LdtMigrationNotificationTitle": "Messaggio importante dal potenziamento delle luci del traffico",
+    "LdtMigrationNotificationText": "Clicca qui per leggere (Apri nel browser web)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+}

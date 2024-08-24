@@ -90,6 +90,12 @@ public static class Types
         public string label;
 
         public string notificationType;
+
+        public string key;
+
+        public string value;
+
+        public string engineEventName;
     }
 
     public struct ItemRange {
@@ -187,12 +193,12 @@ public static class Types
 
     public static ItemRadio MainPanelItemPattern(string label, uint pattern, uint selectedPattern)
     {
-        return new ItemRadio{label = label, key = "pattern", value = pattern.ToString(), engineEventName = "C2VM-TLE-Call-MainPanel-UpdatePattern", isChecked = (selectedPattern & 0xFFFF) == pattern};
+        return new ItemRadio{label = label, key = "pattern", value = pattern.ToString(), engineEventName = "C2VM.TLE.CallMainPanelUpdatePattern", isChecked = (selectedPattern & 0xFFFF) == pattern};
     }
 
     public static ItemCheckbox MainPanelItemOption(string label, uint option, uint selectedPattern)
     {
-        return new ItemCheckbox{label = label, key = option.ToString(), value = ((selectedPattern & option) != 0).ToString(), isChecked = (selectedPattern & option) != 0, engineEventName = "C2VM-TLE-Call-MainPanel-UpdateOption"};
+        return new ItemCheckbox{label = label, key = option.ToString(), value = ((selectedPattern & option) != 0).ToString(), isChecked = (selectedPattern & option) != 0, engineEventName = "C2VM.TLE.CallMainPanelUpdateOption"};
     }
 }
 

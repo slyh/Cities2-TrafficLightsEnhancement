@@ -1,76 +1,124 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net472</TargetFramework>
+        <Configurations>Debug;Release</Configurations>
+        <LangVersion>12.0</LangVersion>
 
-  <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
-    <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
-    <Description>C2VM.TrafficLightsEnhancement</Description>
-    <Version>0.2.18</Version>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>latest</LangVersion>
-    <RestoreAdditionalProjectSources>
-      https://api.nuget.org/v3/index.json;
-      https://nuget.bepinex.dev/v3/index.json;
-      https://nuget.samboy.dev/v3/index.json
-    </RestoreAdditionalProjectSources>
-    <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
-    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
-  </PropertyGroup>
+        <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
+        <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
+        <Version>0.2.27</Version>
 
-  <PropertyGroup Condition="'$(BepInExVersion)' == '6'">
-    <DefineConstants>$(DefineConstants);BEPINEX6</DefineConstants>
-  </PropertyGroup>
+        <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
+        <CustomManagedPath></CustomManagedPath>
 
-  <ItemGroup Condition="'$(BepInExVersion)' == '5' Or '$(BepInExVersion)' == ''">
-    <PackageReference Include="BepInEx.Core" Version="5.*" />
-  </ItemGroup>
+        <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
+        <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
+    </PropertyGroup>
 
-  <ItemGroup Condition="'$(BepInExVersion)' == '6'">
-    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" IncludeAssets="compile" />
-  </ItemGroup>
+    <!--Imports must be after PropertyGroup block-->
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" Condition="'$(DisablePostProcessors)' != 'true'" />
 
-  <ItemGroup>
-    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
-    <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <ReferencePath Condition="Exists('C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/')">C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/</ReferencePath>
-    <ReferencePath Condition="Exists('../../Managed/')">../../Managed/</ReferencePath>
-    <ReferencePath Condition="Exists('../Managed/')">../Managed/</ReferencePath>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="$(ReferencePath)*.dll" Exclude="$(ReferencePath)System.*.dll" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="../CommonLibraries/LaneSystem/LaneSystem.csproj" />
-  </ItemGroup>
-
-  <Target Name="BuildFrontend" BeforeTargets="CoreCompile">
-    <Exec Command="npm install --prefer-offline --no-audit" WorkingDirectory="../TLEFrontend/" />
-    <Exec Command="npm run build" WorkingDirectory="../TLEFrontend/" />
     <ItemGroup>
-      <Compile Include="../TLEFrontend/dist/assets/Payload.cs" />
+        <Reference Include="Game">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="cohtml.Net">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.Core">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.IO.AssetDatabase">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.Localization">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.Logging">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.Mathematics">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.PSI.Common">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.UI">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.UI.Binding">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.Burst">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.Collections">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.Entities">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.Mathematics">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
-    <Message Text="ReferencePath: $(ReferencePath)" Importance="high" />
-  </Target>
 
-  <PropertyGroup Condition="'$(Verbosity)' == 'Verbose'">
-    <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE</DefineConstants>
-  </PropertyGroup>
+    <ItemGroup>
+        <Reference Update="System">
+            <Private>false</Private>
+        </Reference>
+        <Reference Update="System.Core">
+            <Private>false</Private>
+        </Reference>
+        <Reference Update="System.Data">
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
 
-  <PropertyGroup Condition="'$(Verbosity)' == 'Debug'">
-    <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE;VERBOSITY_DEBUG</DefineConstants>
-  </PropertyGroup>
+    <ItemGroup>
+        <None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
+        <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+    </ItemGroup>
 
-  <PropertyGroup Condition="'$(ShowCanaryBuildWarning)' == 'true'">
-    <DefineConstants>$(DefineConstants);SHOW_CANARY_BUILD_WARNING</DefineConstants>
-  </PropertyGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Localisations\**\*.json" />
+    </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Lib.Harmony" Version="2.2.2" />
+        <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
+    </ItemGroup>
+
+    <Target Name="BuildFrontend" BeforeTargets="CoreCompile" Condition="'$(DisableBuildFrontend)' != 'true'">
+        <Exec Command="npm install --prefer-offline --no-audit" WorkingDirectory="..\TLEFrontend\" />
+        <Exec Command="npm run build" WorkingDirectory="..\TLEFrontend\" />
+        <Copy SourceFiles="..\TLEFrontend\dist\C2VM.TLEFrontend.mjs" DestinationFolder="$(OutDir)\" />
+    </Target>
+
+    <Target Name="CopyLaneSystem" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <LaneSystemFiles Include="..\CommonLibraries\LaneSystem\bin\$(Configuration)\$(TargetFramework)\*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(LaneSystemFiles)" DestinationFolder="$(OutDir)\" />
+    </Target>
+
+    <PropertyGroup Condition="'$(Verbosity)' == 'Verbose'">
+        <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Verbosity)' == 'Debug'">
+        <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE;VERBOSITY_DEBUG</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(ShowCanaryBuildWarning)' == 'true'">
+        <DefineConstants>$(DefineConstants);SHOW_CANARY_BUILD_WARNING</DefineConstants>
+    </PropertyGroup>
 </Project>

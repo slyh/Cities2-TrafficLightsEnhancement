@@ -15,38 +15,55 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
 
     private int m_SchemaVersion;
 
-    public Flags m_Flags;
+    private Flags m_Flags;
+
+    public ushort m_YieldGroupMask;
+
+    public ushort m_IgnorePriorityGroupMask;
 
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
         writer.Write(m_SchemaVersion);
-        writer.Write((uint)m_Flags);
+        writer.Write(m_YieldGroupMask);
+        writer.Write(m_IgnorePriorityGroupMask);
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
     {
         reader.Read(out m_SchemaVersion);
-        reader.Read(out uint flags);
-        m_Flags = (Flags)flags;
+        if (m_SchemaVersion == 1)
+        {
+            reader.Read(out uint flags);
+            m_Flags = (Flags)flags;
+            if ((m_Flags & Flags.Yield) != 0)
+            {
+                m_YieldGroupMask = ushort.MaxValue;
+            }
+            if ((m_Flags & Flags.IgnorePriority) != 0)
+            {
+                m_IgnorePriorityGroupMask = ushort.MaxValue;
+            }
+        }
+        else if (m_SchemaVersion == 2)
+        {
+            reader.Read(out m_YieldGroupMask);
+            reader.Read(out m_IgnorePriorityGroupMask);
+        }
     }
 
     public ExtraLaneSignal()
     {
-        m_SchemaVersion = 1;
+        m_SchemaVersion = 2;
         m_Flags = 0;
+        m_YieldGroupMask = 0;
+        m_IgnorePriorityGroupMask = 0;
     }
 
     public ExtraLaneSignal(LaneGroup laneGroup)
     {
-        m_SchemaVersion = 1;
+        m_SchemaVersion = 2;
         m_Flags = 0;
-        if (laneGroup.m_IsYield)
-        {
-            m_Flags |= Flags.Yield;
-        }
-        if (laneGroup.m_IgnorePriority)
-        {
-            m_Flags |= Flags.IgnorePriority;
-        }
+        m_YieldGroupMask = laneGroup.m_YieldGroupMask;
+        m_IgnorePriorityGroupMask = laneGroup.m_IgnorePriorityGroupMask;
     }
 }

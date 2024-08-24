@@ -2,7 +2,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.0.19f1
+* Compatible with version 1.1.7f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -15,27 +15,7 @@ Do you have any suggestion on the translations? You could submit them on [Crowdi
 
 ## Installation
 
-1. If you already have BepInEx 5 or BepInEx 6 installed, proceed to step 4
-
-2. Install [BepInEx 5](https://github.com/BepInEx/BepInEx/releases)
-
-   * Download `BepInEx_x64_5.4.22.0.zip`, and unzip all of its contents into the game's installation directory, typically `C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II`
-
-   * The installation directory should now have the `BepInEx` folder, the `doorstop_config.ini` file, and the `winhttp.dll` file
-
-3. Run the game once, then close it. You can close it when the main menu appears
-
-4. Download the mod
-
-   * For BepInEx 5 users, download [C2VM.TrafficLightsEnhancement-BepInEx5.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx5.zip)
-
-   * For BepInEx 6 users, download [C2VM.TrafficLightsEnhancement-BepInEx6.zip](https://github.com/slyh/Cities2-TrafficLightsEnhancement/releases/latest/download/C2VM.TrafficLightsEnhancement-BepInEx6.zip)
-
-5. Unzip the downloaded file into the `Cities Skylines II/BepInEx/plugins` folder
-
-   * Don't forget to uninstall the old version of the mod to avoid conflicts
-
-6. Launch the game, the mod should be loaded automatically
+You can download the mod from [Paradox Mods](https://mods.paradoxplaza.com/mods/78960/Windows) or install it manually as a [local mod](https://cs2.paradoxwikis.com/Modding_Toolchain#Local_Mods_Location).
 
 The instructions for building the mod yourself are available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/main/BUILD.md).
 
@@ -55,24 +35,28 @@ This mod would not have reached its current stage without help from the followin
 
 Additionally, gratitude is extended to the individuals listed below for their translation contributions:
 
-* Chinese (Simplified): [SuperYYT](https://github.com/SuperYYT)
+* Chinese (Simplified): [SuperYYT](https://github.com/SuperYYT) and [RilkeXS](https://crowdin.com/profile/rilkexs)
 
 * Chinese (Traditional): [angel84326](https://github.com/angel84326) and the Taiwanese Cities: Skylines community
 
-* Dutch: [Jord38](https://github.com/Jord38) and [Randy von der Weide](https://crowdin.com/profile/thesonnyx)
+* Dutch: [Jord38](https://github.com/Jord38), [Randy von der Weide](https://crowdin.com/profile/thesonnyx) and [starrysum](https://crowdin.com/profile/starrysum)
 
-* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24) and [Clark](https://crowdin.com/profile/clarkent)
+* French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24), [Clark](https://crowdin.com/profile/clarkent), [rorobuibui](https://crowdin.com/profile/rorobuibui) and [Morgan Touverey Quilling](https://crowdin.com/profile/mtouverey)
 
-* German: [TheL0ki](https://github.com/TheL0ki) and [Simanova86](https://github.com/Simanova86)
+* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen), [fahei](https://github.com/fahei) and [KaeseKuchen](https://crowdin.com/profile/kaesemitkuchen)
 
-* Japanese: [macoto-hino](https://github.com/macoto-hino)
+* Italian: [Stefano](https://crowdin.com/profile/furios)
+
+* Japanese: [macoto-hino](https://github.com/macoto-hino) and [amanao](https://crowdin.com/profile/amanao)
 
 * Korean: [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything)
 
+* Polish: [karmel68](https://crowdin.com/profile/karmel68)
+
 * Portuguese (Brazil): [djotabr](https://github.com/djotabr) and [lucianoedipo](https://github.com/lucianoedipo)
 
-* Russian: [Mellaway](https://github.com/Mellaway) and [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder)
+* Russian: [Mellaway](https://github.com/Mellaway), [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder), [Alex Motor](https://crowdin.com/profile/orwester) and [Sivenesis](https://crowdin.com/profile/sivenesis)
 
-* Spanish: [Fabio Rodriguez](https://crowdin.com/profile/elwingcr)
+* Spanish: [Fabio Rodriguez](https://crowdin.com/profile/elwingcr) and [elGendo87](https://crowdin.com/profile/elgendo87)
 
 Finally, heartfelt thanks to all the players who have submitted bug reports and suggestions.

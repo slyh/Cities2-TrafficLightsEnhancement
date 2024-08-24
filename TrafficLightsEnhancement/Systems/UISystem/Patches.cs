@@ -4,6 +4,7 @@ using C2VM.CommonLibraries.LaneSystem;
 using Colossal.Randomization;
 using Game.Areas;
 using Game.Net;
+using System.Collections.Generic;
 using Game.Prefabs;
 using HarmonyLib;
 using Unity.Collections;
@@ -14,9 +15,16 @@ namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 [HarmonyPatch]
 class Patches
 {
+    [HarmonyPatch(typeof(Colossal.Localization.LocalizationManager), "NotifyActiveDictionaryChanged")]
+    [HarmonyPostfix]
+    static void NotifyActiveDictionaryChanged()
+    {
+        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+    }
+
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
     [HarmonyPostfix]
-    static void SetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)
+    static void NetToolSystemSetAppliedUpgrade(Game.Tools.NetToolSystem __instance, bool removing)
     {
         if (removing)
         {
@@ -28,26 +36,6 @@ class Patches
 
         if ((flags.m_General & CompositionFlags.General.TrafficLights) != 0)
         {
-            BufferLookup<ConnectPositionSource> connectPositionSourceLookup = __instance.GetBufferLookup<ConnectPositionSource>(false);
-            if (!connectPositionSourceLookup.HasBuffer(entity))
-            {
-                __instance.EntityManager.AddBuffer<ConnectPositionSource>(entity);
-            }
-            else
-            {
-                connectPositionSourceLookup[entity].Clear();
-            }
-
-            BufferLookup<ConnectPositionTarget> connectPositionTargetLookup = __instance.GetBufferLookup<ConnectPositionTarget>(false);
-            if (!connectPositionTargetLookup.HasBuffer(entity))
-            {
-                __instance.EntityManager.AddBuffer<ConnectPositionTarget>(entity);
-            }
-            else
-            {
-                connectPositionTargetLookup[entity].Clear();
-            }
-
             UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
             uiSystem.ChangeSelectedEntity(entity);
 
@@ -217,15 +205,20 @@ class Patches
         }
     }
 
-    [HarmonyPatch(typeof(Game.Audio.AudioManager), "OnGameLoadingComplete")]
+    [HarmonyPatch(typeof(Game.UI.InGame.ToolbarUISystem), "Apply")]
     [HarmonyPostfix]
-    static void OnGameLoadingComplete(Game.Audio.AudioManager __instance, ref Game.GameMode mode)
+    static void ToolbarUISystemApply(Game.UI.InGame.ToolbarUISystem __instance, List<Entity> themes, List<Entity> packs, Entity assetMenuEntity, Entity assetCategoryEntity, Entity assetEntity)
     {
-        if ((mode & Game.GameMode.GameOrEditor) == 0)
+        UISystem uiSystem = __instance.World.GetOrCreateSystemManaged<UISystem>();
+        if (__instance.EntityManager.HasComponent<PlaceableNetData>(assetEntity))
         {
-            return;
+            PlaceableNetData placeableNetData = __instance.EntityManager.GetComponentData<PlaceableNetData>(assetEntity);
+            if ((placeableNetData.m_SetUpgradeFlags.m_General & CompositionFlags.General.TrafficLights) != 0)
+            {
+                uiSystem.ShouldShowPanel(true);
+                return;
+            }
         }
-
-        __instance.World.GetOrCreateSystem<UISystem>();
+        uiSystem.ShouldShowPanel(false);
     }
 }

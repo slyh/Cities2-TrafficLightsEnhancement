@@ -1,0 +1,23 @@
+{
+    "LocaleLabel": "언어",
+    "LocaleDesc": "이 모드의 언어를 설정합니다. \"자동\"으로 선택하면 게임 시스템이 사용중인 언어를 선택합니다.",
+    "ShowFloatingButtonLabel": "상단 패널 버튼",
+    "ShowFloatingButtonDesc": "좌측 상단에 메인 패널을 표시하는 버튼을 켜거나 끌 수 있습니다.",
+    "Version": "버전",
+    "General": "일반",
+    "Default": "기본",
+    "DefaultSplitPhasingLabel": "분할 신호 일괄 설정",
+    "DefaultSplitPhasingDesc": "사용자 정의 구성이 없는 모든 신호등을 분할 신호로 설정합니다. 새로 건설된 도로에도 적용되며 노드 업데이트 클릭 시 기존 도로에도 적용됩니다.",
+    "DefaultAlwaysGreenKerbsideTurnLabel": "적신호시 우회전 허용 일괄 설정",
+    "DefaultAlwaysGreenKerbsideTurnDesc": "사용자 정의 구성이 없는 모든 신호등을 적신호시 우회전 허용으로 설정합니다. 새로 건설된 도로에도 적용되며 노드 업데이트 클릭 시 기존 도로에도 적용됩니다.",
+    "DefaultExclusivePedestrianLabel": "동시 보행 신호 일괄 설정",
+    "DefaultExclusivePedestrianDesc": "사용자 정의 구성이 없는 모든 신호등을 동시 보행 신호를 설정합니다. 새로 건설된 도로에도 적용되며 노드 업데이트 클릭 시 기존 도로에도 적용됩니다.",
+    "ForceAllNodesUpdateLabel": "강제 모든 노드 업데이트",
+    "ForceAllNodesUpdateDesc": "모든 노드(도로 교차로)를 업데이트하여 사용자 정의 구성이 없는 모든 신호등에 기본 설정을 적용합니다. 해당 기능은 도시를 불러온 후 사용이 가능합니다.",
+    "ForceAllNodesUpdateWarning": "모든 노드가 업데이트 됩니다. 이 기본설정은 사용자 정의 구성이 없는 모든 신호등에 적용됩니다.",
+    "ReleaseChannel": "출시 단계",
+    "LdtMigrationNotificationTitle": "TLE 중요사항 메시지",
+    "LdtMigrationNotificationText": "클릭하여 읽기 (웹 브라우저에서 열기)",
+    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+}
