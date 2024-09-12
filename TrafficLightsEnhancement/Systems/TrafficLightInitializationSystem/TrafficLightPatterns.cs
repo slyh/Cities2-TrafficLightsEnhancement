@@ -19,6 +19,8 @@ public class TrafficLightPatterns {
 
         ModDefault = 4,
 
+        CustomPhase = 5,
+
         ExclusivePedestrian = 1 << 16,
 
         AlwaysGreenKerbsideTurn = 1 << 17,
@@ -49,6 +51,12 @@ public class TrafficLightPatterns {
                     return true;
                 }
                 return false;
+
+            case (uint)Pattern.ModDefault:
+                return true;
+
+            case (uint)Pattern.CustomPhase:
+                return true;
 
             default:
                 return false;

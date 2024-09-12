@@ -1,6 +1,5 @@
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 using Colossal.Serialization.Entities;
-using Unity.Collections;
 using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement.Components;
@@ -155,6 +154,11 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
             return m_Pattern;
         }
         return TrafficLightPatterns.Pattern.Vanilla;
+    }
+
+    public TrafficLightPatterns.Pattern GetPatternOnly(int ways)
+    {
+        return (TrafficLightPatterns.Pattern)((uint)GetPattern(ways) & 0xFFFF);
     }
 
     public void SetPattern(uint pattern)

@@ -121,6 +121,19 @@ public static class Types
         public string engineEventName;
     }
 
+    public struct ItemCustomPhase {
+        [JsonProperty]
+        const string itemType = "customPhase";
+
+        public int activeIndex;
+
+        public int index;
+
+        public int length;
+
+        public float minimumDurationMultiplier;
+    }
+
     public struct WorldPosition
     {
         public float x;
@@ -128,13 +141,46 @@ public static class Types
         public float y;
 
         public float z;
+
+        public string key { get => $"{x.ToString("0.00")},{y.ToString("0.00")},{z.ToString("0.00")}"; }
+
+        public static implicit operator WorldPosition(float pos) => new WorldPosition{x = pos, y = pos, z = pos};
+
+        public static implicit operator WorldPosition(Unity.Mathematics.float3 pos) => new WorldPosition{x = pos.x, y = pos.y, z = pos.z};
+
+        public static implicit operator Unity.Mathematics.float3(WorldPosition pos) => new Unity.Mathematics.float3(pos.x, pos.y, pos.z);
+
+        public static implicit operator UnityEngine.Vector3(WorldPosition pos) => new UnityEngine.Vector3(pos.x, pos.y, pos.z);
+
+        public static implicit operator string(WorldPosition pos) => pos.key;
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not WorldPosition)
+            {
+                return false;
+            }
+            return Equals((WorldPosition)obj);
+        }
+
+        public bool Equals(WorldPosition other)
+        {
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        public override int GetHashCode()
+        {
+            return x.GetHashCode() ^ (y.GetHashCode() << 2) ^ (z.GetHashCode() >> 2);
+        }
     }
 
-    public struct ScreenPosition
+    public struct ScreenPoint
     {
         public float top;
 
         public float left;
+
+        public static implicit operator ScreenPoint(UnityEngine.Vector3 pos) => new ScreenPoint{left = pos.x, top = UnityEngine.Screen.height - pos.y};
     }
 
     public struct LaneToolButton
@@ -201,5 +247,3 @@ public static class Types
         return new ItemCheckbox{label = label, key = option.ToString(), value = ((selectedPattern & option) != 0).ToString(), isChecked = (selectedPattern & option) != 0, engineEventName = "C2VM.TLE.CallMainPanelUpdateOption"};
     }
 }
-
-

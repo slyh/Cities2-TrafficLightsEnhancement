@@ -13,6 +13,22 @@ namespace C2VM.TrafficLightsEnhancement;
 [SettingsUIShowGroupName]
 public class Settings : ModSetting
 {
+    public struct Values
+    {
+        public bool m_DefaultSplitPhasing;
+
+        public bool m_DefaultAlwaysGreenKerbsideTurn;
+
+        public bool m_DefaultExclusivePedestrian;
+
+        public Values(Settings settings)
+        {
+            m_DefaultSplitPhasing = settings.m_DefaultSplitPhasing;
+            m_DefaultAlwaysGreenKerbsideTurn = settings.m_DefaultExclusivePedestrian;
+            m_DefaultExclusivePedestrian = settings.m_DefaultExclusivePedestrian;
+        }
+    }
+
     [SettingsUISection("General")]
     [SettingsUIDropdown(typeof(Settings), "GetLanguageValues")]
     public string m_LocaleOption
