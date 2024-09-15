@@ -142,7 +142,7 @@ public static class Types
 
         public float z;
 
-        public string key { get => $"{x.ToString("0.00")},{y.ToString("0.00")},{z.ToString("0.00")}"; }
+        public string key { get => $"{x.ToString("0.0")},{y.ToString("0.0")},{z.ToString("0.0")}"; }
 
         public static implicit operator WorldPosition(float pos) => new WorldPosition{x = pos, y = pos, z = pos};
 
@@ -174,13 +174,42 @@ public static class Types
         }
     }
 
-    public struct ScreenPoint
+    public struct ScreenPoint : System.IEquatable<ScreenPoint>, Colossal.UI.Binding.IJsonWritable
     {
-        public float top;
+        public int top;
 
-        public float left;
+        public int left;
 
-        public static implicit operator ScreenPoint(UnityEngine.Vector3 pos) => new ScreenPoint{left = pos.x, top = UnityEngine.Screen.height - pos.y};
+        public ScreenPoint(UnityEngine.Vector3 pos, int screenHeight)
+        {
+            left = (int)pos.x;
+            top = (int)(screenHeight - pos.y);
+        }
+
+        public void Write(Colossal.UI.Binding.IJsonWriter writer)
+        {
+            writer.TypeBegin("");
+            writer.PropertyName("top");
+            writer.Write(top);
+            writer.PropertyName("left");
+            writer.Write(left);
+            writer.TypeEnd();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ScreenPoint other){
+                return Equals(other);
+            }
+            return false;
+        }
+
+        public bool Equals(ScreenPoint other)
+        {
+            return other.top == top && other.left == left;
+        }
+
+        public override int GetHashCode() => (top, left).GetHashCode();
     }
 
     public struct LaneToolButton

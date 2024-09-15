@@ -11,18 +11,14 @@ public struct CustomPhaseProcessor
 {
     public static void ProcessLanes(ref InitializeTrafficLightsJob job, int unfilteredChunkIndex, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdges, DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, out int groupCount, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMasks, DynamicBuffer<CustomPhaseData> customPhaseDatas)
     {
+        NativeHashMap<Entity, NodeUtils.LaneConnection> laneConnectionMap = NodeUtils.GetLaneConnectionMap(Allocator.Temp, subLanes, connectedEdges, job.m_ExtraTypeHandle.m_SubLane, job.m_ExtraTypeHandle.m_Lane);
         groupCount = customPhaseDatas.Length;
-        var laneConnectionMap = NodeUtils.GetLaneConnectionMap(Allocator.Temp, subLanes, connectedEdges, job.m_ExtraTypeHandle.m_SubLane, job.m_ExtraTypeHandle.m_Lane);
         for (int i = 0; i < subLanes.Length; i++)
         {
             Entity subLane = subLanes[i].m_SubLane;
-            if (!job.m_LaneSignalData.HasComponent(subLane))
-            {
-                continue;
-            }
             LaneSignal laneSignal = job.m_LaneSignalData[subLane];
-            ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
-            laneSignal.m_GroupMask = 0;
+            ExtraLaneSignal extraLaneSignal = new();
+            laneSignal.m_GroupMask = ushort.MaxValue;
             laneSignal.m_Default = 0;
             bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
             var laneConnection = NodeUtils.GetLaneConnectionFromNodeSubLane(subLane, laneConnectionMap, (pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
@@ -75,7 +71,7 @@ public struct CustomPhaseProcessor
                         laneSignal.m_GroupMask = groupMask.m_Track.m_Straight.m_GoGroupMask;
                     }
                 }
-                if (isPedestrian)
+                if ((pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0)
                 {
                     if (NodeUtils.IsCrossingStopLine(ref job, subLane, sourceEdge))
                     {
@@ -88,6 +84,15 @@ public struct CustomPhaseProcessor
                 }
             }
 
+            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            if (job.m_LaneSignalData.HasComponent(subLane))
+            {
+                job.m_LaneSignalData[subLane] = laneSignal;
+            }
+            else
+            {
+                job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, laneSignal);
+            }
             if (job.m_ExtraTypeHandle.m_ExtraLaneSignal.HasComponent(subLane))
             {
                 job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
@@ -96,47 +101,50 @@ public struct CustomPhaseProcessor
             {
                 job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
             }
-
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
-            job.m_LaneSignalData[subLane] = laneSignal;
         }
 
-        if ((trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0)
+        // Set up pedestrian crossings at tracks
+        for (int i = 0; i < subLanes.Length; i++)
         {
-            for (int i = 0; i < subLanes.Length; i++)
+            Entity subLane = subLanes[i].m_SubLane;
+            bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
+            if (!isPedestrian)
             {
-                Entity subLane = subLanes[i].m_SubLane;
-                if (!job.m_LaneSignalData.HasComponent(subLane) || !job.m_PedestrianLaneData.HasComponent(subLane))
+                continue;
+            }
+            LaneSignal laneSignal = job.m_LaneSignalData[subLane];
+            ExtraLaneSignal extraLaneSignal = new();
+            laneSignal.m_GroupMask = ushort.MaxValue;
+            laneSignal.m_Default = 0;
+            if (job.m_Overlaps.HasBuffer(subLane))
+            {
+                bool hasCarLane = false;
+                foreach (var overlap in job.m_Overlaps[subLane])
+                {
+                    if (job.m_CarLaneData.HasComponent(overlap.m_Other))
+                    {
+                        hasCarLane = true;
+                        break;
+                    }
+                    if (!job.m_ExtraTypeHandle.m_TrackLane.HasComponent(overlap.m_Other))
+                    {
+                        continue;
+                    }
+                    if (job.m_LaneSignalData.TryGetComponent(overlap.m_Other, out var overlapSignal))
+                    {
+                        laneSignal.m_GroupMask &= (ushort)~overlapSignal.m_GroupMask;
+                    }
+                }
+                if (hasCarLane)
                 {
                     continue;
                 }
-                LaneSignal laneSignal = job.m_LaneSignalData[subLane];
-                ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
-                laneSignal.m_GroupMask = ushort.MaxValue;
-                laneSignal.m_Default = 0;
-                if (job.m_Overlaps.HasBuffer(subLane))
-                {
-                    foreach (var overlap in job.m_Overlaps[subLane])
-                    {
-                        if (job.m_LaneSignalData.TryGetComponent(overlap.m_Other, out var overlapSignal))
-                        {
-                            laneSignal.m_GroupMask &= (ushort)~overlapSignal.m_GroupMask;
-                        }
-                    }
-                }
-
-                if (job.m_ExtraTypeHandle.m_ExtraLaneSignal.HasComponent(subLane))
-                {
-                    job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
-                }
-                else
-                {
-                    job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
-                }
-
-                TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
-                job.m_LaneSignalData[subLane] = laneSignal;
             }
+
+            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            // Do not check if the component exists because it has already been added to the ecb in the previous loop
+            job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, laneSignal);
+            job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
         }
     }
 }

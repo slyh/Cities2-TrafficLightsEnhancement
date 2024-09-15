@@ -91,16 +91,6 @@ public struct NodeUtils
         }
 
         NativeHashMap<Entity, LaneConnection> laneConnectionMap = GetLaneConnectionMap(Allocator.Temp, em, nodeEntity);
-        bool isLevelCrossing = false;
-
-        foreach (SubLane nodeSubLane in nodeSubLaneBuffer)
-        {
-            if (em.TryGetComponent<TrackLane>(nodeSubLane.m_SubLane, out var trackLane) && (trackLane.m_Flags & TrackLaneFlags.LevelCrossing) != 0)
-            {
-                isLevelCrossing = true;
-                break;
-            }
-        }
 
         foreach (ConnectedEdge connectedEdge in connectedEdgeBuffer)
         {
@@ -163,20 +153,17 @@ public struct NodeUtils
                         }
                     }
                 }
-                if (!isLevelCrossing)
+                if ((nodePedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0 && (nodePedestrianLane.m_Flags & PedestrianLaneFlags.Unsafe) == 0)
                 {
-                    if ((nodePedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0 && (nodePedestrianLane.m_Flags & PedestrianLaneFlags.Unsafe) == 0)
+                    if (laneConnection.m_SourceEdge == edgeEntity || laneConnection.m_DestEdge == edgeEntity)
                     {
-                        if (laneConnection.m_SourceEdge == edgeEntity || laneConnection.m_DestEdge == edgeEntity)
+                        if (IsCrossingStopLine(em, nodeSubLane.m_SubLane, edgeEntity))
                         {
-                            if (IsCrossingStopLine(em, nodeSubLane.m_SubLane, edgeEntity))
-                            {
-                                edgeInfo.m_PedestrianLaneStopLineCount++;
-                            }
-                            else
-                            {
-                                edgeInfo.m_PedestrianLaneNonStopLineCount++;
-                            }
+                            edgeInfo.m_PedestrianLaneStopLineCount++;
+                        }
+                        else
+                        {
+                            edgeInfo.m_PedestrianLaneNonStopLineCount++;
                         }
                     }
                 }

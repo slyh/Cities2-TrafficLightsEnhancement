@@ -11,6 +11,7 @@ using Colossal.UI.Binding;
 using Game;
 using Game.Common;
 using Game.Net;
+using Game.Rendering;
 using Game.SceneFlow;
 using Game.UI;
 using Newtonsoft.Json;
@@ -47,24 +48,15 @@ public partial class UISystem : UISystemBase
 
     private Entity m_TrafficLightsAssetEntity = Entity.Null;
 
-    private Vector3 m_CameraPosition;
+    private Camera m_Camera;
+
+    private int m_ScreenHeight;
+
+    private CameraUpdateSystem m_CameraUpdateSystem;
+
+    private float3 m_CameraPosition;
 
     private List<Types.WorldPosition> m_WorldPositionList;
-
-    private int m_ActiveEditingCustomPhaseIndexValue;
-
-    private int m_ActiveEditingCustomPhaseIndex
-    {
-        get { return m_ActiveEditingCustomPhaseIndexValue; }
-        set
-        {
-            m_ActiveEditingCustomPhaseIndexValue = value;
-            if (m_ActiveEditingCustomPhaseIndexBinding != null)
-            {
-                m_ActiveEditingCustomPhaseIndexBinding.Update();
-            }
-        }
-    }
 
     private GetterValueBinding<string> m_MainPanelBinding;
 
@@ -72,28 +64,31 @@ public partial class UISystem : UISystemBase
 
     private GetterValueBinding<string> m_CityConfigurationBinding;
 
-    private GetterValueBinding<string> m_ScreenPointBinding;
+    private GetterValueBinding<Dictionary<string, Types.ScreenPoint>> m_ScreenPointBinding;
 
     private GetterValueBinding<string> m_EdgeInfoBinding;
 
-    private GetterValueBinding<int> m_ActiveEditingCustomPhaseIndexBinding;
+    private ValueBinding<int> m_ActiveEditingCustomPhaseIndexBinding;
 
     protected override void OnCreate()
     {
         base.OnCreate();
 
-        m_ActiveEditingCustomPhaseIndex = -1;
+        m_Camera = Camera.main;
+        m_ScreenHeight = Screen.height;
+
         m_WorldPositionList = [];
 
+        m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
 
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
         AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetLocale", GetLocale));
         AddBinding(m_CityConfigurationBinding = new GetterValueBinding<string>("C2VM.TLE", "GetCityConfiguration", GetCityConfiguration));
-        AddBinding(m_ScreenPointBinding = new GetterValueBinding<string>("C2VM.TLE", "GetScreenPoint", GetScreenPoint));
+        AddBinding(m_ScreenPointBinding = new GetterValueBinding<Dictionary<string, Types.ScreenPoint>>("C2VM.TLE", "GetScreenPoint", GetScreenPoint, new DictionaryWriter<string, Types.ScreenPoint>(null, new ValueWriter<Types.ScreenPoint>())));
         AddBinding(m_EdgeInfoBinding = new GetterValueBinding<string>("C2VM.TLE", "GetEdgeInfo", GetEdgeInfo));
-        AddBinding(m_ActiveEditingCustomPhaseIndexBinding = new GetterValueBinding<int>("C2VM.TLE", "GetActiveEditingCustomPhaseIndex", () => m_ActiveEditingCustomPhaseIndex));
+        AddBinding(m_ActiveEditingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveEditingCustomPhaseIndex", -1));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateOption", CallMainPanelUpdateOption));
@@ -119,10 +114,9 @@ public partial class UISystem : UISystemBase
 
     protected override void OnUpdate()
     {
-        Vector3 currentCameraPosition = Camera.main.WorldToScreenPoint(new Vector3(0, 0, 0));
-        if (m_WorldPositionList.Count > 0 && currentCameraPosition != m_CameraPosition)
+        if (m_WorldPositionList.Count > 0 && !m_CameraPosition.Equals(m_CameraUpdateSystem.position))
         {
-            m_CameraPosition = currentCameraPosition;
+            m_CameraPosition = m_CameraUpdateSystem.position;
             m_ScreenPointBinding.Update();
         }
     }
@@ -148,19 +142,12 @@ public partial class UISystem : UISystemBase
     {
         UpdateEntity();
         m_MainPanelState = state;
-        if (m_MainPanelState == MainPanelState.CustomPhase)
-        {
-            m_EdgeInfoBinding.Update();
-        }
+        m_MainPanelBinding.Update();
         if (m_MainPanelState != MainPanelState.CustomPhase)
         {
-            m_ActiveEditingCustomPhaseIndex = -1;
+            m_ActiveEditingCustomPhaseIndexBinding.Update(-1);
         }
-        if (m_MainPanelState != MainPanelState.Hidden)
-        {
-            m_MainPanelBinding.Update();
-        }
-        else
+        if (m_MainPanelState == MainPanelState.Hidden)
         {
             CallMainPanelSave("");
         }
@@ -381,7 +368,7 @@ public partial class UISystem : UISystemBase
             }
             for (int i = 0; i < customPhaseDataBuffer.Length; i++)
             {
-                menu.items.Add(new Types.ItemCustomPhase{activeIndex = m_ActiveEditingCustomPhaseIndex, index = i, length = customPhaseDataBuffer.Length, minimumDurationMultiplier = customPhaseDataBuffer[i].m_MinimumDurationMultiplier});
+                menu.items.Add(new Types.ItemCustomPhase{activeIndex = m_ActiveEditingCustomPhaseIndexBinding.value, index = i, length = customPhaseDataBuffer.Length, minimumDurationMultiplier = customPhaseDataBuffer[i].m_MinimumDurationMultiplier});
             }
             if (customPhaseDataBuffer.Length < 16)
             {
@@ -430,7 +417,7 @@ public partial class UISystem : UISystemBase
     {
         var definition = new { index = 0 };
         var value = JsonConvert.DeserializeAnonymousType(input, definition);
-        m_ActiveEditingCustomPhaseIndex = value.index;
+        m_ActiveEditingCustomPhaseIndexBinding.Update(value.index);
         UpdateEntity();
         m_MainPanelBinding.Update();
         return "";
@@ -447,7 +434,7 @@ public partial class UISystem : UISystemBase
             }
             customPhaseDataBuffer.Add(new CustomPhaseData());
             UpdateEntity();
-            m_ActiveEditingCustomPhaseIndex = customPhaseDataBuffer.Length - 1;
+            m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
             m_MainPanelBinding.Update();
             m_EdgeInfoBinding.Update();
         }
@@ -474,9 +461,9 @@ public partial class UISystem : UISystemBase
             }
             CustomPhaseUtils.SwapBit(customPhaseGroupMaskBuffer, value.index, 16);
 
-            if (m_ActiveEditingCustomPhaseIndex >= customPhaseDataBuffer.Length)
+            if (m_ActiveEditingCustomPhaseIndexBinding.value >= customPhaseDataBuffer.Length)
             {
-                m_ActiveEditingCustomPhaseIndex = customPhaseDataBuffer.Length - 1;
+                m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
             }
 
             UpdateEntity();
@@ -506,7 +493,7 @@ public partial class UISystem : UISystemBase
             }
             CustomPhaseUtils.SwapBit(customPhaseGroupMaskBuffer, value.index1, value.index2);
 
-            m_ActiveEditingCustomPhaseIndex = value.index2;
+            m_ActiveEditingCustomPhaseIndexBinding.Update(value.index2);
             UpdateEntity();
             m_MainPanelBinding.Update();
             m_EdgeInfoBinding.Update();
@@ -529,9 +516,9 @@ public partial class UISystem : UISystemBase
                 {
                     customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
                 }
-                var newValue = customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndex];
+                var newValue = customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value];
                 newValue.m_MinimumDurationMultiplier = parsedValue.value;
-                customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndex] = newValue;
+                customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value] = newValue;
 
                 UpdateEntity();
                 m_MainPanelBinding.Update();
@@ -607,7 +594,7 @@ public partial class UISystem : UISystemBase
         {
             m_WorldPositionList.Add(pos);
         }
-        m_ScreenPointBinding.Update();
+        m_CameraPosition = float.MaxValue; // Trigger binding update
         return "";
     }
 
@@ -618,21 +605,23 @@ public partial class UISystem : UISystemBase
         {
             m_WorldPositionList.Remove(pos);
         }
-        m_ScreenPointBinding.Update();
+        m_CameraPosition = float.MaxValue; // Trigger binding update
         return "";
     }
 
-    protected string GetScreenPoint()
+    protected Dictionary<string, Types.ScreenPoint> GetScreenPoint()
     {
-        Dictionary<string, Types.ScreenPoint> screenPointDict = [];
+        Dictionary<string, Types.ScreenPoint> screenPointDictionary = [];
+        m_Camera = Camera.main;
+        m_ScreenHeight = Screen.height;
         foreach (var wp in m_WorldPositionList)
         {
-            if (!screenPointDict.ContainsKey(wp.key))
+            if (!screenPointDictionary.ContainsKey(wp))
             {
-                screenPointDict[wp.key] = Camera.main.WorldToScreenPoint(wp);
+                screenPointDictionary[wp] = new Types.ScreenPoint(m_Camera.WorldToScreenPoint(wp), m_ScreenHeight);
             }
         }
-        return JsonConvert.SerializeObject(screenPointDict);
+        return screenPointDictionary;
     }
 
     public void UpdateEntity()
@@ -745,6 +734,7 @@ public partial class UISystem : UISystemBase
             ResetMainPanelState();
 
             m_MainPanelBinding.Update();
+            m_EdgeInfoBinding.Update();
         }
     }
 }
