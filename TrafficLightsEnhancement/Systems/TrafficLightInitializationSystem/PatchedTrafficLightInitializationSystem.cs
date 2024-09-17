@@ -5,6 +5,7 @@
 
 using System.Runtime.CompilerServices;
 using C2VM.TrafficLightsEnhancement.Components;
+using C2VM.TrafficLightsEnhancement.Utils;
 using Colossal.Mathematics;
 using Game;
 using Game.Common;
@@ -102,6 +103,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
                 if (customTrafficLights.GetPatternOnly(0) == TrafficLightPatterns.Pattern.CustomPhase && i < customPhaseGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
                 {
+                    CustomPhaseUtils.ValidateBuffer(ref this, entityArray[i], connectedEdgeAccessor[i], customPhaseGroupMaskAccessor[i]);
                     CustomPhaseProcessor.ProcessLanes(ref this, unfilteredChunkIndex, entityArray[i], connectedEdgeAccessor[i], subLanes, vehicleLanes, pedestrianLanes, groups, out groupCount, ref trafficLights, ref customTrafficLights, customPhaseGroupMaskAccessor[i], customPhaseDataAccessor[i]);
                 }
                 else

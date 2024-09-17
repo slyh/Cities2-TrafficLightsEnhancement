@@ -1,23 +1,39 @@
 using C2VM.TrafficLightsEnhancement.Components;
-using Colossal.Entities;
+using Game.Net;
 using Unity.Entities;
 using Unity.Mathematics;
+using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
 
 namespace C2VM.TrafficLightsEnhancement.Utils;
 
 public struct CustomPhaseUtils
 {
-    public static void ValidateBuffer(EntityManager em, Entity nodeEntity)
+    public static void ValidateBuffer(ref InitializeTrafficLightsJob job, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer)
     {
-        var edgeInfoList = NodeUtils.GetEdgeInfoList(Unity.Collections.Allocator.Temp, em, nodeEntity);
-        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer))
+        for (int i = 0; i < customPhaseGroupMaskBuffer.Length; i++)
         {
-            customPhaseGroupMaskBuffer = em.AddBuffer<CustomPhaseGroupMask>(nodeEntity);
-        }
-        customPhaseGroupMaskBuffer.Clear();
-        foreach (var edgeInfo in edgeInfoList)
-        {
-            customPhaseGroupMaskBuffer.Add(new CustomPhaseGroupMask(edgeInfo.m_Edge, edgeInfo.m_Position, edgeInfo.m_Group, edgeInfo.m_CustomPhaseGroupMask));
+            var customPhaseGroupMask = customPhaseGroupMaskBuffer[i];
+            bool edgeFound = false;
+            foreach (ConnectedEdge edge in connectedEdgeBuffer)
+            {
+                var edgeEntity = edge.m_Edge;
+                var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, edgeEntity);
+                if (customPhaseGroupMask.m_Edge == edgeEntity || LooseMatch(customPhaseGroupMask.m_EdgePosition, edgePosition))
+                {
+                    edgeFound = true;
+                    customPhaseGroupMask.m_Edge = edgeEntity;
+                    customPhaseGroupMask.m_EdgePosition = edgePosition;
+                    break;
+                }
+            }
+            if (edgeFound)
+            {
+                customPhaseGroupMaskBuffer[i] = customPhaseGroupMask;
+            }
+            else
+            {
+                customPhaseGroupMaskBuffer.RemoveAtSwapBack(i);
+            }
         }
     }
 

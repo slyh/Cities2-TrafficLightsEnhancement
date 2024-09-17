@@ -16,11 +16,15 @@ public struct CustomPhaseProcessor
         for (int i = 0; i < subLanes.Length; i++)
         {
             Entity subLane = subLanes[i].m_SubLane;
+            bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
+            if ((pedestrianLane.m_Flags & (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe)) == (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe))
+            {
+                continue;
+            }
             LaneSignal laneSignal = job.m_LaneSignalData[subLane];
             ExtraLaneSignal extraLaneSignal = new();
             laneSignal.m_GroupMask = ushort.MaxValue;
             laneSignal.m_Default = 0;
-            bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
             var laneConnection = NodeUtils.GetLaneConnectionFromNodeSubLane(subLane, laneConnectionMap, (pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
             var sourceEdge = laneConnection.m_SourceEdge == Entity.Null && isPedestrian ? laneConnection.m_DestEdge : laneConnection.m_SourceEdge;
             var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, sourceEdge);
@@ -109,6 +113,10 @@ public struct CustomPhaseProcessor
             Entity subLane = subLanes[i].m_SubLane;
             bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
             if (!isPedestrian)
+            {
+                continue;
+            }
+            if ((pedestrianLane.m_Flags & (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe)) == (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe))
             {
                 continue;
             }

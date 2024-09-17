@@ -329,7 +329,7 @@ public struct NodeUtils
         float3 position = default;
         edgeLookup.TryGetComponent(edgeEntity, out Edge edge);
         edgeGeometryLookup.TryGetComponent(edgeEntity, out EdgeGeometry edgeGeometry);
-        if (edgeLookup.HasComponent(edgeEntity) && edgeLookup[edgeEntity].m_Start.Equals(nodeEntity))
+        if (edge.m_Start.Equals(nodeEntity))
         {
             position = (edgeGeometry.m_Start.m_Left.a + edgeGeometry.m_Start.m_Right.a) / 2;
         }
@@ -359,33 +359,6 @@ public struct NodeUtils
                     if (em.TryGetComponent(edgeSubLane.m_SubLane, out Lane edgeLane))
                     {
                         if (nodeLane.m_StartNode.Equals(edgeLane.m_EndNode) || (em.HasComponent<PedestrianLane>(nodeSubLaneEntity) && nodeLane.m_EndNode.Equals(edgeLane.m_StartNode)))
-                        {
-                            return new LaneSource
-                            {
-                                m_SubLane = edgeSubLane.m_SubLane,
-                                m_Edge = edgeEntity
-                            };
-                        }
-                    }
-                }
-            }
-        }
-        return new LaneSource();
-    }
-
-    public static LaneSource GetEdgeFromNodeSubLane(Entity nodeSubLaneEntity, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, ComponentLookup<Lane> laneLookup, ComponentLookup<PedestrianLane> pedestrianLaneLookup, BufferLookup<SubLane> subLaneLookup)
-    {
-        if (laneLookup.TryGetComponent(nodeSubLaneEntity, out Lane nodeLane))
-        {
-            foreach (ConnectedEdge connectedEdge in connectedEdgeBuffer)
-            {
-                Entity edgeEntity = connectedEdge.m_Edge;
-                subLaneLookup.TryGetBuffer(edgeEntity, out DynamicBuffer<SubLane> edgeSubLaneBuffer);
-                foreach (SubLane edgeSubLane in edgeSubLaneBuffer)
-                {
-                    if (laneLookup.TryGetComponent(edgeSubLane.m_SubLane, out Lane edgeLane))
-                    {
-                        if (nodeLane.m_StartNode.Equals(edgeLane.m_EndNode) || (pedestrianLaneLookup.HasComponent(nodeSubLaneEntity) && nodeLane.m_EndNode.Equals(edgeLane.m_StartNode)))
                         {
                             return new LaneSource
                             {
@@ -443,11 +416,6 @@ public struct NodeUtils
             }
         }
         return laneConnection;
-    }
-
-    public static LaneSource GetEdgeFromNodeSubLane(ref InitializeTrafficLightsJob job, Entity nodeSubLaneEntity, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer)
-    {
-        return GetEdgeFromNodeSubLane(nodeSubLaneEntity, connectedEdgeBuffer, job.m_ExtraTypeHandle.m_Lane, job.m_ExtraTypeHandle.m_PedestrianLane, job.m_ExtraTypeHandle.m_SubLane);
     }
 
     public static bool IsCrossingStopLine(EntityManager em, Entity nodeSubLaneEntity, Entity edgeEntity)
