@@ -23,13 +23,13 @@ The instructions for building the mod yourself are available [here](https://gith
 
 This mod would not have reached its current stage without help from the following people and projects:
 
-[Cities2Modding](https://github.com/optimus-code/Cities2Modding): An example mod for starting modding in Cities: Skylines II
-
-[BepInEx](https://github.com/BepInEx/BepInEx): Unity / XNA game patcher and plugin framework
+[Cities2Modding](https://github.com/optimus-code/Cities2Modding): An example mod for starting modding in Cities: Skylines II (BepInEx-based template, now obsolete)
 
 [Harmony](https://github.com/pardeike/Harmony): A library for patching, replacing and decorating .NET and Mono methods during runtime
 
 [PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insights into the lane system's inner workings.
+
+[Krzysztof](https://github.com/krzychu124) for advising on UI performance issues.
 
 [Primeinc](https://github.com/primeinc) and [Windows200000](https://github.com/Windows200000) for the [guide](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md).
 

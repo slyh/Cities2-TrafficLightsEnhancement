@@ -101,7 +101,8 @@ public partial class UISystem : UISystemBase
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallRemoveCustomPhase", CallRemoveCustomPhase));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallSwapCustomPhase", CallSwapCustomPhase));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallSetActiveEditingCustomPhaseIndex", CallSetActiveEditingCustomPhaseIndex));
-        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateCustomPhaseGroupMask", CallUpdateCustomPhaseGroupMask));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateEdgeGroupMask", CallUpdateEdgeGroupMask));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateSubLaneGroupMask", CallUpdateSubLaneGroupMask));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateCustomPhaseData", CallUpdateCustomPhaseData));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallKeyPress", CallKeyPress));
@@ -218,9 +219,9 @@ public partial class UISystem : UISystemBase
             {
                 EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
-            if (!EntityManager.HasBuffer<CustomPhaseGroupMask>(m_SelectedEntity))
+            if (!EntityManager.HasBuffer<EdgeGroupMask>(m_SelectedEntity))
             {
-                EntityManager.AddBuffer<CustomPhaseGroupMask>(m_SelectedEntity);
+                EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
             }
             m_CustomTrafficLights.SetPattern(TrafficLightPatterns.Pattern.CustomPhase);
         }
@@ -277,6 +278,7 @@ public partial class UISystem : UISystemBase
             image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
             showPanel = m_MainPanelState != MainPanelState.Hidden,
             showFloatingButton = Mod.m_Settings != null && Mod.m_Settings.m_ShowFloatingButton,
+            state = m_MainPanelState,
             trafficLightsAssetEntityIndex = m_TrafficLightsAssetEntity.Index,
             trafficLightsAssetEntityVersion = m_TrafficLightsAssetEntity.Version,
             items = new ArrayList()
@@ -396,12 +398,7 @@ public partial class UISystem : UISystemBase
             return "[]";
         }
         var edgeInfoNativeList = NodeUtils.GetEdgeInfoList(Allocator.Temp, EntityManager, m_SelectedEntity);
-        List<NodeUtils.EdgeInfo> edgeInfoList = [];
-        foreach (var edgeInfo in edgeInfoNativeList)
-        {
-            edgeInfoList.Add(edgeInfo);
-        }
-        return JsonConvert.SerializeObject(edgeInfoList);
+        return JsonConvert.SerializeObject(edgeInfoNativeList.AsArray());
     }
 
     protected string CallSetMainPanelState(string input)
@@ -454,12 +451,19 @@ public partial class UISystem : UISystemBase
             }
             customPhaseDataBuffer.RemoveAt(value.index);
 
-            DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer;
-            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out customPhaseGroupMaskBuffer))
+            DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer;
+            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out edgeGroupMaskBuffer))
             {
-                customPhaseGroupMaskBuffer = EntityManager.AddBuffer<CustomPhaseGroupMask>(m_SelectedEntity);
+                edgeGroupMaskBuffer = EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
             }
-            CustomPhaseUtils.SwapBit(customPhaseGroupMaskBuffer, value.index, 16);
+            CustomPhaseUtils.SwapBit(edgeGroupMaskBuffer, value.index, 16);
+
+            DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer;
+            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out subLaneGroupMaskBuffer))
+            {
+                subLaneGroupMaskBuffer = EntityManager.AddBuffer<SubLaneGroupMask>(m_SelectedEntity);
+            }
+            CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, value.index, 16);
 
             if (m_ActiveEditingCustomPhaseIndexBinding.value >= customPhaseDataBuffer.Length)
             {
@@ -486,12 +490,19 @@ public partial class UISystem : UISystemBase
             }
             (customPhaseDataBuffer[value.index2], customPhaseDataBuffer[value.index1]) = (customPhaseDataBuffer[value.index1], customPhaseDataBuffer[value.index2]);
 
-            DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer;
-            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out customPhaseGroupMaskBuffer))
+            DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer;
+            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out edgeGroupMaskBuffer))
             {
-                customPhaseGroupMaskBuffer = EntityManager.AddBuffer<CustomPhaseGroupMask>(m_SelectedEntity);
+                edgeGroupMaskBuffer = EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
             }
-            CustomPhaseUtils.SwapBit(customPhaseGroupMaskBuffer, value.index1, value.index2);
+            CustomPhaseUtils.SwapBit(edgeGroupMaskBuffer, value.index1, value.index2);
+
+            DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer;
+            if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out subLaneGroupMaskBuffer))
+            {
+                subLaneGroupMaskBuffer = EntityManager.AddBuffer<SubLaneGroupMask>(m_SelectedEntity);
+            }
+            CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, value.index1, value.index2);
 
             m_ActiveEditingCustomPhaseIndexBinding.Update(value.index2);
             UpdateEntity();
@@ -528,34 +539,70 @@ public partial class UISystem : UISystemBase
         return "";
     }
 
-    protected string CallUpdateCustomPhaseGroupMask(string input)
+    protected string CallUpdateEdgeGroupMask(string input)
     {
         if (m_SelectedEntity.Equals(Entity.Null))
         {
             return "";
         }
-        CustomPhaseGroupMask[] customPhaseGroupMaskArray = JsonConvert.DeserializeObject<CustomPhaseGroupMask[]>(input);
-        DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer;
-        if (EntityManager.HasBuffer<CustomPhaseGroupMask>(m_SelectedEntity))
+
+        EdgeGroupMask[] groupMaskArray = JsonConvert.DeserializeObject<EdgeGroupMask[]>(input);
+        DynamicBuffer<EdgeGroupMask> groupMaskBuffer;
+        if (EntityManager.HasBuffer<EdgeGroupMask>(m_SelectedEntity))
         {
-            customPhaseGroupMaskBuffer = EntityManager.GetBuffer<CustomPhaseGroupMask>(m_SelectedEntity, false);
+            groupMaskBuffer = EntityManager.GetBuffer<EdgeGroupMask>(m_SelectedEntity, false);
         }
         else
         {
-            customPhaseGroupMaskBuffer = EntityManager.AddBuffer<CustomPhaseGroupMask>(m_SelectedEntity);
-            var edgeInfoList = NodeUtils.GetEdgeInfoList(Allocator.Temp, EntityManager, m_SelectedEntity);
-            foreach (var edgeInfo in edgeInfoList)
+            groupMaskBuffer = EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
+        }
+
+        foreach (var newValue in groupMaskArray)
+        {
+            int index = CustomPhaseUtils.TryGet(groupMaskBuffer, newValue, out EdgeGroupMask oldValue);
+            if (index >= 0)
             {
-                customPhaseGroupMaskBuffer.Add(edgeInfo.m_CustomPhaseGroupMask);
+                groupMaskBuffer[index] = new EdgeGroupMask(oldValue, newValue);
+            }
+            else
+            {
+                groupMaskBuffer.Add(new EdgeGroupMask(oldValue, newValue));
             }
         }
 
-        foreach (var newValue in customPhaseGroupMaskArray)
+        m_EdgeInfoBinding.Update();
+
+        return "";
+    }
+
+    protected string CallUpdateSubLaneGroupMask(string input)
+    {
+        if (m_SelectedEntity.Equals(Entity.Null))
         {
-            int index = CustomPhaseUtils.TryGet(customPhaseGroupMaskBuffer, newValue, out CustomPhaseGroupMask oldValue);
+            return "";
+        }
+
+        SubLaneGroupMask[] groupMaskArray = JsonConvert.DeserializeObject<SubLaneGroupMask[]>(input);
+        DynamicBuffer<SubLaneGroupMask> groupMaskBuffer;
+        if (EntityManager.HasBuffer<SubLaneGroupMask>(m_SelectedEntity))
+        {
+            groupMaskBuffer = EntityManager.GetBuffer<SubLaneGroupMask>(m_SelectedEntity, false);
+        }
+        else
+        {
+            groupMaskBuffer = EntityManager.AddBuffer<SubLaneGroupMask>(m_SelectedEntity);
+        }
+
+        foreach (var newValue in groupMaskArray)
+        {
+            int index = CustomPhaseUtils.TryGet(groupMaskBuffer, newValue, out SubLaneGroupMask oldValue);
             if (index >= 0)
             {
-                customPhaseGroupMaskBuffer[index] = new CustomPhaseGroupMask(oldValue, newValue);
+                groupMaskBuffer[index] = new SubLaneGroupMask(oldValue, newValue);
+            }
+            else
+            {
+                groupMaskBuffer.Add(new SubLaneGroupMask(oldValue, newValue));
             }
         }
 

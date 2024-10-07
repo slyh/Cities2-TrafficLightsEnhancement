@@ -27,7 +27,9 @@ public struct ExtraTypeHandle
 
     public ComponentLookup<ExtraLaneSignal> m_ExtraLaneSignal;
 
-    public BufferTypeHandle<CustomPhaseGroupMask> m_CustomPhaseGroupMask;
+    public BufferTypeHandle<EdgeGroupMask> m_EdgeGroupMask;
+
+    public BufferTypeHandle<SubLaneGroupMask> m_SubLaneGroupMask;
 
     public BufferTypeHandle<CustomPhaseData> m_CustomPhaseData;
 
@@ -44,7 +46,8 @@ public struct ExtraTypeHandle
         m_TrackLane = state.GetComponentLookup<TrackLane>();
         m_CustomTrafficLights = state.GetComponentTypeHandle<CustomTrafficLights>();
         m_ExtraLaneSignal = state.GetComponentLookup<ExtraLaneSignal>();
-        m_CustomPhaseGroupMask = state.GetBufferTypeHandle<CustomPhaseGroupMask>();
+        m_EdgeGroupMask = state.GetBufferTypeHandle<EdgeGroupMask>();
+        m_SubLaneGroupMask = state.GetBufferTypeHandle<SubLaneGroupMask>();
         m_CustomPhaseData = state.GetBufferTypeHandle<CustomPhaseData>();
     }
 
@@ -61,7 +64,8 @@ public struct ExtraTypeHandle
         m_TrackLane.Update(ref state);
         m_CustomTrafficLights.Update(ref state);
         m_ExtraLaneSignal.Update(ref state);
-        m_CustomPhaseGroupMask.Update(ref state);
+        m_EdgeGroupMask.Update(ref state);
+        m_SubLaneGroupMask.Update(ref state);
         m_CustomPhaseData.Update(ref state);
     }
 }

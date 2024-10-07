@@ -1,5 +1,6 @@
 using C2VM.TrafficLightsEnhancement.Components;
 using Game.Net;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
@@ -8,46 +9,104 @@ namespace C2VM.TrafficLightsEnhancement.Utils;
 
 public struct CustomPhaseUtils
 {
-    public static void ValidateBuffer(ref InitializeTrafficLightsJob job, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer)
+    public static void ValidateBuffer(ref InitializeTrafficLightsJob job, Entity nodeEntity, DynamicBuffer<SubLane> nodeSubLaneBuffer, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer, DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer, BufferLookup<SubLane> subLaneLookup)
     {
-        for (int i = 0; i < customPhaseGroupMaskBuffer.Length; i++)
+        for (int i = 0; i < edgeGroupMaskBuffer.Length; i++)
         {
-            var customPhaseGroupMask = customPhaseGroupMaskBuffer[i];
+            var groupMask = edgeGroupMaskBuffer[i];
             bool edgeFound = false;
             foreach (ConnectedEdge edge in connectedEdgeBuffer)
             {
                 var edgeEntity = edge.m_Edge;
                 var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, edgeEntity);
-                if (customPhaseGroupMask.m_Edge == edgeEntity || LooseMatch(customPhaseGroupMask.m_EdgePosition, edgePosition))
+                if (groupMask.m_Edge == edgeEntity || LooseMatch(groupMask.m_Position, edgePosition))
                 {
                     edgeFound = true;
-                    customPhaseGroupMask.m_Edge = edgeEntity;
-                    customPhaseGroupMask.m_EdgePosition = edgePosition;
+                    groupMask.m_Edge = edgeEntity;
+                    groupMask.m_Position = edgePosition;
                     break;
                 }
             }
             if (edgeFound)
             {
-                customPhaseGroupMaskBuffer[i] = customPhaseGroupMask;
+                edgeGroupMaskBuffer[i] = groupMask;
             }
             else
             {
-                customPhaseGroupMaskBuffer.RemoveAtSwapBack(i);
+                edgeGroupMaskBuffer.RemoveAtSwapBack(i);
+            }
+        }
+        foreach (ConnectedEdge edge in connectedEdgeBuffer)
+        {
+            var edgeEntity = edge.m_Edge;
+            var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, edgeEntity);
+            bool edgeFound = false;
+            for (int i = 0; i < edgeGroupMaskBuffer.Length; i++)
+            {
+                if (edgeGroupMaskBuffer[i].m_Edge == edgeEntity)
+                {
+                    edgeFound = true;
+                    break;
+                }
+            }
+            if (!edgeFound)
+            {
+                edgeGroupMaskBuffer.Add(new EdgeGroupMask(edgeEntity, edgePosition));
+            }
+        }
+
+        NativeList<DynamicBuffer<SubLane>> subLaneBufferList = new(16, Allocator.Temp);
+        subLaneBufferList.Add(nodeSubLaneBuffer);
+        foreach (ConnectedEdge edge in connectedEdgeBuffer)
+        {
+            subLaneBufferList.Add(subLaneLookup[edge.m_Edge]);
+        }
+        for (int i = 0; i < subLaneGroupMaskBuffer.Length; i++)
+        {
+            var groupMask = subLaneGroupMaskBuffer[i];
+            bool subLaneFound = false;
+            foreach (var subLaneBuffer in subLaneBufferList)
+            {
+                foreach (SubLane subLane in subLaneBuffer)
+                {
+                    Entity subLaneEntity = subLane.m_SubLane;
+                    float3 subLanePosition = NodeUtils.GetSubLanePosition(subLaneEntity, job.m_CurveData);
+                    if (groupMask.m_SubLane == subLaneEntity || LooseMatch(groupMask.m_Position, subLanePosition))
+                    {
+                        subLaneFound = true;
+                        groupMask.m_SubLane = subLaneEntity;
+                        groupMask.m_Position = subLanePosition;
+                        break;
+                    }
+                }
+            }
+            if (subLaneFound)
+            {
+                subLaneGroupMaskBuffer[i] = groupMask;
+            }
+            else
+            {
+                subLaneGroupMaskBuffer.RemoveAtSwapBack(i);
             }
         }
     }
 
-    public static int TryGet(DynamicBuffer<CustomPhaseGroupMask> buffer, CustomPhaseGroupMask searchKey, out CustomPhaseGroupMask result)
+    public static int TryGet(DynamicBuffer<EdgeGroupMask> buffer, EdgeGroupMask searchKey, out EdgeGroupMask result)
     {
-        return TryGet(buffer, searchKey.m_Edge, searchKey.m_EdgePosition, searchKey.m_Group, out result);
+        return TryGet(buffer, searchKey.m_Edge, searchKey.m_Position, out result);
     }
 
-    public static int TryGet(DynamicBuffer<CustomPhaseGroupMask> buffer, Entity edgeEntity, float3 edgePosition, uint group, out CustomPhaseGroupMask result)
+    public static int TryGet(DynamicBuffer<SubLaneGroupMask> buffer, SubLaneGroupMask searchKey, out SubLaneGroupMask result)
+    {
+        return TryGet(buffer, searchKey.m_SubLane, searchKey.m_Position, out result);
+    }
+
+    public static int TryGet(DynamicBuffer<EdgeGroupMask> buffer, Entity entity, float3 position, out EdgeGroupMask result)
     {
         for (int i = 0; i < buffer.Length; i++)
         {
-            CustomPhaseGroupMask phase = buffer[i];
-            if (phase.m_Edge.Equals(edgeEntity) && phase.m_Group == group)
+            EdgeGroupMask phase = buffer[i];
+            if (phase.m_Edge.Equals(entity))
             {
                 result = phase;
                 return i;
@@ -55,18 +114,42 @@ public struct CustomPhaseUtils
         }
         for (int i = 0; i < buffer.Length; i++)
         {
-            CustomPhaseGroupMask phase = buffer[i];
-            if (LooseMatch(phase.m_EdgePosition, edgePosition) && phase.m_Group == group)
+            EdgeGroupMask phase = buffer[i];
+            if (LooseMatch(phase.m_Position, position))
             {
                 result = phase;
                 return i;
             }
         }
-        result = new CustomPhaseGroupMask(edgeEntity, edgePosition, group);
+        result = new EdgeGroupMask(entity, position);
         return -1;
     }
 
-    public static void SwapBit(DynamicBuffer<CustomPhaseGroupMask> buffer, int index1, int index2)
+    public static int TryGet(DynamicBuffer<SubLaneGroupMask> buffer, Entity entity, float3 position, out SubLaneGroupMask result)
+    {
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            SubLaneGroupMask phase = buffer[i];
+            if (phase.m_SubLane.Equals(entity))
+            {
+                result = phase;
+                return i;
+            }
+        }
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            SubLaneGroupMask phase = buffer[i];
+            if (LooseMatch(phase.m_Position, position))
+            {
+                result = phase;
+                return i;
+            }
+        }
+        result = new SubLaneGroupMask(entity, position);
+        return -1;
+    }
+
+    public static void SwapBit(DynamicBuffer<EdgeGroupMask> buffer, int index1, int index2)
     {
         for (int i = 0; i < buffer.Length; i++)
         {
@@ -76,7 +159,17 @@ public struct CustomPhaseUtils
         }
     }
 
-    public static void SwapBit(ref CustomPhaseGroupMask phase, int index1, int index2)
+    public static void SwapBit(DynamicBuffer<SubLaneGroupMask> buffer, int index1, int index2)
+    {
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            var phase = buffer[i];
+            SwapBit(ref phase, index1, index2);
+            buffer[i] = phase;
+        }
+    }
+
+    public static void SwapBit(ref EdgeGroupMask phase, int index1, int index2)
     {
         TurnSwapBit(ref phase.m_Car, index1, index2);
         TurnSwapBit(ref phase.m_PublicCar, index1, index2);
@@ -85,7 +178,13 @@ public struct CustomPhaseUtils
         SignalSwapBit(ref phase.m_PedestrianNonStopLine, index1, index2);
     }
 
-    public static void TurnSwapBit(ref CustomPhaseGroupMask.Turn signal, int index1, int index2)
+    public static void SwapBit(ref SubLaneGroupMask phase, int index1, int index2)
+    {
+        TurnSwapBit(ref phase.m_Vehicle, index1, index2);
+        SignalSwapBit(ref phase.m_Pedestrian, index1, index2);
+    }
+
+    public static void TurnSwapBit(ref GroupMask.Turn signal, int index1, int index2)
     {
         SignalSwapBit(ref signal.m_Left, index1, index2);
         SignalSwapBit(ref signal.m_Straight, index1, index2);
@@ -93,7 +192,7 @@ public struct CustomPhaseUtils
         SignalSwapBit(ref signal.m_UTurn, index1, index2);
     }
 
-    public static void SignalSwapBit(ref CustomPhaseGroupMask.Signal signal, int index1, int index2)
+    public static void SignalSwapBit(ref GroupMask.Signal signal, int index1, int index2)
     {
         signal.m_GoGroupMask = SwapBit(signal.m_GoGroupMask, index1, index2);
         signal.m_YieldGroupMask = SwapBit(signal.m_YieldGroupMask, index1, index2);

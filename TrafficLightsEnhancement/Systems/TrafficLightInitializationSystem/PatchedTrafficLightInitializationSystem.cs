@@ -74,7 +74,8 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             NativeArray<CustomTrafficLights> customTrafficLightsArray = chunk.GetNativeArray(ref m_ExtraTypeHandle.m_CustomTrafficLights);
             NativeArray<Entity> entityArray = chunk.GetNativeArray(m_ExtraTypeHandle.m_Entity);
             BufferAccessor<ConnectedEdge> connectedEdgeAccessor = chunk.GetBufferAccessor(ref m_ExtraTypeHandle.m_ConnectedEdge);
-            BufferAccessor<CustomPhaseGroupMask> customPhaseGroupMaskAccessor = chunk.GetBufferAccessor(ref m_ExtraTypeHandle.m_CustomPhaseGroupMask);
+            BufferAccessor<EdgeGroupMask> edgeGroupMaskAccessor = chunk.GetBufferAccessor(ref m_ExtraTypeHandle.m_EdgeGroupMask);
+            BufferAccessor<SubLaneGroupMask> subLaneGroupMaskAccessor = chunk.GetBufferAccessor(ref m_ExtraTypeHandle.m_SubLaneGroupMask);
             BufferAccessor<CustomPhaseData> customPhaseDataAccessor = chunk.GetBufferAccessor(ref m_ExtraTypeHandle.m_CustomPhaseData);
             for (int i = 0; i < nativeArray.Length; i++)
             {
@@ -101,10 +102,10 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                 customTrafficLights.SetPedestrianPhaseGroupMask(0);
                 int groupCount = 0;
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
-                if (customTrafficLights.GetPatternOnly(0) == TrafficLightPatterns.Pattern.CustomPhase && i < customPhaseGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
+                if (customTrafficLights.GetPatternOnly(0) == TrafficLightPatterns.Pattern.CustomPhase && i < edgeGroupMaskAccessor.Length && i < subLaneGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
                 {
-                    CustomPhaseUtils.ValidateBuffer(ref this, entityArray[i], connectedEdgeAccessor[i], customPhaseGroupMaskAccessor[i]);
-                    CustomPhaseProcessor.ProcessLanes(ref this, unfilteredChunkIndex, entityArray[i], connectedEdgeAccessor[i], subLanes, vehicleLanes, pedestrianLanes, groups, out groupCount, ref trafficLights, ref customTrafficLights, customPhaseGroupMaskAccessor[i], customPhaseDataAccessor[i]);
+                    CustomPhaseUtils.ValidateBuffer(ref this, entityArray[i], subLanes, connectedEdgeAccessor[i], edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i], m_ExtraTypeHandle.m_SubLane);
+                    CustomPhaseProcessor.ProcessLanes(ref this, unfilteredChunkIndex, entityArray[i], connectedEdgeAccessor[i], subLanes, vehicleLanes, pedestrianLanes, groups, out groupCount, ref trafficLights, ref customTrafficLights, edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i], customPhaseDataAccessor[i]);
                 }
                 else
                 {

@@ -3,21 +3,38 @@ using C2VM.TrafficLightsEnhancement.Utils;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 public struct CustomPhaseProcessor
 {
-    public static void ProcessLanes(ref InitializeTrafficLightsJob job, int unfilteredChunkIndex, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdges, DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, out int groupCount, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMasks, DynamicBuffer<CustomPhaseData> customPhaseDatas)
+    public static void ProcessLanes(ref InitializeTrafficLightsJob job, int unfilteredChunkIndex, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdges, DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, out int groupCount, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<EdgeGroupMask> edgeGroupMasks, DynamicBuffer<SubLaneGroupMask> subLaneGroupMasks, DynamicBuffer<CustomPhaseData> customPhaseDatas)
     {
         NativeHashMap<Entity, NodeUtils.LaneConnection> laneConnectionMap = NodeUtils.GetLaneConnectionMap(Allocator.Temp, subLanes, connectedEdges, job.m_ExtraTypeHandle.m_SubLane, job.m_ExtraTypeHandle.m_Lane);
         groupCount = customPhaseDatas.Length;
+
+        for (int i = 0; i < subLanes.Length; i++)
+        {
+            Entity subLane = subLanes[i].m_SubLane;
+            if (!job.m_LaneSignalData.TryGetComponent(subLane, out LaneSignal laneSignal))
+            {
+                continue;
+            }
+            laneSignal.m_GroupMask = 0;
+            job.m_LaneSignalData[subLane] = laneSignal;
+        }
+
         for (int i = 0; i < subLanes.Length; i++)
         {
             Entity subLane = subLanes[i].m_SubLane;
             bool isPedestrian = job.m_PedestrianLaneData.TryGetComponent(subLane, out var pedestrianLane);
             if ((pedestrianLane.m_Flags & (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe)) == (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe))
+            {
+                continue;
+            }
+            if (job.m_MasterLaneData.HasComponent(subLane))
             {
                 continue;
             }
@@ -28,8 +45,19 @@ public struct CustomPhaseProcessor
             var laneConnection = NodeUtils.GetLaneConnectionFromNodeSubLane(subLane, laneConnectionMap, (pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
             var sourceEdge = laneConnection.m_SourceEdge == Entity.Null && isPedestrian ? laneConnection.m_DestEdge : laneConnection.m_SourceEdge;
             var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, sourceEdge);
-            if (CustomPhaseUtils.TryGet(customPhaseGroupMasks, sourceEdge, edgePosition, 0, out CustomPhaseGroupMask groupMask) >= 0)
+            if (CustomPhaseUtils.TryGet(edgeGroupMasks, sourceEdge, edgePosition, out EdgeGroupMask groupMask) >= 0)
             {
+                if ((groupMask.m_Options & EdgeGroupMask.Options.PerLaneSignal) != 0)
+                {
+                    Entity searchKey = isPedestrian ? subLane : laneConnection.m_SourceSubLane;
+                    float3 subLanePosition = NodeUtils.GetSubLanePosition(searchKey, job.m_CurveData);
+                    CustomPhaseUtils.TryGet(subLaneGroupMasks, searchKey, subLanePosition, out SubLaneGroupMask subLaneGroupMask);
+                    groupMask.m_Car = subLaneGroupMask.m_Vehicle;
+                    groupMask.m_PublicCar = subLaneGroupMask.m_Vehicle;
+                    groupMask.m_Track = subLaneGroupMask.m_Vehicle;
+                    groupMask.m_PedestrianStopLine = subLaneGroupMask.m_Pedestrian;
+                    groupMask.m_PedestrianNonStopLine = subLaneGroupMask.m_Pedestrian;
+                }
                 if (job.m_CarLaneData.TryGetComponent(subLane, out var nodeCarLane))
                 {
                     job.m_CarLaneData.TryGetComponent(laneConnection.m_SourceSubLane, out var edgeCarLane);
@@ -107,6 +135,34 @@ public struct CustomPhaseProcessor
             }
         }
 
+        for (int i = 0; i < subLanes.Length; i++)
+        {
+            Entity subLane = subLanes[i].m_SubLane;
+            if (!job.m_MasterLaneData.TryGetComponent(subLane, out MasterLane masterLane))
+            {
+                continue;
+            }
+            if (!job.m_LaneSignalData.TryGetComponent(subLane, out LaneSignal laneSignal))
+            {
+                continue;
+            }
+
+            laneSignal.m_GroupMask = 0;
+            for (int j = masterLane.m_MinIndex - 1; j <= masterLane.m_MaxIndex; j++)
+            {
+                Entity slaveSubLane = subLanes[j].m_SubLane;
+                if (!job.m_LaneSignalData.TryGetComponent(slaveSubLane, out LaneSignal slaveLaneSignal))
+                {
+                    continue;
+                }
+                laneSignal.m_GroupMask |= slaveLaneSignal.m_GroupMask;
+            }
+
+            ExtraLaneSignal extraLaneSignal = new();
+            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            job.m_LaneSignalData[subLane] = laneSignal;
+        }
+
         // Set up pedestrian crossings at tracks
         for (int i = 0; i < subLanes.Length; i++)
         {
@@ -119,6 +175,20 @@ public struct CustomPhaseProcessor
             if ((pedestrianLane.m_Flags & (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe)) == (PedestrianLaneFlags.Crosswalk | PedestrianLaneFlags.Unsafe))
             {
                 continue;
+            }
+            if (job.m_MasterLaneData.HasComponent(subLane))
+            {
+                continue;
+            }
+            var laneConnection = NodeUtils.GetLaneConnectionFromNodeSubLane(subLane, laneConnectionMap, true);
+            var sourceEdge = laneConnection.m_SourceEdge == Entity.Null ? laneConnection.m_DestEdge : laneConnection.m_SourceEdge;
+            var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, sourceEdge);
+            if (CustomPhaseUtils.TryGet(edgeGroupMasks, sourceEdge, edgePosition, out EdgeGroupMask groupMask) >= 0)
+            {
+                if ((groupMask.m_Options & EdgeGroupMask.Options.PerLaneSignal) != 0)
+                {
+                    continue;
+                }
             }
             LaneSignal laneSignal = job.m_LaneSignalData[subLane];
             ExtraLaneSignal extraLaneSignal = new();

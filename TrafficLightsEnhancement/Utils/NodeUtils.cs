@@ -15,8 +15,6 @@ public struct NodeUtils
     {
         public Entity m_Edge;
 
-        public uint m_Group;
-
         public WorldPosition m_Position;
 
         public int m_CarLaneLeftCount;
@@ -45,7 +43,34 @@ public struct NodeUtils
 
         public int m_PedestrianLaneNonStopLineCount;
 
-        public CustomPhaseGroupMask m_CustomPhaseGroupMask;
+        public NativeArray<SubLaneInfo> m_SubLaneInfoList;
+
+        public EdgeGroupMask m_EdgeGroupMask;
+    }
+
+    public struct SubLaneInfo
+    {
+        public Entity m_SubLane;
+
+        public WorldPosition m_Position;
+
+        public int m_CarLaneLeftCount;
+
+        public int m_CarLaneStraightCount;
+
+        public int m_CarLaneRightCount;
+
+        public int m_CarLaneUTurnCount;
+
+        public int m_TrackLaneLeftCount;
+
+        public int m_TrackLaneStraightCount;
+
+        public int m_TrackLaneRightCount;
+
+        public int m_PedestrianLaneCount;
+
+        public SubLaneGroupMask m_SubLaneGroupMask;
     }
 
     public struct LaneSource
@@ -82,12 +107,16 @@ public struct NodeUtils
 
     public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, EntityManager em, Entity nodeEntity)
     {
-        NativeList<EdgeInfo> edgeInfoList = new NativeList<EdgeInfo>(0, allocator);
+        NativeList<EdgeInfo> edgeInfoList = new(4, allocator);
         em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<SubLane> nodeSubLaneBuffer);
         em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<ConnectedEdge> connectedEdgeBuffer);
-        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<CustomPhaseGroupMask> customPhaseGroupMaskBuffer))
+        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer))
         {
-            customPhaseGroupMaskBuffer = em.AddBuffer<CustomPhaseGroupMask>(nodeEntity);
+            edgeGroupMaskBuffer = em.AddBuffer<EdgeGroupMask>(nodeEntity);
+        }
+        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer))
+        {
+            subLaneGroupMaskBuffer = em.AddBuffer<SubLaneGroupMask>(nodeEntity);
         }
 
         NativeHashMap<Entity, LaneConnection> laneConnectionMap = GetLaneConnectionMap(Allocator.Temp, em, nodeEntity);
@@ -98,12 +127,11 @@ public struct NodeUtils
             Entity edgeEntity = connectedEdge.m_Edge;
             float3 edgePosition = GetEdgePosition(em, nodeEntity, edgeEntity);
             edgeInfo.m_Edge = edgeEntity;
-            edgeInfo.m_Group = 0;
             edgeInfo.m_Position = edgePosition;
-            if (CustomPhaseUtils.TryGet(customPhaseGroupMaskBuffer, edgeEntity, edgePosition, 0, out edgeInfo.m_CustomPhaseGroupMask) < 0)
-            {
-                customPhaseGroupMaskBuffer.Add(edgeInfo.m_CustomPhaseGroupMask);
-            }
+            CustomPhaseUtils.TryGet(edgeGroupMaskBuffer, edgeEntity, edgePosition, out edgeInfo.m_EdgeGroupMask);
+
+            NativeHashMap<Entity, SubLaneInfo> subLaneMap = new(16, Allocator.Temp);
+            NativeList<SubLaneInfo> subLaneInfoList = new(16, allocator);
 
             foreach (SubLane nodeSubLane in nodeSubLaneBuffer)
             {
@@ -111,45 +139,60 @@ public struct NodeUtils
                 LaneConnection laneConnection = GetLaneConnectionFromNodeSubLane(nodeSubLane.m_SubLane, laneConnectionMap, (nodePedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
                 if (laneConnection.m_SourceEdge == edgeEntity)
                 {
-                    if (em.TryGetComponent<TrackLane>(nodeSubLane.m_SubLane, out var trackLane))
+                    if (!em.HasComponent<MasterLane>(nodeSubLane.m_SubLane))
                     {
-                        if ((trackLane.m_Flags & TrackLaneFlags.TurnLeft) != 0)
+                        SubLaneInfo sourceSubLaneInfo = subLaneMap[laneConnection.m_SourceSubLane];
+                        sourceSubLaneInfo.m_SubLane = laneConnection.m_SourceSubLane;
+                        sourceSubLaneInfo.m_Position = GetSubLanePosition(em, sourceSubLaneInfo.m_SubLane);
+                        if (em.TryGetComponent<TrackLane>(nodeSubLane.m_SubLane, out var trackLane))
                         {
-                            edgeInfo.m_TrackLaneLeftCount++;
+                            if ((trackLane.m_Flags & TrackLaneFlags.TurnLeft) != 0)
+                            {
+                                edgeInfo.m_TrackLaneLeftCount++;
+                                sourceSubLaneInfo.m_TrackLaneLeftCount++;
+                            }
+                            else if ((trackLane.m_Flags & TrackLaneFlags.TurnRight) != 0)
+                            {
+                                edgeInfo.m_TrackLaneRightCount++;
+                                sourceSubLaneInfo.m_TrackLaneRightCount++;
+                            }
+                            else
+                            {
+                                edgeInfo.m_TrackLaneStraightCount++;
+                                sourceSubLaneInfo.m_TrackLaneStraightCount++;
+                            }
+                            subLaneMap[laneConnection.m_SourceSubLane] = sourceSubLaneInfo;
                         }
-                        else if ((trackLane.m_Flags & TrackLaneFlags.TurnRight) != 0)
+                        if (em.TryGetComponent<CarLane>(nodeSubLane.m_SubLane, out var nodeCarLane))
                         {
-                            edgeInfo.m_TrackLaneRightCount++;
-                        }
-                        else
-                        {
-                            edgeInfo.m_TrackLaneStraightCount++;
-                        }
-                    }
-                    if (em.TryGetComponent<CarLane>(nodeSubLane.m_SubLane, out var nodeCarLane))
-                    {
-                        em.TryGetComponent<CarLane>(laneConnection.m_SourceSubLane, out var edgeCarLane);
-                        bool isPublicOnly = (edgeCarLane.m_Flags & CarLaneFlags.PublicOnly) != 0;
-                        bool isUTurn = (nodeCarLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
-                        if (!isUTurn && (nodeCarLane.m_Flags & (CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0)
-                        {
-                            edgeInfo.m_PublicCarLaneLeftCount += System.Convert.ToInt32(isPublicOnly);
-                            edgeInfo.m_CarLaneLeftCount += System.Convert.ToInt32(!isPublicOnly);
-                        }
-                        else if (!isUTurn && (nodeCarLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.GentleTurnRight)) != 0)
-                        {
-                            edgeInfo.m_PublicCarLaneRightCount += System.Convert.ToInt32(isPublicOnly);
-                            edgeInfo.m_CarLaneRightCount += System.Convert.ToInt32(!isPublicOnly);
-                        }
-                        else if (!isUTurn)
-                        {
-                            edgeInfo.m_PublicCarLaneStraightCount += System.Convert.ToInt32(isPublicOnly);
-                            edgeInfo.m_CarLaneStraightCount += System.Convert.ToInt32(!isPublicOnly);
-                        }
-                        else if (isUTurn)
-                        {
-                            edgeInfo.m_PublicCarLaneUTurnCount += System.Convert.ToInt32(isPublicOnly);
-                            edgeInfo.m_CarLaneUTurnCount += System.Convert.ToInt32(!isPublicOnly);
+                            em.TryGetComponent<CarLane>(laneConnection.m_SourceSubLane, out var edgeCarLane);
+                            bool isPublicOnly = (edgeCarLane.m_Flags & CarLaneFlags.PublicOnly) != 0;
+                            bool isUTurn = (nodeCarLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
+                            if (!isUTurn && (nodeCarLane.m_Flags & (CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0)
+                            {
+                                edgeInfo.m_PublicCarLaneLeftCount += System.Convert.ToInt32(isPublicOnly);
+                                edgeInfo.m_CarLaneLeftCount += System.Convert.ToInt32(!isPublicOnly);
+                                sourceSubLaneInfo.m_CarLaneLeftCount++;
+                            }
+                            else if (!isUTurn && (nodeCarLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.GentleTurnRight)) != 0)
+                            {
+                                edgeInfo.m_PublicCarLaneRightCount += System.Convert.ToInt32(isPublicOnly);
+                                edgeInfo.m_CarLaneRightCount += System.Convert.ToInt32(!isPublicOnly);
+                                sourceSubLaneInfo.m_CarLaneRightCount++;
+                            }
+                            else if (!isUTurn)
+                            {
+                                edgeInfo.m_PublicCarLaneStraightCount += System.Convert.ToInt32(isPublicOnly);
+                                edgeInfo.m_CarLaneStraightCount += System.Convert.ToInt32(!isPublicOnly);
+                                sourceSubLaneInfo.m_CarLaneStraightCount++;
+                            }
+                            else if (isUTurn)
+                            {
+                                edgeInfo.m_PublicCarLaneUTurnCount += System.Convert.ToInt32(isPublicOnly);
+                                edgeInfo.m_CarLaneUTurnCount += System.Convert.ToInt32(!isPublicOnly);
+                                sourceSubLaneInfo.m_CarLaneUTurnCount++;
+                            }
+                            subLaneMap[laneConnection.m_SourceSubLane] = sourceSubLaneInfo;
                         }
                     }
                 }
@@ -165,9 +208,22 @@ public struct NodeUtils
                         {
                             edgeInfo.m_PedestrianLaneNonStopLineCount++;
                         }
+                        SubLaneInfo subLaneInfo = subLaneMap[nodeSubLane.m_SubLane];
+                        subLaneInfo.m_SubLane = nodeSubLane.m_SubLane;
+                        subLaneInfo.m_Position = GetSubLanePosition(em, subLaneInfo.m_SubLane);
+                        subLaneInfo.m_PedestrianLaneCount++;
+                        subLaneMap[nodeSubLane.m_SubLane] = subLaneInfo;
                     }
                 }
             }
+
+            foreach (var kV in subLaneMap)
+            {
+                var subLaneInfo = kV.Value;
+                CustomPhaseUtils.TryGet(subLaneGroupMaskBuffer, subLaneInfo.m_SubLane, subLaneInfo.m_Position, out subLaneInfo.m_SubLaneGroupMask);
+                subLaneInfoList.Add(subLaneInfo);
+            }
+            edgeInfo.m_SubLaneInfoList = subLaneInfoList.AsArray();
             edgeInfoList.Add(edgeInfo);
         }
 
@@ -343,6 +399,18 @@ public struct NodeUtils
     public static float3 GetEdgePosition(ref InitializeTrafficLightsJob job, Entity nodeEntity, Entity edgeEntity)
     {
         return GetEdgePosition(nodeEntity, edgeEntity, job.m_ExtraTypeHandle.m_Edge, job.m_ExtraTypeHandle.m_EdgeGeometry);
+    }
+
+    public static float3 GetSubLanePosition(EntityManager em, Entity subLane)
+    {
+        em.TryGetComponent(subLane, out Curve curve);
+        return curve.m_Bezier.d;
+    }
+
+    public static float3 GetSubLanePosition(Entity subLane, ComponentLookup<Curve> curveLookup)
+    {
+        curveLookup.TryGetComponent(subLane, out Curve curve);
+        return curve.m_Bezier.d;
     }
 
     public static LaneSource GetEdgeFromNodeSubLane(EntityManager em, Entity nodeEntity, Entity nodeSubLaneEntity)
