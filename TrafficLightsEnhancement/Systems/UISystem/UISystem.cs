@@ -46,6 +46,10 @@ public partial class UISystem : UISystemBase
 
     private LDTRetirementSystem m_LdtRetirementSystem;
 
+    private Game.Simulation.SimulationSystem m_SimulationSystem;
+
+    private RenderSystem.RenderSystem m_RenderSystem;
+
     private Entity m_TrafficLightsAssetEntity = Entity.Null;
 
     private Camera m_Camera;
@@ -57,6 +61,8 @@ public partial class UISystem : UISystemBase
     private float3 m_CameraPosition;
 
     private List<Types.WorldPosition> m_WorldPositionList;
+
+    private uint m_LastUpdateFrameIndex;
 
     private GetterValueBinding<string> m_MainPanelBinding;
 
@@ -82,6 +88,8 @@ public partial class UISystem : UISystemBase
         m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
+        m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem.RenderSystem>();
+        m_SimulationSystem = World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
 
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
         AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetLocale", GetLocale));
@@ -120,6 +128,10 @@ public partial class UISystem : UISystemBase
             m_CameraPosition = m_CameraUpdateSystem.position;
             m_ScreenPointBinding.Update();
         }
+        if (math.abs(m_SimulationSystem.frameIndex - m_LastUpdateFrameIndex) >= 15)
+        {
+            RedrawGizmo();
+        }
     }
 
     protected override void OnGameLoadingComplete(Colossal.Serialization.Entities.Purpose purpose, GameMode mode)
@@ -137,6 +149,61 @@ public partial class UISystem : UISystemBase
         }
         m_MainPanelBinding.Update();
         m_CityConfigurationBinding.Update();
+    }
+
+    public void RedrawGizmo()
+    {
+        if (m_SelectedEntity != Entity.Null)
+        {
+            m_LastUpdateFrameIndex = m_SimulationSystem.frameIndex;
+            if (m_MainPanelState == MainPanelState.CustomPhase)
+            {
+                m_MainPanelBinding.Update();
+            }
+            m_RenderSystem.ClearMesh();
+            if (EntityManager.TryGetBuffer<SubLane>(m_SelectedEntity, true, out var subLaneBuffer))
+            {
+                int displayGroup = 16;
+                if (m_ActiveEditingCustomPhaseIndexBinding.value >= 0)
+                {
+                    displayGroup = m_ActiveEditingCustomPhaseIndexBinding.value;
+                }
+                else if (EntityManager.TryGetComponent<TrafficLights>(m_SelectedEntity, out var trafficLights))
+                {
+                    displayGroup = trafficLights.m_CurrentSignalGroup - 1;
+                }
+                foreach (var subLane in subLaneBuffer)
+                {
+                    Entity subLaneEntity = subLane.m_SubLane;
+                    bool isPedestrian = EntityManager.TryGetComponent<PedestrianLane>(subLaneEntity, out var pedestrianLane);
+                    if (EntityManager.HasComponent<MasterLane>(subLaneEntity))
+                    {
+                        continue;
+                    }
+                    if (!EntityManager.HasComponent<CarLane>(subLaneEntity) && !EntityManager.HasComponent<TrackLane>(subLaneEntity) && !isPedestrian)
+                    {
+                        continue;
+                    }
+                    if (isPedestrian && (pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) == 0)
+                    {
+                        continue;
+                    }
+                    if (EntityManager.TryGetComponent<LaneSignal>(subLaneEntity, out var laneSignal) && EntityManager.TryGetComponent<Curve>(subLaneEntity, out var curve))
+                    {
+                        Color color = Color.green;
+                        if (EntityManager.TryGetComponent<ExtraLaneSignal>(subLaneEntity, out var extraLaneSignal) && (extraLaneSignal.m_YieldGroupMask & 1 << displayGroup) != 0)
+                        {
+                            color = Color.yellow;
+                        }
+                        if ((laneSignal.m_GroupMask & 1 << displayGroup) != 0)
+                        {
+                            m_RenderSystem.AddBezier(curve.m_Bezier, color, curve.m_Length, 0.25f);
+                        }
+                    }
+                }
+            }
+            m_RenderSystem.BuildMesh();
+        }
     }
 
     public void SetMainPanelState(MainPanelState state)
@@ -368,9 +435,16 @@ public partial class UISystem : UISystemBase
             {
                 customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
+            EntityManager.TryGetComponent(m_SelectedEntity, out TrafficLights trafficLights);
             for (int i = 0; i < customPhaseDataBuffer.Length; i++)
             {
-                menu.items.Add(new Types.ItemCustomPhase{activeIndex = m_ActiveEditingCustomPhaseIndexBinding.value, index = i, length = customPhaseDataBuffer.Length, minimumDurationMultiplier = customPhaseDataBuffer[i].m_MinimumDurationMultiplier});
+                menu.items.Add(new Types.ItemCustomPhase{
+                    activeIndex = m_ActiveEditingCustomPhaseIndexBinding.value,
+                    currentSignalGroup = trafficLights.m_CurrentSignalGroup,
+                    index = i,
+                    length = customPhaseDataBuffer.Length,
+                    minimumDurationMultiplier = customPhaseDataBuffer[i].m_MinimumDurationMultiplier
+                });
             }
             if (customPhaseDataBuffer.Length < 16)
             {
@@ -415,8 +489,8 @@ public partial class UISystem : UISystemBase
         var definition = new { index = 0 };
         var value = JsonConvert.DeserializeAnonymousType(input, definition);
         m_ActiveEditingCustomPhaseIndexBinding.Update(value.index);
-        UpdateEntity();
         m_MainPanelBinding.Update();
+        UpdateEntity();
         return "";
     }
 
@@ -430,10 +504,10 @@ public partial class UISystem : UISystemBase
                 customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
             customPhaseDataBuffer.Add(new CustomPhaseData());
-            UpdateEntity();
             m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
             m_MainPanelBinding.Update();
             m_EdgeInfoBinding.Update();
+            UpdateEntity();
         }
         return "";
     }
@@ -470,9 +544,10 @@ public partial class UISystem : UISystemBase
                 m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
             }
 
-            UpdateEntity();
             m_MainPanelBinding.Update();
             m_EdgeInfoBinding.Update();
+
+            UpdateEntity();
         }
         return "";
     }
@@ -505,9 +580,10 @@ public partial class UISystem : UISystemBase
             CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, value.index1, value.index2);
 
             m_ActiveEditingCustomPhaseIndexBinding.Update(value.index2);
-            UpdateEntity();
             m_MainPanelBinding.Update();
             m_EdgeInfoBinding.Update();
+
+            UpdateEntity();
         }
         return "";
     }
@@ -531,9 +607,9 @@ public partial class UISystem : UISystemBase
                 newValue.m_MinimumDurationMultiplier = parsedValue.value;
                 customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value] = newValue;
 
-                UpdateEntity();
                 m_MainPanelBinding.Update();
                 m_EdgeInfoBinding.Update();
+                UpdateEntity();
             }
         }
         return "";
@@ -571,6 +647,7 @@ public partial class UISystem : UISystemBase
         }
 
         m_EdgeInfoBinding.Update();
+        UpdateEntity();
 
         return "";
     }
@@ -607,6 +684,7 @@ public partial class UISystem : UISystemBase
         }
 
         m_EdgeInfoBinding.Update();
+        UpdateEntity();
 
         return "";
     }
@@ -715,6 +793,7 @@ public partial class UISystem : UISystemBase
         if (entity != m_SelectedEntity)
         {
             m_ShowNotificationUnsaved = false;
+            m_RenderSystem.ClearMesh();
 
             // Clean up old entity
             if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))

@@ -127,6 +127,8 @@ public static class Types
 
         public int activeIndex;
 
+        public int currentSignalGroup;
+
         public int index;
 
         public int length;

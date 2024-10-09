@@ -57,6 +57,7 @@ public class Mod : IMod
 
         m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UIUpdateSystem>(SystemUpdatePhase.ModificationEnd);
     }
 
     public void OnDispose()
