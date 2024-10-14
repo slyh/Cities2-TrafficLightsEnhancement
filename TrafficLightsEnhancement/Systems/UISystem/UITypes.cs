@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Colossal.UI.Binding;
 using Newtonsoft.Json;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public static class Types
+public static class UITypes
 {
     public struct ItemDivider
     {
@@ -136,7 +137,7 @@ public static class Types
         public float minimumDurationMultiplier;
     }
 
-    public struct WorldPosition
+    public struct WorldPosition : IJsonWritable
     {
         public float x;
 
@@ -174,9 +175,23 @@ public static class Types
         {
             return x.GetHashCode() ^ (y.GetHashCode() << 2) ^ (z.GetHashCode() >> 2);
         }
+
+        public void Write(IJsonWriter writer)
+        {
+            writer.TypeBegin(typeof(WorldPosition).FullName);
+            writer.PropertyName("x");
+            writer.Write(x);
+            writer.PropertyName("y");
+            writer.Write(y);
+            writer.PropertyName("z");
+            writer.Write(z);
+            writer.PropertyName("key");
+            writer.Write(key);
+            writer.TypeEnd();
+        }
     }
 
-    public struct ScreenPoint : System.IEquatable<ScreenPoint>, Colossal.UI.Binding.IJsonWritable
+    public struct ScreenPoint : System.IEquatable<ScreenPoint>, IJsonWritable
     {
         public int top;
 
@@ -188,9 +203,9 @@ public static class Types
             top = (int)(screenHeight - pos.y);
         }
 
-        public void Write(Colossal.UI.Binding.IJsonWriter writer)
+        public void Write(IJsonWriter writer)
         {
-            writer.TypeBegin("");
+            writer.TypeBegin(typeof(ScreenPoint).FullName);
             writer.PropertyName("top");
             writer.Write(top);
             writer.PropertyName("left");

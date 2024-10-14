@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using C2VM.TrafficLightsEnhancement.Components;
 using Game.Net;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
@@ -23,6 +24,9 @@ public struct ExtraTypeHandle
 
     public ComponentLookup<TrackLane> m_TrackLane;
 
+    [ReadOnly]
+    public ComponentLookup<TrainTrack> m_TrainTrack;
+
     public ComponentTypeHandle<CustomTrafficLights> m_CustomTrafficLights;
 
     public ComponentLookup<ExtraLaneSignal> m_ExtraLaneSignal;
@@ -44,6 +48,7 @@ public struct ExtraTypeHandle
         m_PedestrianLane = state.GetComponentLookup<PedestrianLane>();
         m_SubLane = state.GetBufferLookup<SubLane>();
         m_TrackLane = state.GetComponentLookup<TrackLane>();
+        m_TrainTrack = state.GetComponentLookup<TrainTrack>(true);
         m_CustomTrafficLights = state.GetComponentTypeHandle<CustomTrafficLights>();
         m_ExtraLaneSignal = state.GetComponentLookup<ExtraLaneSignal>();
         m_EdgeGroupMask = state.GetBufferTypeHandle<EdgeGroupMask>();
@@ -62,6 +67,7 @@ public struct ExtraTypeHandle
         m_PedestrianLane.Update(ref state);
         m_SubLane.Update(ref state);
         m_TrackLane.Update(ref state);
+        m_TrainTrack.Update(ref state);
         m_CustomTrafficLights.Update(ref state);
         m_ExtraLaneSignal.Update(ref state);
         m_EdgeGroupMask.Update(ref state);

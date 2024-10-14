@@ -38,15 +38,11 @@ public partial class UISystem : UISystemBase
 
     public Entity m_SelectedEntity;
 
-    private int m_Ways;
-
     private CustomTrafficLights m_CustomTrafficLights;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
-    private LDTRetirementSystem m_LdtRetirementSystem;
-
-    private Game.Simulation.SimulationSystem m_SimulationSystem;
+    private LdtRetirementSystem m_LdtRetirementSystem;
 
     private RenderSystem.RenderSystem m_RenderSystem;
 
@@ -60,9 +56,11 @@ public partial class UISystem : UISystemBase
 
     private float3 m_CameraPosition;
 
-    private List<Types.WorldPosition> m_WorldPositionList;
+    private List<UITypes.WorldPosition> m_WorldPositionList;
 
-    private uint m_LastUpdateFrameIndex;
+    private Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>> m_EdgeInfoDictionary;
+
+    private int m_DebugDisplayGroup;
 
     private GetterValueBinding<string> m_MainPanelBinding;
 
@@ -70,11 +68,13 @@ public partial class UISystem : UISystemBase
 
     private GetterValueBinding<string> m_CityConfigurationBinding;
 
-    private GetterValueBinding<Dictionary<string, Types.ScreenPoint>> m_ScreenPointBinding;
+    private GetterValueBinding<Dictionary<string, UITypes.ScreenPoint>> m_ScreenPointBinding;
 
-    private GetterValueBinding<string> m_EdgeInfoBinding;
+    private GetterValueBinding<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>> m_EdgeInfoBinding;
 
     private ValueBinding<int> m_ActiveEditingCustomPhaseIndexBinding;
+
+    public TypeHandle m_TypeHandle;
 
     protected override void OnCreate()
     {
@@ -84,18 +84,20 @@ public partial class UISystem : UISystemBase
         m_ScreenHeight = Screen.height;
 
         m_WorldPositionList = [];
+        m_EdgeInfoDictionary = [];
+
+        m_DebugDisplayGroup = -1;
 
         m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
-        m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LDTRetirementSystem>();
+        m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LdtRetirementSystem>();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem.RenderSystem>();
-        m_SimulationSystem = World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
 
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
         AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetLocale", GetLocale));
         AddBinding(m_CityConfigurationBinding = new GetterValueBinding<string>("C2VM.TLE", "GetCityConfiguration", GetCityConfiguration));
-        AddBinding(m_ScreenPointBinding = new GetterValueBinding<Dictionary<string, Types.ScreenPoint>>("C2VM.TLE", "GetScreenPoint", GetScreenPoint, new DictionaryWriter<string, Types.ScreenPoint>(null, new ValueWriter<Types.ScreenPoint>())));
-        AddBinding(m_EdgeInfoBinding = new GetterValueBinding<string>("C2VM.TLE", "GetEdgeInfo", GetEdgeInfo));
+        AddBinding(m_ScreenPointBinding = new GetterValueBinding<Dictionary<string, UITypes.ScreenPoint>>("C2VM.TLE", "GetScreenPoint", GetScreenPoint, new DictionaryWriter<string, UITypes.ScreenPoint>(null, new ValueWriter<UITypes.ScreenPoint>()), new JsonWriter.FalseEqualityComparer<Dictionary<string, UITypes.ScreenPoint>>()));
+        AddBinding(m_EdgeInfoBinding = new GetterValueBinding<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>("C2VM.TLE", "GetEdgeInfo", GetEdgeInfo, new JsonWriter.EdgeInfoWriter(), new JsonWriter.FalseEqualityComparer<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>()));
         AddBinding(m_ActiveEditingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveEditingCustomPhaseIndex", -1));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
@@ -119,6 +121,14 @@ public partial class UISystem : UISystemBase
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallRemoveWorldPosition", CallRemoveWorldPosition));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallOpenBrowser", CallOpenBrowser));
+
+        AddBinding(new TriggerBinding<int>("C2VM.TLE", "SetDebugDisplayGroup", (group) => { m_DebugDisplayGroup = group; RedrawGizmo(); }));
+    }
+
+    protected override void OnCreateForCompiler()
+    {
+        base.OnCreateForCompiler();
+        m_TypeHandle.AssignHandles(ref base.CheckedStateRef);
     }
 
     protected override void OnUpdate()
@@ -127,10 +137,6 @@ public partial class UISystem : UISystemBase
         {
             m_CameraPosition = m_CameraUpdateSystem.position;
             m_ScreenPointBinding.Update();
-        }
-        if (math.abs(m_SimulationSystem.frameIndex - m_LastUpdateFrameIndex) >= 15)
-        {
-            RedrawGizmo();
         }
     }
 
@@ -151,16 +157,20 @@ public partial class UISystem : UISystemBase
         m_CityConfigurationBinding.Update();
     }
 
+    public void SimulationUpdate()
+    {
+        if (m_MainPanelState == MainPanelState.CustomPhase)
+        {
+            m_MainPanelBinding.Update();
+        }
+        RedrawGizmo();
+    }
+
     public void RedrawGizmo()
     {
         if (m_SelectedEntity != Entity.Null)
         {
-            m_LastUpdateFrameIndex = m_SimulationSystem.frameIndex;
-            if (m_MainPanelState == MainPanelState.CustomPhase)
-            {
-                m_MainPanelBinding.Update();
-            }
-            m_RenderSystem.ClearMesh();
+            m_RenderSystem.ClearLineMesh();
             if (EntityManager.TryGetBuffer<SubLane>(m_SelectedEntity, true, out var subLaneBuffer))
             {
                 int displayGroup = 16;
@@ -171,6 +181,10 @@ public partial class UISystem : UISystemBase
                 else if (EntityManager.TryGetComponent<TrafficLights>(m_SelectedEntity, out var trafficLights))
                 {
                     displayGroup = trafficLights.m_CurrentSignalGroup - 1;
+                }
+                if (m_DebugDisplayGroup >= 0)
+                {
+                    displayGroup = m_DebugDisplayGroup;
                 }
                 foreach (var subLane in subLaneBuffer)
                 {
@@ -202,8 +216,31 @@ public partial class UISystem : UISystemBase
                     }
                 }
             }
-            m_RenderSystem.BuildMesh();
+            m_RenderSystem.BuildLineMesh();
         }
+    }
+
+    public void RedrawIcon()
+    {
+        m_RenderSystem.ClearIconMesh();
+        if (m_MainPanelState == MainPanelState.Empty)
+        {
+            var entityQuery = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<Node>(), ComponentType.ReadOnly<CustomTrafficLights>());
+            var nodeArray = entityQuery.ToComponentDataArray<Node>(Allocator.Temp);
+            var customTrafficLightsArray = entityQuery.ToComponentDataArray<CustomTrafficLights>(Allocator.Temp);
+            for (int i = 0; i < nodeArray.Length; i++)
+            {
+                var node = nodeArray[i];
+                var customTrafficLights = customTrafficLightsArray[i];
+                RenderSystem.RenderSystem.Icon icon = RenderSystem.RenderSystem.Icon.TrafficLight;
+                if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
+                {
+                    icon = RenderSystem.RenderSystem.Icon.TrafficLightWrench;
+                }
+                m_RenderSystem.AddIcon(node.m_Position, node.m_Rotation, icon);
+            }
+        }
+        m_RenderSystem.BuildIconMesh();
     }
 
     public void SetMainPanelState(MainPanelState state)
@@ -211,6 +248,7 @@ public partial class UISystem : UISystemBase
         UpdateEntity();
         m_MainPanelState = state;
         m_MainPanelBinding.Update();
+        RedrawIcon();
         if (m_MainPanelState != MainPanelState.CustomPhase)
         {
             m_ActiveEditingCustomPhaseIndexBinding.Update(-1);
@@ -223,7 +261,7 @@ public partial class UISystem : UISystemBase
 
     public static string GetLocaleCode()
     {
-        string locale = Localisations.Helper.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name);
+        string locale = Utils.LocalisationUtils.GetAutoLocale(GameManager.instance.localizationManager.activeLocaleId, CultureInfo.CurrentCulture.Name);
         if (Mod.m_Settings != null && Mod.m_Settings.m_Locale != "auto")
         {
             locale = Mod.m_Settings.m_Locale;
@@ -243,7 +281,7 @@ public partial class UISystem : UISystemBase
 
     public static void UpdateLocale()
     {
-        Localisations.Helper localisationsHelper = new Localisations.Helper(GetLocaleCode());
+        Utils.LocalisationUtils localisationsHelper = new Utils.LocalisationUtils(GetLocaleCode());
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
 
         if (m_LocaleBinding != null)
@@ -264,33 +302,35 @@ public partial class UISystem : UISystemBase
 
     protected string CallOpenBrowser(string jsonString)
     {
-        var keyDefinition = new {
-            data = new { key = "", value = "" }
-        };
+        var keyDefinition = new { key = "", value = "" };
         var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
-        System.Diagnostics.Process.Start(parsedKey.data.value);
+        System.Diagnostics.Process.Start(parsedKey.value);
         return "";
     }
 
     protected string CallMainPanelUpdatePattern(string input)
     {
-        Types.ItemRadio pattern = JsonConvert.DeserializeObject<Types.ItemRadio>(input);
-        m_CustomTrafficLights.SetPattern(((uint)m_CustomTrafficLights.GetPattern(m_Ways) & 0xFFFF0000) | uint.Parse(pattern.value));
-        if (m_CustomTrafficLights.GetPatternOnly(m_Ways) != TrafficLightPatterns.Pattern.Vanilla)
+        UITypes.ItemRadio pattern = JsonConvert.DeserializeObject<UITypes.ItemRadio>(input);
+        m_CustomTrafficLights.SetPattern(((uint)m_CustomTrafficLights.GetPattern() & 0xFFFF0000) | uint.Parse(pattern.value));
+        if (m_CustomTrafficLights.GetPatternOnly() != CustomTrafficLights.Patterns.Vanilla)
         {
-            m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern(m_Ways) & ~TrafficLightPatterns.Pattern.CentreTurnGiveWay);
+            m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern() & ~CustomTrafficLights.Patterns.CentreTurnGiveWay);
         }
-        if (m_CustomTrafficLights.GetPatternOnly(m_Ways) == TrafficLightPatterns.Pattern.CustomPhase)
+        if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
         {
             if (!EntityManager.HasBuffer<CustomPhaseData>(m_SelectedEntity))
             {
-                EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
+                EntityManager.AddComponent<CustomPhaseData>(m_SelectedEntity);
             }
             if (!EntityManager.HasBuffer<EdgeGroupMask>(m_SelectedEntity))
             {
-                EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
+                EntityManager.AddComponent<EdgeGroupMask>(m_SelectedEntity);
             }
-            m_CustomTrafficLights.SetPattern(TrafficLightPatterns.Pattern.CustomPhase);
+            if (!EntityManager.HasBuffer<SubLaneGroupMask>(m_SelectedEntity))
+            {
+                EntityManager.AddComponent<SubLaneGroupMask>(m_SelectedEntity);
+            }
+            m_CustomTrafficLights.SetPattern(CustomTrafficLights.Patterns.CustomPhase);
         }
         UpdateEntity();
         m_MainPanelBinding.Update();
@@ -299,15 +339,15 @@ public partial class UISystem : UISystemBase
 
     protected string CallMainPanelUpdateOption(string input)
     {
-        Types.ItemCheckbox option = JsonConvert.DeserializeObject<Types.ItemCheckbox>(input);
-        foreach (TrafficLightPatterns.Pattern pattern in Enum.GetValues(typeof(TrafficLightPatterns.Pattern)))
+        UITypes.ItemCheckbox option = JsonConvert.DeserializeObject<UITypes.ItemCheckbox>(input);
+        foreach (CustomTrafficLights.Patterns pattern in Enum.GetValues(typeof(CustomTrafficLights.Patterns)))
         {
             if (((uint) pattern & 0xFFFF0000) != 0)
             {
                 if (uint.Parse(option.key) == (uint)pattern)
                 {
                     // Toggle the option
-                    m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern(m_Ways) ^ pattern);
+                    m_CustomTrafficLights.SetPattern(m_CustomTrafficLights.GetPattern() ^ pattern);
                 }
             }
         }
@@ -352,49 +392,45 @@ public partial class UISystem : UISystemBase
         };
         if (m_MainPanelState == MainPanelState.Main && m_SelectedEntity != Entity.Null)
         {
-            menu.items.Add(new Types.ItemTitle{title = "TrafficSignal"});
-            menu.items.Add(Types.MainPanelItemPattern("ModDefault", (uint)TrafficLightPatterns.Pattern.ModDefault, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            menu.items.Add(Types.MainPanelItemPattern("Vanilla", (uint)TrafficLightPatterns.Pattern.Vanilla, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.SplitPhasing))
+            menu.items.Add(new UITypes.ItemTitle{title = "TrafficSignal"});
+            menu.items.Add(UITypes.MainPanelItemPattern("ModDefault", (uint)CustomTrafficLights.Patterns.ModDefault, (uint)m_CustomTrafficLights.GetPattern()));
+            menu.items.Add(UITypes.MainPanelItemPattern("Vanilla", (uint)CustomTrafficLights.Patterns.Vanilla, (uint)m_CustomTrafficLights.GetPattern()));
+            if (PredefinedPatternsProcessor.IsValidPattern(m_EdgeInfoDictionary[m_SelectedEntity], CustomTrafficLights.Patterns.SplitPhasing))
             {
-                menu.items.Add(Types.MainPanelItemPattern("SplitPhasing", (uint)TrafficLightPatterns.Pattern.SplitPhasing, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                menu.items.Add(UITypes.MainPanelItemPattern("SplitPhasing", (uint)CustomTrafficLights.Patterns.SplitPhasing, (uint)m_CustomTrafficLights.GetPattern()));
             }
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.SplitPhasingAdvanced))
-            {
-                menu.items.Add(Types.MainPanelItemPattern("AdvancedSplitPhasing", (uint)TrafficLightPatterns.Pattern.SplitPhasingAdvanced, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            }
-            if (TrafficLightPatterns.IsValidPattern(m_Ways, TrafficLightPatterns.Pattern.ProtectedCentreTurn))
+            if (PredefinedPatternsProcessor.IsValidPattern(m_EdgeInfoDictionary[m_SelectedEntity], CustomTrafficLights.Patterns.ProtectedCentreTurn))
             {
                 if (m_CityConfigurationSystem.leftHandTraffic)
                 {
-                    menu.items.Add(Types.MainPanelItemPattern("ProtectedRightTurns", (uint)TrafficLightPatterns.Pattern.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                    menu.items.Add(UITypes.MainPanelItemPattern("ProtectedRightTurns", (uint)CustomTrafficLights.Patterns.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern()));
                 }
                 else
                 {
-                    menu.items.Add(Types.MainPanelItemPattern("ProtectedLeftTurns", (uint)TrafficLightPatterns.Pattern.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                    menu.items.Add(UITypes.MainPanelItemPattern("ProtectedLeftTurns", (uint)CustomTrafficLights.Patterns.ProtectedCentreTurn, (uint)m_CustomTrafficLights.GetPattern()));
                 }
             }
-            menu.items.Add(Types.MainPanelItemPattern("CustomPhase", (uint)TrafficLightPatterns.Pattern.CustomPhase, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-            if (m_CustomTrafficLights.GetPatternOnly(m_Ways) == TrafficLightPatterns.Pattern.CustomPhase)
+            menu.items.Add(UITypes.MainPanelItemPattern("CustomPhase", (uint)CustomTrafficLights.Patterns.CustomPhase, (uint)m_CustomTrafficLights.GetPattern()));
+            if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
             {
-                menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemTitle{title = "CustomPhase"});
-                menu.items.Add(new Types.ItemButton{label = "Setup", key = "state", value = "3", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
+                menu.items.Add(default(UITypes.ItemDivider));
+                menu.items.Add(new UITypes.ItemTitle{title = "CustomPhase"});
+                menu.items.Add(new UITypes.ItemButton{label = "Setup", key = "state", value = "3", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
             }
-            if (m_CustomTrafficLights.GetPatternOnly(m_Ways) < TrafficLightPatterns.Pattern.ModDefault)
+            if (m_CustomTrafficLights.GetPatternOnly() < CustomTrafficLights.Patterns.ModDefault && !NodeUtils.HasTrainTrack(m_EdgeInfoDictionary[m_SelectedEntity]))
             {
-                menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemTitle{title = "Options"});
-                menu.items.Add(Types.MainPanelItemOption("AllowTurningOnRed", (uint)TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-                if (m_CustomTrafficLights.GetPatternOnly(m_Ways) == TrafficLightPatterns.Pattern.Vanilla)
+                menu.items.Add(default(UITypes.ItemDivider));
+                menu.items.Add(new UITypes.ItemTitle{title = "Options"});
+                menu.items.Add(UITypes.MainPanelItemOption("AllowTurningOnRed", (uint)CustomTrafficLights.Patterns.AlwaysGreenKerbsideTurn, (uint)m_CustomTrafficLights.GetPattern()));
+                if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.Vanilla)
                 {
-                    menu.items.Add(Types.MainPanelItemOption("GiveWayToOncomingVehicles", (uint)TrafficLightPatterns.Pattern.CentreTurnGiveWay, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
+                    menu.items.Add(UITypes.MainPanelItemOption("GiveWayToOncomingVehicles", (uint)CustomTrafficLights.Patterns.CentreTurnGiveWay, (uint)m_CustomTrafficLights.GetPattern()));
                 }
-                menu.items.Add(Types.MainPanelItemOption("ExclusivePedestrianPhase", (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian, (uint)m_CustomTrafficLights.GetPattern(m_Ways)));
-                if (((uint)m_CustomTrafficLights.GetPattern(m_Ways) & (uint)TrafficLightPatterns.Pattern.ExclusivePedestrian) != 0)
+                menu.items.Add(UITypes.MainPanelItemOption("ExclusivePedestrianPhase", (uint)CustomTrafficLights.Patterns.ExclusivePedestrian, (uint)m_CustomTrafficLights.GetPattern()));
+                if (((uint)m_CustomTrafficLights.GetPattern() & (uint)CustomTrafficLights.Patterns.ExclusivePedestrian) != 0)
                 {
-                    menu.items.Add(default(Types.ItemDivider));
-                    menu.items.Add(new Types.ItemRange
+                    menu.items.Add(default(UITypes.ItemDivider));
+                    menu.items.Add(new UITypes.ItemRange
                     {
                         key = "CustomPedestrianDurationMultiplier",
                         label = "CustomPedestrianDurationMultiplier",
@@ -407,25 +443,25 @@ public partial class UISystem : UISystemBase
                     });
                 }
             }
-            menu.items.Add(default(Types.ItemDivider));
+            menu.items.Add(default(UITypes.ItemDivider));
             if (m_LdtRetirementSystem.m_UnmigratedNodeCount > 0)
             {
-                menu.items.Add(new Types.ItemTitle{title = "LaneDirectionTool"});
-                menu.items.Add(new Types.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM.TLE.CallLaneDirectionToolReset"});
-                menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LDTRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM.TLE.CallOpenBrowser"});
-                menu.items.Add(default(Types.ItemDivider));
+                menu.items.Add(new UITypes.ItemTitle{title = "LaneDirectionTool"});
+                menu.items.Add(new UITypes.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM.TLE.CallLaneDirectionToolReset"});
+                menu.items.Add(default(UITypes.ItemDivider));
+                menu.items.Add(new UITypes.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LdtRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM.TLE.CallOpenBrowser"});
+                menu.items.Add(default(UITypes.ItemDivider));
             }
             else if (Mod.m_Settings != null && !Mod.m_Settings.m_HasReadLdtRetirementNotice)
             {
-                menu.items.Add(new Types.ItemNotification{label = "LdtRetirementNotice", notificationType = "notice"});
-                menu.items.Add(default(Types.ItemDivider));
+                menu.items.Add(new UITypes.ItemNotification{label = "LdtRetirementNotice", notificationType = "notice"});
+                menu.items.Add(default(UITypes.ItemDivider));
             }
-            menu.items.Add(new Types.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM.TLE.CallMainPanelSave"});
+            menu.items.Add(new UITypes.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM.TLE.CallMainPanelSave"});
             if (m_ShowNotificationUnsaved)
             {
-                menu.items.Add(default(Types.ItemDivider));
-                menu.items.Add(new Types.ItemNotification{label = "PleaseSave", notificationType = "warning"});
+                menu.items.Add(default(UITypes.ItemDivider));
+                menu.items.Add(new UITypes.ItemNotification{label = "PleaseSave", notificationType = "warning"});
             }
         }
         else if (m_MainPanelState == MainPanelState.CustomPhase)
@@ -438,7 +474,7 @@ public partial class UISystem : UISystemBase
             EntityManager.TryGetComponent(m_SelectedEntity, out TrafficLights trafficLights);
             for (int i = 0; i < customPhaseDataBuffer.Length; i++)
             {
-                menu.items.Add(new Types.ItemCustomPhase{
+                menu.items.Add(new UITypes.ItemCustomPhase{
                     activeIndex = m_ActiveEditingCustomPhaseIndexBinding.value,
                     currentSignalGroup = trafficLights.m_CurrentSignalGroup,
                     index = i,
@@ -448,31 +484,50 @@ public partial class UISystem : UISystemBase
             }
             if (customPhaseDataBuffer.Length < 16)
             {
-                menu.items.Add(new Types.ItemButton{label = "Add", key = "add", value = "add", engineEventName = "C2VM.TLE.CallAddCustomPhase"});
+                menu.items.Add(new UITypes.ItemButton{label = "Add", key = "add", value = "add", engineEventName = "C2VM.TLE.CallAddCustomPhase"});
             }
-            menu.items.Add(new Types.ItemButton{label = "Save", key = "state", value = "2", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
+            menu.items.Add(new UITypes.ItemButton{label = "Save", key = "state", value = "2", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
         }
         else if (m_MainPanelState == MainPanelState.Empty)
         {
-            menu.items.Add(new Types.ItemMessage{message = "PleaseSelectJunction"});
+            menu.items.Add(new UITypes.ItemMessage{message = "PleaseSelectJunction"});
         }
         if (Mod.IsCanary() && Mod.m_Settings != null && Mod.m_Settings.m_SuppressCanaryWarningVersion != Mod.m_InformationalVersion)
         {
-            menu.items.Add(default(Types.ItemDivider));
-            menu.items.Add(new Types.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
+            menu.items.Add(default(UITypes.ItemDivider));
+            menu.items.Add(new UITypes.ItemNotification{label = "CanaryBuildWarning", notificationType = "warning"});
         }
         string result = JsonConvert.SerializeObject(menu);
         return result;
     }
 
-    protected string GetEdgeInfo()
+    protected Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>> GetEdgeInfo()
     {
-        if (m_SelectedEntity.Equals(Entity.Null))
+        return m_EdgeInfoDictionary;
+    }
+
+    public void UpdateEdgeInfo(Entity node)
+    {
+        if (node == Entity.Null)
         {
-            return "[]";
+            return;
         }
-        var edgeInfoNativeList = NodeUtils.GetEdgeInfoList(Allocator.Temp, EntityManager, m_SelectedEntity);
-        return JsonConvert.SerializeObject(edgeInfoNativeList.AsArray());
+        if (m_EdgeInfoDictionary.ContainsKey(node))
+        {
+            NodeUtils.Dispose(m_EdgeInfoDictionary[node]);
+        }
+        m_EdgeInfoDictionary[node] = NodeUtils.GetEdgeInfoList(Allocator.Persistent, node, this).AsArray();
+        m_EdgeInfoBinding.Update();
+        m_MainPanelBinding.Update();
+    }
+
+    public void ClearEdgeInfo()
+    {
+        foreach (var kV in m_EdgeInfoDictionary)
+        {
+            NodeUtils.Dispose(kV.Value);
+        }
+        m_EdgeInfoDictionary.Clear();
     }
 
     protected string CallSetMainPanelState(string input)
@@ -506,7 +561,7 @@ public partial class UISystem : UISystemBase
             customPhaseDataBuffer.Add(new CustomPhaseData());
             m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
             m_MainPanelBinding.Update();
-            m_EdgeInfoBinding.Update();
+            UpdateEdgeInfo(m_SelectedEntity);
             UpdateEntity();
         }
         return "";
@@ -526,18 +581,20 @@ public partial class UISystem : UISystemBase
             customPhaseDataBuffer.RemoveAt(value.index);
 
             DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer;
+            DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer;
             if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out edgeGroupMaskBuffer))
             {
                 edgeGroupMaskBuffer = EntityManager.AddBuffer<EdgeGroupMask>(m_SelectedEntity);
             }
-            CustomPhaseUtils.SwapBit(edgeGroupMaskBuffer, value.index, 16);
-
-            DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer;
             if (!EntityManager.TryGetBuffer(m_SelectedEntity, false, out subLaneGroupMaskBuffer))
             {
                 subLaneGroupMaskBuffer = EntityManager.AddBuffer<SubLaneGroupMask>(m_SelectedEntity);
             }
-            CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, value.index, 16);
+            for (int i = value.index; i < 16; i++)
+            {
+                CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, i, i + 1);
+                CustomPhaseUtils.SwapBit(edgeGroupMaskBuffer, i, i + 1);
+            }
 
             if (m_ActiveEditingCustomPhaseIndexBinding.value >= customPhaseDataBuffer.Length)
             {
@@ -545,7 +602,7 @@ public partial class UISystem : UISystemBase
             }
 
             m_MainPanelBinding.Update();
-            m_EdgeInfoBinding.Update();
+            UpdateEdgeInfo(m_SelectedEntity);
 
             UpdateEntity();
         }
@@ -581,7 +638,7 @@ public partial class UISystem : UISystemBase
 
             m_ActiveEditingCustomPhaseIndexBinding.Update(value.index2);
             m_MainPanelBinding.Update();
-            m_EdgeInfoBinding.Update();
+            UpdateEdgeInfo(m_SelectedEntity);
 
             UpdateEntity();
         }
@@ -608,7 +665,7 @@ public partial class UISystem : UISystemBase
                 customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value] = newValue;
 
                 m_MainPanelBinding.Update();
-                m_EdgeInfoBinding.Update();
+                UpdateEdgeInfo(m_SelectedEntity);
                 UpdateEntity();
             }
         }
@@ -646,7 +703,7 @@ public partial class UISystem : UISystemBase
             }
         }
 
-        m_EdgeInfoBinding.Update();
+        UpdateEdgeInfo(m_SelectedEntity);
         UpdateEntity();
 
         return "";
@@ -683,7 +740,7 @@ public partial class UISystem : UISystemBase
             }
         }
 
-        m_EdgeInfoBinding.Update();
+        UpdateEdgeInfo(m_SelectedEntity);
         UpdateEntity();
 
         return "";
@@ -714,7 +771,7 @@ public partial class UISystem : UISystemBase
 
     protected string CallAddWorldPosition(string input)
     {
-        Types.WorldPosition[] posArray = JsonConvert.DeserializeObject<Types.WorldPosition[]>(input);
+        UITypes.WorldPosition[] posArray = JsonConvert.DeserializeObject<UITypes.WorldPosition[]>(input);
         foreach (var pos in posArray)
         {
             m_WorldPositionList.Add(pos);
@@ -725,7 +782,7 @@ public partial class UISystem : UISystemBase
 
     protected string CallRemoveWorldPosition(string input)
     {
-        Types.WorldPosition[] posArray = JsonConvert.DeserializeObject<Types.WorldPosition[]>(input);
+        UITypes.WorldPosition[] posArray = JsonConvert.DeserializeObject<UITypes.WorldPosition[]>(input);
         foreach (var pos in posArray)
         {
             m_WorldPositionList.Remove(pos);
@@ -734,16 +791,16 @@ public partial class UISystem : UISystemBase
         return "";
     }
 
-    protected Dictionary<string, Types.ScreenPoint> GetScreenPoint()
+    protected Dictionary<string, UITypes.ScreenPoint> GetScreenPoint()
     {
-        Dictionary<string, Types.ScreenPoint> screenPointDictionary = [];
+        Dictionary<string, UITypes.ScreenPoint> screenPointDictionary = [];
         m_Camera = Camera.main;
         m_ScreenHeight = Screen.height;
         foreach (var wp in m_WorldPositionList)
         {
             if (!screenPointDictionary.ContainsKey(wp))
             {
-                screenPointDictionary[wp] = new Types.ScreenPoint(m_Camera.WorldToScreenPoint(wp), m_ScreenHeight);
+                screenPointDictionary[wp] = new UITypes.ScreenPoint(m_Camera.WorldToScreenPoint(wp), m_ScreenHeight);
             }
         }
         return screenPointDictionary;
@@ -762,7 +819,7 @@ public partial class UISystem : UISystemBase
                 EntityManager.SetComponentData<CustomTrafficLights>(m_SelectedEntity, m_CustomTrafficLights);
             }
 
-            if (m_CustomTrafficLights.GetPatternOnly(m_Ways) == TrafficLightPatterns.Pattern.ModDefault)
+            if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.ModDefault)
             {
                 EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
             }
@@ -773,7 +830,7 @@ public partial class UISystem : UISystemBase
 
     protected void ResetMainPanelState()
     {
-        m_CustomTrafficLights = new CustomTrafficLights(TrafficLightPatterns.Pattern.ModDefault);
+        m_CustomTrafficLights = new CustomTrafficLights(CustomTrafficLights.Patterns.ModDefault);
 
         if (EntityManager.HasComponent<CustomTrafficLights>(m_SelectedEntity))
         {
@@ -793,18 +850,8 @@ public partial class UISystem : UISystemBase
         if (entity != m_SelectedEntity)
         {
             m_ShowNotificationUnsaved = false;
-            m_RenderSystem.ClearMesh();
-
-            // Clean up old entity
-            if (EntityManager.HasBuffer<ConnectPositionSource>(m_SelectedEntity))
-            {
-                EntityManager.RemoveComponent<ConnectPositionSource>(m_SelectedEntity);
-            }
-
-            if (EntityManager.HasBuffer<ConnectPositionTarget>(m_SelectedEntity))
-            {
-                EntityManager.RemoveComponent<ConnectPositionTarget>(m_SelectedEntity);
-            }
+            m_RenderSystem.ClearLineMesh();
+            ClearEdgeInfo();
 
             if (!entity.Equals(Entity.Null))
             {
@@ -817,50 +864,9 @@ public partial class UISystem : UISystemBase
 
             m_SelectedEntity = entity;
 
-            m_Ways = 0;
-
-            // Retrieve info of new entity
-            if (EntityManager.HasBuffer<SubLane>(m_SelectedEntity))
-            {
-                Dictionary<float3, bool> lanes = new Dictionary<float3, bool>();
-                DynamicBuffer<SubLane> buffer = EntityManager.GetBuffer<SubLane>(m_SelectedEntity);
-                foreach (SubLane subLane in buffer)
-                {
-                    if (EntityManager.HasComponent<SecondaryLane>(subLane.m_SubLane))
-                    {
-                        continue;
-                    }
-
-                    if (EntityManager.HasComponent<PedestrianLane>(subLane.m_SubLane))
-                    {
-                        continue;
-                    }
-
-                    if (!EntityManager.HasComponent<CarLane>(subLane.m_SubLane) && !EntityManager.HasComponent<TrackLane>(subLane.m_SubLane))
-                    {
-                        continue;
-                    }
-
-                    if (EntityManager.HasComponent<MasterLane>(subLane.m_SubLane) || !EntityManager.HasComponent<SlaveLane>(subLane.m_SubLane))
-                    {
-                        if (EntityManager.HasComponent<Curve>(subLane.m_SubLane))
-                        {
-                            Curve curve = EntityManager.GetComponentData<Curve>(subLane.m_SubLane);
-                            if (lanes.ContainsKey(curve.m_Bezier.a))
-                            {
-                                continue;
-                            }
-                            lanes[curve.m_Bezier.a] = true;
-                        }
-                    }
-                }
-                m_Ways = lanes.Count;
-            }
-
             ResetMainPanelState();
 
-            m_MainPanelBinding.Update();
-            m_EdgeInfoBinding.Update();
+            UpdateEdgeInfo(m_SelectedEntity);
         }
     }
 }

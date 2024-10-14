@@ -1,10 +1,11 @@
 using Colossal.Serialization.Entities;
+using Colossal.UI.Binding;
 
 namespace C2VM.TrafficLightsEnhancement.Components;
 
 public struct GroupMask
 {
-    public struct Signal : ISerializable
+    public struct Signal : ISerializable, IJsonWritable
     {
         private ushort m_SchemaVersion;
 
@@ -26,6 +27,16 @@ public struct GroupMask
             writer.Write(m_YieldGroupMask);
         }
 
+        public void Write(IJsonWriter writer)
+        {
+            writer.TypeBegin(typeof(Signal).FullName);
+            writer.PropertyName("m_GoGroupMask");
+            writer.Write(m_GoGroupMask);
+            writer.PropertyName("m_YieldGroupMask");
+            writer.Write(m_YieldGroupMask);
+            writer.TypeEnd();
+        }
+
         public Signal()
         {
             m_SchemaVersion = 1;
@@ -34,7 +45,7 @@ public struct GroupMask
         }
     }
 
-    public struct Turn : ISerializable
+    public struct Turn : ISerializable, IJsonWritable
     {
         private ushort m_SchemaVersion;
 
@@ -62,6 +73,20 @@ public struct GroupMask
             writer.Write(m_Straight);
             writer.Write(m_Right);
             writer.Write(m_UTurn);
+        }
+
+        public void Write(IJsonWriter writer)
+        {
+            writer.TypeBegin(typeof(Turn).FullName);
+            writer.PropertyName("m_Left");
+            writer.Write(m_Left);
+            writer.PropertyName("m_Straight");
+            writer.Write(m_Straight);
+            writer.PropertyName("m_Right");
+            writer.Write(m_Right);
+            writer.PropertyName("m_UTurn");
+            writer.Write(m_UTurn);
+            writer.TypeEnd();
         }
 
         public Turn()

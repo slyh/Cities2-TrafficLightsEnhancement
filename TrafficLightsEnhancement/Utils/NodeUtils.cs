@@ -1,91 +1,16 @@
+using System.Collections.Generic;
 using C2VM.TrafficLightsEnhancement.Components;
-using Colossal.Entities;
+using C2VM.TrafficLightsEnhancement.Systems.UISystem;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
-using static C2VM.TrafficLightsEnhancement.Systems.UISystem.Types;
 
 namespace C2VM.TrafficLightsEnhancement.Utils;
 
-public struct NodeUtils
+public partial struct NodeUtils
 {
-    public struct EdgeInfo
-    {
-        public Entity m_Edge;
-
-        public WorldPosition m_Position;
-
-        public int m_CarLaneLeftCount;
-
-        public int m_CarLaneStraightCount;
-
-        public int m_CarLaneRightCount;
-
-        public int m_CarLaneUTurnCount;
-
-        public int m_PublicCarLaneLeftCount;
-
-        public int m_PublicCarLaneStraightCount;
-
-        public int m_PublicCarLaneRightCount;
-
-        public int m_PublicCarLaneUTurnCount;
-
-        public int m_TrackLaneLeftCount;
-
-        public int m_TrackLaneStraightCount;
-
-        public int m_TrackLaneRightCount;
-
-        public int m_PedestrianLaneStopLineCount;
-
-        public int m_PedestrianLaneNonStopLineCount;
-
-        public NativeArray<SubLaneInfo> m_SubLaneInfoList;
-
-        public EdgeGroupMask m_EdgeGroupMask;
-    }
-
-    public struct SubLaneInfo
-    {
-        public Entity m_SubLane;
-
-        public WorldPosition m_Position;
-
-        public int m_CarLaneLeftCount;
-
-        public int m_CarLaneStraightCount;
-
-        public int m_CarLaneRightCount;
-
-        public int m_CarLaneUTurnCount;
-
-        public int m_TrackLaneLeftCount;
-
-        public int m_TrackLaneStraightCount;
-
-        public int m_TrackLaneRightCount;
-
-        public int m_PedestrianLaneCount;
-
-        public SubLaneGroupMask m_SubLaneGroupMask;
-    }
-
-    public struct LaneSource
-    {
-        public Entity m_SubLane;
-
-        public Entity m_Edge;
-
-        public LaneSource()
-        {
-            m_SubLane = Entity.Null;
-            m_Edge = Entity.Null;
-        }
-    }
-
     public struct LaneConnection
     {
         public Entity m_SourceSubLane;
@@ -105,27 +30,35 @@ public struct NodeUtils
         }
     }
 
-    public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, EntityManager em, Entity nodeEntity)
+    public static NativeList<EdgeInfo> GetEdgeInfoList
+    (
+        Allocator allocator,
+        Entity nodeEntity,
+        DynamicBuffer<SubLane> nodeSubLaneBuffer,
+        DynamicBuffer<ConnectedEdge> connectedEdgeBuffer,
+        DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer,
+        DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer,
+        BufferLookup<SubLane> subLaneLookup,
+        BufferLookup<LaneOverlap> laneOverlapLookup,
+        ComponentLookup<Edge> edgeLookup,
+        ComponentLookup<EdgeGeometry> edgeGeometryLookup,
+        ComponentLookup<Lane> laneLookup,
+        ComponentLookup<PedestrianLane> pedestrianLaneLookup,
+        ComponentLookup<MasterLane> masterLaneLookup,
+        ComponentLookup<TrackLane> trackLaneLookup,
+        ComponentLookup<CarLane> carLaneLookup,
+        ComponentLookup<Curve> curveLookup,
+        ComponentLookup<TrainTrack> trainTrackLookup
+    )
     {
         NativeList<EdgeInfo> edgeInfoList = new(4, allocator);
-        em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<SubLane> nodeSubLaneBuffer);
-        em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<ConnectedEdge> connectedEdgeBuffer);
-        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer))
-        {
-            edgeGroupMaskBuffer = em.AddBuffer<EdgeGroupMask>(nodeEntity);
-        }
-        if (!em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer))
-        {
-            subLaneGroupMaskBuffer = em.AddBuffer<SubLaneGroupMask>(nodeEntity);
-        }
-
-        NativeHashMap<Entity, LaneConnection> laneConnectionMap = GetLaneConnectionMap(Allocator.Temp, em, nodeEntity);
+        NativeHashMap<Entity, LaneConnection> laneConnectionMap = GetLaneConnectionMap(Allocator.Temp, nodeSubLaneBuffer, connectedEdgeBuffer, subLaneLookup, laneLookup);
 
         foreach (ConnectedEdge connectedEdge in connectedEdgeBuffer)
         {
             EdgeInfo edgeInfo = default;
             Entity edgeEntity = connectedEdge.m_Edge;
-            float3 edgePosition = GetEdgePosition(em, nodeEntity, edgeEntity);
+            float3 edgePosition = GetEdgePosition(nodeEntity, edgeEntity, edgeLookup, edgeGeometryLookup);
             edgeInfo.m_Edge = edgeEntity;
             edgeInfo.m_Position = edgePosition;
             CustomPhaseUtils.TryGet(edgeGroupMaskBuffer, edgeEntity, edgePosition, out edgeInfo.m_EdgeGroupMask);
@@ -135,16 +68,16 @@ public struct NodeUtils
 
             foreach (SubLane nodeSubLane in nodeSubLaneBuffer)
             {
-                em.TryGetComponent<PedestrianLane>(nodeSubLane.m_SubLane, out var nodePedestrianLane);
+                pedestrianLaneLookup.TryGetComponent(nodeSubLane.m_SubLane, out var nodePedestrianLane);
                 LaneConnection laneConnection = GetLaneConnectionFromNodeSubLane(nodeSubLane.m_SubLane, laneConnectionMap, (nodePedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
                 if (laneConnection.m_SourceEdge == edgeEntity)
                 {
-                    if (!em.HasComponent<MasterLane>(nodeSubLane.m_SubLane))
+                    if (!masterLaneLookup.HasComponent(nodeSubLane.m_SubLane))
                     {
                         SubLaneInfo sourceSubLaneInfo = subLaneMap[laneConnection.m_SourceSubLane];
                         sourceSubLaneInfo.m_SubLane = laneConnection.m_SourceSubLane;
-                        sourceSubLaneInfo.m_Position = GetSubLanePosition(em, sourceSubLaneInfo.m_SubLane);
-                        if (em.TryGetComponent<TrackLane>(nodeSubLane.m_SubLane, out var trackLane))
+                        sourceSubLaneInfo.m_Position = GetSubLanePosition(sourceSubLaneInfo.m_SubLane, curveLookup);
+                        if (trackLaneLookup.TryGetComponent(nodeSubLane.m_SubLane, out var trackLane))
                         {
                             if ((trackLane.m_Flags & TrackLaneFlags.TurnLeft) != 0)
                             {
@@ -163,9 +96,9 @@ public struct NodeUtils
                             }
                             subLaneMap[laneConnection.m_SourceSubLane] = sourceSubLaneInfo;
                         }
-                        if (em.TryGetComponent<CarLane>(nodeSubLane.m_SubLane, out var nodeCarLane))
+                        if (carLaneLookup.TryGetComponent(nodeSubLane.m_SubLane, out var nodeCarLane))
                         {
-                            em.TryGetComponent<CarLane>(laneConnection.m_SourceSubLane, out var edgeCarLane);
+                            carLaneLookup.TryGetComponent(laneConnection.m_SourceSubLane, out var edgeCarLane);
                             bool isPublicOnly = (edgeCarLane.m_Flags & CarLaneFlags.PublicOnly) != 0;
                             bool isUTurn = (nodeCarLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
                             if (!isUTurn && (nodeCarLane.m_Flags & (CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0)
@@ -200,7 +133,7 @@ public struct NodeUtils
                 {
                     if (laneConnection.m_SourceEdge == edgeEntity || laneConnection.m_DestEdge == edgeEntity)
                     {
-                        if (IsCrossingStopLine(em, nodeSubLane.m_SubLane, edgeEntity))
+                        if (IsCrossingStopLine(nodeSubLane.m_SubLane, edgeEntity, laneLookup, laneOverlapLookup, subLaneLookup))
                         {
                             edgeInfo.m_PedestrianLaneStopLineCount++;
                         }
@@ -210,11 +143,16 @@ public struct NodeUtils
                         }
                         SubLaneInfo subLaneInfo = subLaneMap[nodeSubLane.m_SubLane];
                         subLaneInfo.m_SubLane = nodeSubLane.m_SubLane;
-                        subLaneInfo.m_Position = GetSubLanePosition(em, subLaneInfo.m_SubLane);
+                        subLaneInfo.m_Position = GetSubLanePosition(subLaneInfo.m_SubLane, curveLookup);
                         subLaneInfo.m_PedestrianLaneCount++;
                         subLaneMap[nodeSubLane.m_SubLane] = subLaneInfo;
                     }
                 }
+            }
+
+            if (trainTrackLookup.HasComponent(edgeInfo.m_Edge))
+            {
+                edgeInfo.m_TrainTrackCount++;
             }
 
             foreach (var kV in subLaneMap)
@@ -230,72 +168,66 @@ public struct NodeUtils
         return edgeInfoList;
     }
 
-    public static NativeHashMap<Entity, LaneConnection> GetLaneConnectionMap(Allocator allocator, EntityManager em, Entity nodeEntity)
+    public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, Entity nodeEntity, UISystem uISystem)
     {
-        NativeHashMap<Entity, LaneConnection> laneConnectionMap = new NativeHashMap<Entity, LaneConnection>(16, allocator);
-        em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<SubLane> nodeSubLaneBuffer);
-        em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<ConnectedEdge> connectedEdgeBuffer);
-        foreach (SubLane nodeSubLane in nodeSubLaneBuffer)
+        uISystem.m_TypeHandle.Update(uISystem);
+        uISystem.m_TypeHandle.m_SubLane.TryGetBuffer(nodeEntity, out var nodeSubLaneBuffer);
+        uISystem.m_TypeHandle.m_ConnectedEdge.TryGetBuffer(nodeEntity, out var connectedEdgeBuffer);
+        uISystem.m_TypeHandle.m_EdgeGroupMask.TryGetBuffer(nodeEntity, out var edgeGroupMaskBuffer);
+        uISystem.m_TypeHandle.m_SubLaneGroupMask.TryGetBuffer(nodeEntity, out var subLaneGroupMaskBuffer);
+        return GetEdgeInfoList
+        (
+            allocator,
+            nodeEntity,
+            nodeSubLaneBuffer,
+            connectedEdgeBuffer,
+            edgeGroupMaskBuffer,
+            subLaneGroupMaskBuffer,
+            uISystem.m_TypeHandle.m_SubLane,
+            uISystem.m_TypeHandle.m_LaneOverlap,
+            uISystem.m_TypeHandle.m_Edge,
+            uISystem.m_TypeHandle.m_EdgeGeometry,
+            uISystem.m_TypeHandle.m_Lane,
+            uISystem.m_TypeHandle.m_PedestrianLane,
+            uISystem.m_TypeHandle.m_MasterLane,
+            uISystem.m_TypeHandle.m_TrackLane,
+            uISystem.m_TypeHandle.m_CarLane,
+            uISystem.m_TypeHandle.m_Curve,
+            uISystem.m_TypeHandle.m_TrainTrack
+        );
+    }
+
+    public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, Entity nodeEntity, ref InitializeTrafficLightsJob job, DynamicBuffer<SubLane> nodeSubLaneBuffer, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, DynamicBuffer<EdgeGroupMask> edgeGroupMaskBuffer, DynamicBuffer<SubLaneGroupMask> subLaneGroupMaskBuffer)
+    {
+        return GetEdgeInfoList
+        (
+            allocator,
+            nodeEntity,
+            nodeSubLaneBuffer,
+            connectedEdgeBuffer,
+            edgeGroupMaskBuffer,
+            subLaneGroupMaskBuffer,
+            job.m_ExtraTypeHandle.m_SubLane,
+            job.m_Overlaps,
+            job.m_ExtraTypeHandle.m_Edge,
+            job.m_ExtraTypeHandle.m_EdgeGeometry,
+            job.m_ExtraTypeHandle.m_Lane,
+            job.m_ExtraTypeHandle.m_PedestrianLane,
+            job.m_MasterLaneData,
+            job.m_ExtraTypeHandle.m_TrackLane,
+            job.m_CarLaneData,
+            job.m_CurveData,
+            job.m_ExtraTypeHandle.m_TrainTrack
+        );
+    }
+
+    public static void Dispose(NativeArray<EdgeInfo> edgeInfoList)
+    {
+        foreach (var edgeInfo in edgeInfoList)
         {
-            LaneConnection laneConnection = new LaneConnection();
-            if (em.TryGetComponent(nodeSubLane.m_SubLane, out Lane nodeLane))
-            {
-                foreach (ConnectedEdge connectedEdge in connectedEdgeBuffer)
-                {
-                    em.TryGetBuffer(connectedEdge.m_Edge, true, out DynamicBuffer<SubLane> edgeSubLaneBuffer);
-                    foreach (SubLane edgeSubLane in edgeSubLaneBuffer)
-                    {
-                        if (em.TryGetComponent(edgeSubLane.m_SubLane, out Lane edgeLane))
-                        {
-                            if (nodeLane.m_StartNode.Equals(edgeLane.m_EndNode))
-                            {
-                                laneConnection.m_SourceEdge = connectedEdge.m_Edge;
-                                laneConnection.m_SourceSubLane = edgeSubLane.m_SubLane;
-                            }
-                            else if (nodeLane.m_StartNode.Equals(edgeLane.m_StartNode))
-                            {
-                                laneConnection.m_SourceEdge = connectedEdge.m_Edge;
-                                laneConnection.m_SourceSubLane = edgeSubLane.m_SubLane;
-                            }
-                            if (nodeLane.m_EndNode.Equals(edgeLane.m_StartNode))
-                            {
-                                laneConnection.m_DestEdge = connectedEdge.m_Edge;
-                                laneConnection.m_DestSubLane = edgeSubLane.m_SubLane;
-                            }
-                            else if (nodeLane.m_EndNode.Equals(edgeLane.m_EndNode))
-                            {
-                                laneConnection.m_DestEdge = connectedEdge.m_Edge;
-                                laneConnection.m_DestSubLane = edgeSubLane.m_SubLane;
-                            }
-                        }
-                    }
-                }
-                foreach (SubLane nodeSubLane2 in nodeSubLaneBuffer)
-                {
-                    if (laneConnection.m_SourceSubLane != Entity.Null && laneConnection.m_DestSubLane != Entity.Null)
-                    {
-                        break;
-                    }
-                    if (nodeSubLane2.m_SubLane == nodeSubLane.m_SubLane)
-                    {
-                        continue;
-                    }
-                    if (em.TryGetComponent(nodeSubLane2.m_SubLane, out Lane nodeLane2))
-                    {
-                        if (nodeLane.m_StartNode.Equals(nodeLane2.m_EndNode) && laneConnection.m_SourceSubLane == Entity.Null)
-                        {
-                            laneConnection.m_SourceSubLane = nodeSubLane2.m_SubLane;
-                        }
-                        if (nodeLane.m_EndNode.Equals(nodeLane2.m_StartNode) && laneConnection.m_DestSubLane == Entity.Null)
-                        {
-                            laneConnection.m_DestSubLane = nodeSubLane2.m_SubLane;
-                        }
-                    }
-                }
-            }
-            laneConnectionMap[nodeSubLane.m_SubLane] = laneConnection;
+            edgeInfo.m_SubLaneInfoList.Dispose();
         }
-        return laneConnectionMap;
+        edgeInfoList.Dispose();
     }
 
     public static NativeHashMap<Entity, LaneConnection> GetLaneConnectionMap(Allocator allocator, DynamicBuffer<SubLane> nodeSubLaneBuffer, DynamicBuffer<ConnectedEdge> connectedEdgeBuffer, BufferLookup<SubLane> subLaneLookup, ComponentLookup<Lane> laneLookup)
@@ -364,22 +296,6 @@ public struct NodeUtils
         return laneConnectionMap;
     }
 
-    public static float3 GetEdgePosition(EntityManager em, Entity nodeEntity, Entity edgeEntity)
-    {
-        float3 position = default;
-        em.TryGetComponent(edgeEntity, out Edge edge);
-        em.TryGetComponent(edgeEntity, out EdgeGeometry edgeGeometry);
-        if (edge.m_Start.Equals(nodeEntity))
-        {
-            position = (edgeGeometry.m_Start.m_Left.a + edgeGeometry.m_Start.m_Right.a) / 2;
-        }
-        else if (edge.m_End.Equals(nodeEntity))
-        {
-            position = (edgeGeometry.m_End.m_Left.d + edgeGeometry.m_End.m_Right.d) / 2;
-        }
-        return position;
-    }
-
     public static float3 GetEdgePosition(Entity nodeEntity, Entity edgeEntity, ComponentLookup<Edge> edgeLookup, ComponentLookup<EdgeGeometry> edgeGeometryLookup)
     {
         float3 position = default;
@@ -401,44 +317,10 @@ public struct NodeUtils
         return GetEdgePosition(nodeEntity, edgeEntity, job.m_ExtraTypeHandle.m_Edge, job.m_ExtraTypeHandle.m_EdgeGeometry);
     }
 
-    public static float3 GetSubLanePosition(EntityManager em, Entity subLane)
-    {
-        em.TryGetComponent(subLane, out Curve curve);
-        return curve.m_Bezier.d;
-    }
-
     public static float3 GetSubLanePosition(Entity subLane, ComponentLookup<Curve> curveLookup)
     {
         curveLookup.TryGetComponent(subLane, out Curve curve);
         return curve.m_Bezier.d;
-    }
-
-    public static LaneSource GetEdgeFromNodeSubLane(EntityManager em, Entity nodeEntity, Entity nodeSubLaneEntity)
-    {
-        if (em.TryGetComponent(nodeSubLaneEntity, out Lane nodeLane))
-        {
-            em.TryGetBuffer(nodeEntity, true, out DynamicBuffer<ConnectedEdge> connectedEdgeBuffer);
-            foreach (ConnectedEdge connectedEdge in connectedEdgeBuffer)
-            {
-                Entity edgeEntity = connectedEdge.m_Edge;
-                em.TryGetBuffer(edgeEntity, true, out DynamicBuffer<SubLane> edgeSubLaneBuffer);
-                foreach (SubLane edgeSubLane in edgeSubLaneBuffer)
-                {
-                    if (em.TryGetComponent(edgeSubLane.m_SubLane, out Lane edgeLane))
-                    {
-                        if (nodeLane.m_StartNode.Equals(edgeLane.m_EndNode) || (em.HasComponent<PedestrianLane>(nodeSubLaneEntity) && nodeLane.m_EndNode.Equals(edgeLane.m_StartNode)))
-                        {
-                            return new LaneSource
-                            {
-                                m_SubLane = edgeSubLane.m_SubLane,
-                                m_Edge = edgeEntity
-                            };
-                        }
-                    }
-                }
-            }
-        }
-        return new LaneSource();
     }
 
     public static LaneConnection GetLaneConnectionFromNodeSubLane(Entity nodeSubLaneEntity, NativeHashMap<Entity, LaneConnection> laneConnectionMap, bool recursive)
@@ -452,6 +334,7 @@ public struct NodeUtils
         {
             if (laneConnection.m_SourceSubLane != Entity.Null)
             {
+                int depth = 0;
                 while (laneConnection.m_SourceEdge == Entity.Null)
                 {
                     var nextLaneConnection = laneConnectionMap[laneConnection.m_SourceSubLane];
@@ -464,10 +347,15 @@ public struct NodeUtils
                     {
                         break;
                     }
+                    if (depth++ > 64)
+                    {
+                        break;
+                    }
                 }
             }
             if (laneConnection.m_DestSubLane != Entity.Null)
             {
+                int depth = 0;
                 while (laneConnection.m_DestEdge == Entity.Null)
                 {
                     var nextLaneConnection = laneConnectionMap[laneConnection.m_DestSubLane];
@@ -480,45 +368,14 @@ public struct NodeUtils
                     {
                         break;
                     }
+                    if (depth++ > 64)
+                    {
+                        break;
+                    }
                 }
             }
         }
         return laneConnection;
-    }
-
-    public static bool IsCrossingStopLine(EntityManager em, Entity nodeSubLaneEntity, Entity edgeEntity)
-    {
-        if (em.TryGetBuffer(nodeSubLaneEntity, true, out DynamicBuffer<LaneOverlap> laneOverlapBuffer))
-        {
-            if (!em.TryGetBuffer(edgeEntity, true, out DynamicBuffer<SubLane> edgeSubLaneBuffer))
-            {
-                return false;
-            }
-            foreach (LaneOverlap laneOverlap in laneOverlapBuffer)
-            {
-                bool isStart = false;
-                bool isEnd = false;
-                foreach (SubLane edgeSubLane in edgeSubLaneBuffer)
-                {
-                    if (em.TryGetComponent(edgeSubLane.m_SubLane, out Lane edgeLane) && em.TryGetComponent(laneOverlap.m_Other, out Lane overlapLane))
-                    {
-                        if (overlapLane.m_StartNode.Equals(edgeLane.m_EndNode))
-                        {
-                            isStart = true;
-                        }
-                        else if (overlapLane.m_EndNode.Equals(edgeLane.m_StartNode))
-                        {
-                            isEnd = true;
-                        }
-                    }
-                }
-                if (isStart && !isEnd)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public static bool IsCrossingStopLine(Entity nodeSubLaneEntity, Entity edgeEntity, ComponentLookup<Lane> laneLookup, BufferLookup<LaneOverlap> laneOverlapLookup, BufferLookup<SubLane> subLaneLookup)
@@ -559,5 +416,17 @@ public struct NodeUtils
     public static bool IsCrossingStopLine(ref InitializeTrafficLightsJob job, Entity nodeSubLaneEntity, Entity edgeEntity)
     {
         return IsCrossingStopLine(nodeSubLaneEntity, edgeEntity, job.m_ExtraTypeHandle.m_Lane, job.m_Overlaps, job.m_ExtraTypeHandle.m_SubLane);
+    }
+
+    public static bool HasTrainTrack(IEnumerable<EdgeInfo> edgeInfoArray)
+    {
+        foreach (var edgeInfo in edgeInfoArray)
+        {
+            if (edgeInfo.m_TrainTrackCount > 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

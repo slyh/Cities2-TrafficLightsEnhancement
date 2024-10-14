@@ -27,6 +27,8 @@ This mod would not have reached its current stage without help from the followin
 
 [Harmony](https://github.com/pardeike/Harmony): A library for patching, replacing and decorating .NET and Mono methods during runtime
 
+[Material Design Icons](https://github.com/google/material-design-icons): Icons for in-game UI and textures
+
 [PickledDragon](https://github.com/EisbarGFX) and [Rebecca](https://github.com/slash-under) for their insights into the lane system's inner workings.
 
 [Krzysztof](https://github.com/krzychu124) for advising on UI performance issues.

@@ -10,7 +10,7 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem
 
 public struct CustomPhaseProcessor
 {
-    public static void ProcessLanes(ref InitializeTrafficLightsJob job, int unfilteredChunkIndex, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdges, DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, out int groupCount, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<EdgeGroupMask> edgeGroupMasks, DynamicBuffer<SubLaneGroupMask> subLaneGroupMasks, DynamicBuffer<CustomPhaseData> customPhaseDatas)
+    public static void ProcessLanes(ref InitializeTrafficLightsJob job, int unfilteredChunkIndex, Entity nodeEntity, DynamicBuffer<ConnectedEdge> connectedEdges, DynamicBuffer<SubLane> subLanes, out int groupCount, ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<EdgeGroupMask> edgeGroupMasks, DynamicBuffer<SubLaneGroupMask> subLaneGroupMasks, DynamicBuffer<CustomPhaseData> customPhaseDatas)
     {
         NativeHashMap<Entity, NodeUtils.LaneConnection> laneConnectionMap = NodeUtils.GetLaneConnectionMap(Allocator.Temp, subLanes, connectedEdges, job.m_ExtraTypeHandle.m_SubLane, job.m_ExtraTypeHandle.m_Lane);
         groupCount = customPhaseDatas.Length;
@@ -148,7 +148,7 @@ public struct CustomPhaseProcessor
             }
 
             laneSignal.m_GroupMask = 0;
-            for (int j = masterLane.m_MinIndex - 1; j <= masterLane.m_MaxIndex; j++)
+            for (int j = masterLane.m_MinIndex; j <= masterLane.m_MaxIndex; j++)
             {
                 Entity slaveSubLane = subLanes[j].m_SubLane;
                 if (!job.m_LaneSignalData.TryGetComponent(slaveSubLane, out LaneSignal slaveLaneSignal))

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace C2VM.TrafficLightsEnhancement.Localisations;
+namespace C2VM.TrafficLightsEnhancement.Utils;
 
-public class Helper
+public class LocalisationUtils
 {
     public static readonly string m_DefaultLocale = "en-US";
 
@@ -39,7 +39,7 @@ public class Helper
 
     private Dictionary<string, string> m_Dictionary = new Dictionary<string, string>();
 
-    public Helper(string locale)
+    public LocalisationUtils(string locale)
     {
         SetLocale(locale);
     }
@@ -51,22 +51,16 @@ public class Helper
         {
             m_Locale = m_DefaultLocale;
         }
-        try
+        string resourceName = "C2VM.TrafficLightsEnhancement.Assets.Localisations." + m_Locale + ".json";
+        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+        if (stream == null)
         {
-            string resourceName = "C2VM.TrafficLightsEnhancement.Localisations." + m_Locale + ".json";
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
-            if (stream == null)
-            {
-                throw new System.Exception($"{resourceName} does not exist.");
-            }
-            StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
-            string jsonString = reader.ReadToEnd();
-            m_Dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
+            Mod.m_Log.Error($"{resourceName} does not exist.");
+            return;
         }
-        catch (System.Exception e)
-        {
-            Mod.m_Log.Error(e);
-        }
+        using StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+        string jsonString = reader.ReadToEnd();
+        m_Dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
     }
 
     public static string GetAutoLocale(string locale, string culture)

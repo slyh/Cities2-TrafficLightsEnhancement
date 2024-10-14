@@ -24,6 +24,27 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem
 [CompilerGenerated]
 public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
 {
+    private struct LaneGroup
+    {
+        public float2 m_StartDirection;
+
+        public float2 m_EndDirection;
+
+        public int2 m_LaneRange;
+
+        public int m_GroupIndex;
+
+        public ushort m_GroupMask;
+
+        public bool m_IsStraight;
+
+        public bool m_IsCombined;
+
+        public bool m_IsUnsafe;
+
+        public bool m_IsTrack;
+    }
+
     [BurstCompile]
     public struct InitializeTrafficLightsJob : IJobChunk
     {
@@ -81,44 +102,77 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             {
                 TrafficLights trafficLights = nativeArray[i];
                 DynamicBuffer<SubLane> subLanes = bufferAccessor[i];
-                CustomTrafficLights customTrafficLights = i < customTrafficLightsArray.Length ? customTrafficLights = customTrafficLightsArray[i] : new CustomTrafficLights(TrafficLightPatterns.Pattern.ModDefault);
-                if (customTrafficLights.GetPatternOnly(0) == TrafficLightPatterns.Pattern.ModDefault)
+                CustomTrafficLights customTrafficLights = i < customTrafficLightsArray.Length ? customTrafficLights = customTrafficLightsArray[i] : new CustomTrafficLights(CustomTrafficLights.Patterns.ModDefault);
+                if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.ModDefault)
                 {
-                    uint defaultPattern = (uint) TrafficLightPatterns.Pattern.Vanilla;
+                    uint defaultPattern = (uint) CustomTrafficLights.Patterns.Vanilla;
                     if (m_Settings.m_DefaultSplitPhasing)
                     {
-                        defaultPattern = (uint) TrafficLightPatterns.Pattern.SplitPhasing;
+                        defaultPattern = (uint) CustomTrafficLights.Patterns.SplitPhasing;
                     }
                     if (m_Settings.m_DefaultAlwaysGreenKerbsideTurn)
                     {
-                        defaultPattern |= (uint) TrafficLightPatterns.Pattern.AlwaysGreenKerbsideTurn;
+                        defaultPattern |= (uint) CustomTrafficLights.Patterns.AlwaysGreenKerbsideTurn;
                     }
                     if (m_Settings.m_DefaultExclusivePedestrian)
                     {
-                        defaultPattern |= (uint) TrafficLightPatterns.Pattern.ExclusivePedestrian;
+                        defaultPattern |= (uint) CustomTrafficLights.Patterns.ExclusivePedestrian;
                     }
                     customTrafficLights.SetPattern(defaultPattern);
                 }
                 customTrafficLights.SetPedestrianPhaseGroupMask(0);
                 int groupCount = 0;
                 bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
-                if (customTrafficLights.GetPatternOnly(0) == TrafficLightPatterns.Pattern.CustomPhase && i < edgeGroupMaskAccessor.Length && i < subLaneGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
+                PredefinedPatternsProcessor.ResetExtraLaneSignal(ref this, subLanes, ref trafficLights);
+                if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase && i < edgeGroupMaskAccessor.Length && i < subLaneGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
                 {
                     CustomPhaseUtils.ValidateBuffer(ref this, entityArray[i], subLanes, connectedEdgeAccessor[i], edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i], m_ExtraTypeHandle.m_SubLane);
-                    CustomPhaseProcessor.ProcessLanes(ref this, unfilteredChunkIndex, entityArray[i], connectedEdgeAccessor[i], subLanes, vehicleLanes, pedestrianLanes, groups, out groupCount, ref trafficLights, ref customTrafficLights, edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i], customPhaseDataAccessor[i]);
+                    CustomPhaseProcessor.ProcessLanes(ref this, unfilteredChunkIndex, entityArray[i], connectedEdgeAccessor[i], subLanes, out groupCount, ref trafficLights, ref customTrafficLights, edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i], customPhaseDataAccessor[i]);
                 }
                 else
                 {
-                    FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
-                    ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out groupCount, ref customTrafficLights, out int ways, out TrafficLightPatterns.Pattern pattern);
-                    ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, ref customTrafficLights, ways, pattern);
+                    var edgeInfoArray = NodeUtils.GetEdgeInfoList(Allocator.Temp, entityArray[i], ref this, subLanes, connectedEdgeAccessor[i], edgeGroupMaskAccessor[i], subLaneGroupMaskAccessor[i]).AsArray();
+                    var pattern = customTrafficLights.GetPattern();
+                    if (NodeUtils.HasTrainTrack(edgeInfoArray) || !PredefinedPatternsProcessor.IsValidPattern(edgeInfoArray, pattern))
+                    {
+                        pattern = CustomTrafficLights.Patterns.Vanilla;
+                        customTrafficLights.SetPattern(pattern);
+                    }
+                    if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.SplitPhasing && edgeInfoArray.Length <= 7)
+                    {
+                        PredefinedPatternsProcessor.SetupSplitPhasing(ref this, connectedEdgeAccessor[i], subLanes, out groupCount, ref trafficLights);
+                    }
+                    else if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.ProtectedCentreTurn)
+                    {
+                        PredefinedPatternsProcessor.SetupProtectedCentreTurn(ref this, connectedEdgeAccessor[i], subLanes, out groupCount, ref trafficLights);
+                    }
+                    else
+                    {
+                        FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
+                        ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out groupCount);
+                        ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount);
+                        InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
+                        groups.Clear();
+                    }
+                    if ((customTrafficLights.GetPattern() & CustomTrafficLights.Patterns.AlwaysGreenKerbsideTurn) != 0)
+                    {
+                        PredefinedPatternsProcessor.AddAlwaysGreenKerbsideTurn(ref this, unfilteredChunkIndex, subLanes, ref groupCount, ref trafficLights);
+                    }
+                    if ((customTrafficLights.GetPattern() & CustomTrafficLights.Patterns.CentreTurnGiveWay) != 0)
+                    {
+                        PredefinedPatternsProcessor.AddCentreTurnGiveWay(ref this, unfilteredChunkIndex, subLanes, ref trafficLights);
+                    }
+                    if ((customTrafficLights.GetPattern() & CustomTrafficLights.Patterns.ExclusivePedestrian) != 0)
+                    {
+                        PredefinedPatternsProcessor.AddExclusivePedestrianPhase(ref this, subLanes, ref groupCount, ref trafficLights, ref customTrafficLights);
+                    }
                 }
-                InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights, unfilteredChunkIndex);
-                nativeArray[i] = trafficLights;
                 if (i < customTrafficLightsArray.Length)
                 {
                     customTrafficLightsArray[i] = customTrafficLights;
                 }
+                InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights);
+                nativeArray[i] = trafficLights;
                 groups.Clear();
                 vehicleLanes.Clear();
                 pedestrianLanes.Clear();
@@ -165,9 +219,6 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         CarLane carLane = m_CarLaneData[subLane];
                         value2.m_IsStraight = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
                         value2.m_IsUnsafe = (carLane.m_Flags & CarLaneFlags.Unsafe) != 0;
-                        value2.m_IsTurnLeft = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0;
-                        value2.m_IsTurnRight = (carLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnRight)) != 0;
-                        value2.m_IsUTurn = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
                     }
                     else
                     {
@@ -201,7 +252,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount, ref CustomTrafficLights customTrafficLights, out int ways, out TrafficLightPatterns.Pattern pattern)
+        private void ProcessVehicleLaneGroups(NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, out int groupCount)
         {
             groupCount = 0;
             while (vehicleLanes.Length > 0)
@@ -225,19 +276,6 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         num++;
                     }
                 }
-            }
-
-            ways = 0;
-            for (int j = 0; j < groups.Length; j++)
-            {
-                LaneGroup group = groups[j];
-                ways = math.max(group.m_GroupIndex, ways);
-            }
-            ways++;
-            pattern = customTrafficLights.GetPattern(ways);
-            if (!TrafficLightPatterns.IsValidPattern(ways, pattern))
-            {
-                pattern = TrafficLightPatterns.Pattern.Vanilla;
             }
 
             int i = 0;
@@ -329,11 +367,6 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         num6 = num4++;
                     }
 
-                    if (((uint)pattern & 0xFFFF) != (uint)TrafficLightPatterns.Pattern.Vanilla)
-                    {
-                        flag = false;
-                    }
-
                     if (!flag)
                     {
                         continue;
@@ -359,21 +392,15 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                 }
             }
 
-            if (((uint)pattern & 0xFFFF) == (uint)TrafficLightPatterns.Pattern.Vanilla)
+            for (int l = 0; l < groups.Length; l++)
             {
-                for (int l = 0; l < groups.Length; l++)
-                {
-                    LaneGroup value3 = groups[l];
-                    value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
-                    groups[l] = value3;
-                }
+                LaneGroup value3 = groups[l];
+                value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
+                groups[l] = value3;
             }
-
-            TrafficLightPatterns.ProcessVehicleLaneGroups(ref vehicleLanes, ref groups, ref isLevelCrossing, ref groupCount, m_LeftHandTraffic, ways, pattern);
-            return;
         }
 
-        private void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount, ref CustomTrafficLights customTrafficLights, int ways, TrafficLightPatterns.Pattern pattern)
+        private void ProcessPedestrianLaneGroups(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, bool isLevelCrossing, ref int groupCount)
         {
             if (groupCount <= 1)
             {
@@ -385,12 +412,6 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                     groups.Add(in value);
                 }
 
-                return;
-            }
-
-            if (customTrafficLights.GetPattern(ways) != TrafficLightPatterns.Pattern.Vanilla)
-            {
-                TrafficLightPatterns.ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, m_LeftHandTraffic, ref m_Overlaps, ref customTrafficLights, ways, pattern);
                 return;
             }
 
@@ -460,7 +481,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, ref TrafficLights trafficLights, int unfilteredChunkIndex)
+        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, ref TrafficLights trafficLights)
         {
             trafficLights.m_SignalGroupCount = (byte)math.min(16, groupCount);
             if (trafficLights.m_CurrentSignalGroup > trafficLights.m_SignalGroupCount || trafficLights.m_NextSignalGroup > trafficLights.m_SignalGroupCount)
@@ -486,17 +507,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
                     }
 
-                    ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal(laneGroup);
-                    if (m_ExtraTypeHandle.m_ExtraLaneSignal.HasComponent(subLane))
-                    {
-                        m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
-                    }
-                    else
-                    {
-                        m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
-                    }
-
-                    TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+                    TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
                     m_LaneSignalData[subLane] = laneSignal;
                 }
             }
@@ -561,7 +572,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
     private ExtraTypeHandle m_ExtraTypeHandle;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
-    
+
     private ModificationBarrier4B m_ModificationBarrier;
 
     [Preserve]

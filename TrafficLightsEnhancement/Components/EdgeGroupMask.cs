@@ -1,11 +1,12 @@
 using Colossal.Serialization.Entities;
+using Colossal.UI.Binding;
 using Unity.Entities;
 using Unity.Mathematics;
-using static C2VM.TrafficLightsEnhancement.Systems.UISystem.Types;
+using static C2VM.TrafficLightsEnhancement.Systems.UISystem.UITypes;
 
 namespace C2VM.TrafficLightsEnhancement.Components;
 
-public struct EdgeGroupMask : IBufferElementData, ISerializable
+public struct EdgeGroupMask : IBufferElementData, ISerializable, IJsonWritable
 {
     public enum Options : uint
     {
@@ -56,6 +57,28 @@ public struct EdgeGroupMask : IBufferElementData, ISerializable
         reader.Read(out m_PedestrianNonStopLine);
         m_Position = edgePosition;
         m_Options = (Options)options;
+    }
+
+    public void Write(IJsonWriter writer)
+    {
+        writer.TypeBegin(typeof(EdgeGroupMask).FullName);
+        writer.PropertyName("m_Edge");
+        writer.Write(m_Edge);
+        writer.PropertyName("m_Position");
+        writer.Write<WorldPosition>(m_Position);
+        writer.PropertyName("m_Options");
+        writer.Write((uint)m_Options);
+        writer.PropertyName("m_Car");
+        writer.Write(m_Car);
+        writer.PropertyName("m_PublicCar");
+        writer.Write(m_PublicCar);
+        writer.PropertyName("m_Track");
+        writer.Write(m_Track);
+        writer.PropertyName("m_PedestrianStopLine");
+        writer.Write(m_PedestrianStopLine);
+        writer.PropertyName("m_PedestrianNonStopLine");
+        writer.Write(m_PedestrianNonStopLine);
+        writer.TypeEnd();
     }
 
     public EdgeGroupMask()

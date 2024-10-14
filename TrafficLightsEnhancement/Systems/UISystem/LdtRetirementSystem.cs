@@ -6,7 +6,7 @@ using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public partial class LDTRetirementSystem : GameSystemBase
+public partial class LdtRetirementSystem : GameSystemBase
 {
     public static readonly string kRetirementNoticeLink = "https://github.com/slyh/Cities2-TrafficLightsEnhancement/discussions/96";
 

@@ -101,7 +101,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     break;
                 case Game.Net.TrafficLightState.Ongoing:
                     float greenDuration = 2;
-                    if (customTrafficLights.GetPatternOnly(0) == TrafficLightInitializationSystem.TrafficLightPatterns.Pattern.CustomPhase)
+                    if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
                     {
                         float multiplier = trafficLights.m_CurrentSignalGroup > 0 && trafficLights.m_CurrentSignalGroup <= customPhaseDataBuffer.Length ? customPhaseDataBuffer[trafficLights.m_CurrentSignalGroup - 1].m_MinimumDurationMultiplier : 1;
                         greenDuration *= multiplier;
@@ -525,6 +525,12 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
         jobData.m_ExtraTypeHandle = m_ExtraTypeHandle;
         JobHandle dependency = JobChunkExtensions.ScheduleParallel(jobData, m_TrafficLightQuery, base.Dependency);
         base.Dependency = dependency;
+    }
+
+    public static void UpdateLaneSignal(TrafficLights trafficLights, ref LaneSignal laneSignal)
+    {
+        ExtraLaneSignal extraLaneSignal = new();
+        UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
     }
 
     public static void UpdateLaneSignal(TrafficLights trafficLights, ref LaneSignal laneSignal, ref ExtraLaneSignal extraLaneSignal)

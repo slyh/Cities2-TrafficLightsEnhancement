@@ -103,22 +103,25 @@ public struct CustomPhaseUtils
 
     public static int TryGet(DynamicBuffer<EdgeGroupMask> buffer, Entity entity, float3 position, out EdgeGroupMask result)
     {
-        for (int i = 0; i < buffer.Length; i++)
+        if (buffer.IsCreated)
         {
-            EdgeGroupMask phase = buffer[i];
-            if (phase.m_Edge.Equals(entity))
+            for (int i = 0; i < buffer.Length; i++)
             {
-                result = phase;
-                return i;
+                EdgeGroupMask phase = buffer[i];
+                if (phase.m_Edge.Equals(entity))
+                {
+                    result = phase;
+                    return i;
+                }
             }
-        }
-        for (int i = 0; i < buffer.Length; i++)
-        {
-            EdgeGroupMask phase = buffer[i];
-            if (LooseMatch(phase.m_Position, position))
+            for (int i = 0; i < buffer.Length; i++)
             {
-                result = phase;
-                return i;
+                EdgeGroupMask phase = buffer[i];
+                if (LooseMatch(phase.m_Position, position))
+                {
+                    result = phase;
+                    return i;
+                }
             }
         }
         result = new EdgeGroupMask(entity, position);
@@ -127,22 +130,25 @@ public struct CustomPhaseUtils
 
     public static int TryGet(DynamicBuffer<SubLaneGroupMask> buffer, Entity entity, float3 position, out SubLaneGroupMask result)
     {
-        for (int i = 0; i < buffer.Length; i++)
+        if (buffer.IsCreated)
         {
-            SubLaneGroupMask phase = buffer[i];
-            if (phase.m_SubLane.Equals(entity))
+            for (int i = 0; i < buffer.Length; i++)
             {
-                result = phase;
-                return i;
+                SubLaneGroupMask phase = buffer[i];
+                if (phase.m_SubLane.Equals(entity))
+                {
+                    result = phase;
+                    return i;
+                }
             }
-        }
-        for (int i = 0; i < buffer.Length; i++)
-        {
-            SubLaneGroupMask phase = buffer[i];
-            if (LooseMatch(phase.m_Position, position))
+            for (int i = 0; i < buffer.Length; i++)
             {
-                result = phase;
-                return i;
+                SubLaneGroupMask phase = buffer[i];
+                if (LooseMatch(phase.m_Position, position))
+                {
+                    result = phase;
+                    return i;
+                }
             }
         }
         result = new SubLaneGroupMask(entity, position);
@@ -151,6 +157,10 @@ public struct CustomPhaseUtils
 
     public static void SwapBit(DynamicBuffer<EdgeGroupMask> buffer, int index1, int index2)
     {
+        if (!buffer.IsCreated)
+        {
+            return;
+        }
         for (int i = 0; i < buffer.Length; i++)
         {
             var phase = buffer[i];
@@ -161,6 +171,10 @@ public struct CustomPhaseUtils
 
     public static void SwapBit(DynamicBuffer<SubLaneGroupMask> buffer, int index1, int index2)
     {
+        if (!buffer.IsCreated)
+        {
+            return;
+        }
         for (int i = 0; i < buffer.Length; i++)
         {
             var phase = buffer[i];

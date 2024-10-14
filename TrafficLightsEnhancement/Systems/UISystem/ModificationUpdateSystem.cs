@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
 
-public partial class UIUpdateSystem : GameSystemBase
+public partial class ModificationUpdateSystem : GameSystemBase
 {
     private UISystem m_UISystem;
 
@@ -19,6 +19,7 @@ public partial class UIUpdateSystem : GameSystemBase
         if (m_UISystem.m_SelectedEntity != Entity.Null && EntityManager.HasComponent<Updated>(m_UISystem.m_SelectedEntity))
         {
             m_UISystem.RedrawGizmo();
+            m_UISystem.UpdateEdgeInfo(m_UISystem.m_SelectedEntity);
         }
     }
 }

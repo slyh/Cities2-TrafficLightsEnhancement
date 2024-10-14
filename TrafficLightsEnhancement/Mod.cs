@@ -53,11 +53,12 @@ public class Mod : IMod
         Colossal.IO.AssetDatabase.AssetDatabase.global.LoadSettings(typeof(Settings).GetCustomAttribute<Colossal.IO.AssetDatabase.FileLocationAttribute>().fileName, m_Settings);
         C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
 
-        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.LDTRetirementSystem>();
+        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.LdtRetirementSystem>();
 
         m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>(SystemUpdatePhase.UIUpdate);
-        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UIUpdateSystem>(SystemUpdatePhase.ModificationEnd);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
+        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.UISystem.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
     }
 
     public void OnDispose()

@@ -1,11 +1,12 @@
 using Colossal.Serialization.Entities;
+using Colossal.UI.Binding;
 using Unity.Entities;
 using Unity.Mathematics;
-using static C2VM.TrafficLightsEnhancement.Systems.UISystem.Types;
+using static C2VM.TrafficLightsEnhancement.Systems.UISystem.UITypes;
 
 namespace C2VM.TrafficLightsEnhancement.Components;
 
-public struct SubLaneGroupMask : IBufferElementData, ISerializable
+public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritable
 {
     public enum Options : uint
     {
@@ -43,6 +44,22 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable
         reader.Read(out m_Pedestrian);
         m_Position = subLanePosition;
         m_Options = (Options)options;
+    }
+
+    public void Write(IJsonWriter writer)
+    {
+        writer.TypeBegin(typeof(SubLaneGroupMask).FullName);
+        writer.PropertyName("m_SubLane");
+        writer.Write(m_SubLane);
+        writer.PropertyName("m_Position");
+        writer.Write<WorldPosition>(m_Position);
+        writer.PropertyName("m_Options");
+        writer.Write((uint)m_Options);
+        writer.PropertyName("m_Vehicle");
+        writer.Write(m_Vehicle);
+        writer.PropertyName("m_Pedestrian");
+        writer.Write(m_Pedestrian);
+        writer.TypeEnd();
     }
 
     public SubLaneGroupMask()
