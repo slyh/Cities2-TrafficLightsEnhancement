@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Game.Net;
@@ -418,7 +417,7 @@ public partial struct NodeUtils
         return IsCrossingStopLine(nodeSubLaneEntity, edgeEntity, job.m_ExtraTypeHandle.m_Lane, job.m_Overlaps, job.m_ExtraTypeHandle.m_SubLane);
     }
 
-    public static bool HasTrainTrack(IEnumerable<EdgeInfo> edgeInfoArray)
+    public static bool HasTrainTrack(NativeArray<EdgeInfo> edgeInfoArray)
     {
         foreach (var edgeInfo in edgeInfoArray)
         {

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 using C2VM.TrafficLightsEnhancement.Utils;
@@ -12,7 +10,7 @@ using static C2VM.TrafficLightsEnhancement.Utils.NodeUtils;
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
 public class PredefinedPatternsProcessor {
-    public static bool IsValidPattern(IEnumerable<EdgeInfo> edgeInfoArray, CustomTrafficLights.Patterns pattern)
+    public static bool IsValidPattern(NativeArray<EdgeInfo> edgeInfoArray, CustomTrafficLights.Patterns pattern)
     {
         if (HasTrainTrack(edgeInfoArray))
         {
@@ -23,7 +21,7 @@ public class PredefinedPatternsProcessor {
         {
             case (uint)CustomTrafficLights.Patterns.SplitPhasing:
             {
-                if (edgeInfoArray.Count() > 7)
+                if (edgeInfoArray.Length > 7)
                 {
                     return false;
                 }
@@ -49,7 +47,7 @@ public class PredefinedPatternsProcessor {
                         ways++;
                     }
                 }
-                if (ways == 4 && edgeInfoArray.Count() == ways)
+                if (ways == 4 && edgeInfoArray.Length == ways)
                 {
                     return true;
                 }
