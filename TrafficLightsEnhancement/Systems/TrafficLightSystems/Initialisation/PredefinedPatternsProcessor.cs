@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using C2VM.TrafficLightsEnhancement.Components;
+using C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
-using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
+using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem;
 using static C2VM.TrafficLightsEnhancement.Utils.NodeUtils;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
 public class PredefinedPatternsProcessor {
     public static bool IsValidPattern(IEnumerable<EdgeInfo> edgeInfoArray, CustomTrafficLights.Patterns pattern)
@@ -20,6 +21,15 @@ public class PredefinedPatternsProcessor {
 
         switch ((uint)pattern & 0xFFFF)
         {
+            case (uint)CustomTrafficLights.Patterns.SplitPhasing:
+            {
+                if (edgeInfoArray.Count() > 7)
+                {
+                    return false;
+                }
+                return true;
+            }
+
             case (uint)CustomTrafficLights.Patterns.SplitPhasingAdvancedObsolete:
             {
                 return false;
@@ -130,6 +140,8 @@ public class PredefinedPatternsProcessor {
         }
 
         SetupNonOverlapLanes(ref job, subLanes, groupCount, laneConnectionMap);
+        SetupMasterLanes(ref job, subLanes);
+        RemoveDuplicateGroups(ref job, subLanes, ref groupCount);
         SetupPedestrianLanes(ref job, subLanes, groupCount, laneConnectionMap);
         CheckPedestrianLanes(ref job, subLanes, ref groupCount);
         UpdateLaneSignal(ref job, subLanes, ref trafficLights);
@@ -296,6 +308,8 @@ public class PredefinedPatternsProcessor {
             }
         }
 
+        SetupNonOverlapLanes(ref job, subLanes, groupCount, laneConnectionMap);
+        SetupMasterLanes(ref job, subLanes);
         SetupPedestrianLanes(ref job, subLanes, groupCount, laneConnectionMap);
         CheckPedestrianLanes(ref job, subLanes, ref groupCount);
         UpdateLaneSignal(ref job, subLanes, ref trafficLights);
@@ -349,6 +363,98 @@ public class PredefinedPatternsProcessor {
                 }
                 laneSignal.m_GroupMask |= (ushort)((~overlapGroupMask) & ((1 << groupCount) - 1));
             }
+            job.m_LaneSignalData[subLane] = laneSignal;
+        }
+    }
+
+    private static void RemoveDuplicateGroups(ref InitializeTrafficLightsJob job, DynamicBuffer<SubLane> subLanes, ref int groupCount)
+    {
+        NativeList<NativeList<int>> greenLanes = new(groupCount, Allocator.Temp);
+        for (int i = 0; i < groupCount; i++)
+        {
+            greenLanes[i] = new(subLanes.Length, Allocator.Temp);
+            for (int j = 0; j < subLanes.Length; j++)
+            {
+                Entity subLane = subLanes[j].m_SubLane;
+                if (!job.m_LaneSignalData.TryGetComponent(subLane, out var laneSignal))
+                {
+                    continue;
+                }
+                if ((laneSignal.m_GroupMask & (1 << i)) != 0)
+                {
+                    greenLanes[i].Add(j);
+                }
+            }
+        }
+
+        for (int i = 0; i < groupCount; i++)
+        {
+            for (int j = i + 1; j < groupCount; j++)
+            {
+                if (greenLanes[i].Length != greenLanes[j].Length)
+                {
+                    continue;
+                }
+                int k = 0;
+                while (k < greenLanes[i].Length)
+                {
+                    if (greenLanes[i][k] != greenLanes[j][k])
+                    {
+                        break;
+                    }
+                    k++;
+                }
+                if (k >= greenLanes[i].Length)
+                {
+                    RemoveGroup(ref job, subLanes, j);
+                    greenLanes.RemoveAt(j);
+                    groupCount--;
+                    j--;
+                }
+            }
+        }
+    }
+
+    private static void RemoveGroup(ref InitializeTrafficLightsJob job, DynamicBuffer<SubLane> subLanes, int index)
+    {
+        for (int i = 0; i < subLanes.Length; i++)
+        {
+            Entity subLane = subLanes[i].m_SubLane;
+            if (!job.m_LaneSignalData.TryGetComponent(subLane, out var laneSignal))
+            {
+                continue;
+            }
+            ushort mask = (ushort)((1 << index) - 1);
+            laneSignal.m_GroupMask = (ushort)(((laneSignal.m_GroupMask >> 1) & ~mask) | (laneSignal.m_GroupMask & mask));
+            job.m_LaneSignalData[subLane] = laneSignal;
+        }
+    }
+
+    private static void SetupMasterLanes(ref InitializeTrafficLightsJob job, DynamicBuffer<SubLane> subLanes)
+    {
+        for (int i = 0; i < subLanes.Length; i++)
+        {
+            Entity subLane = subLanes[i].m_SubLane;
+            if (!job.m_MasterLaneData.TryGetComponent(subLane, out MasterLane masterLane))
+            {
+                continue;
+            }
+            if (!job.m_LaneSignalData.TryGetComponent(subLane, out LaneSignal laneSignal))
+            {
+                continue;
+            }
+
+            laneSignal.m_GroupMask = 0;
+            for (int j = masterLane.m_MinIndex; j <= masterLane.m_MaxIndex; j++)
+            {
+                Entity slaveSubLane = subLanes[j].m_SubLane;
+                if (!job.m_LaneSignalData.TryGetComponent(slaveSubLane, out LaneSignal slaveLaneSignal))
+                {
+                    continue;
+                }
+                laneSignal.m_GroupMask |= slaveLaneSignal.m_GroupMask;
+            }
+
             job.m_LaneSignalData[subLane] = laneSignal;
         }
     }
@@ -459,7 +565,7 @@ public class PredefinedPatternsProcessor {
                 laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
             }
             laneSignal.m_Default = 0;
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
         }
     }
@@ -504,7 +610,7 @@ public class PredefinedPatternsProcessor {
                 continue;
             }
             laneSignal.m_GroupMask = pedestrianGroupMask;
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
         }
     }
@@ -556,7 +662,7 @@ public class PredefinedPatternsProcessor {
             extraLaneSignal.m_YieldGroupMask = groupMask;
             extraLaneSignal.m_IgnorePriorityGroupMask = groupMask;
 
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
@@ -589,7 +695,7 @@ public class PredefinedPatternsProcessor {
             extraLaneSignal.m_YieldGroupMask = laneSignal.m_GroupMask;
             extraLaneSignal.m_IgnorePriorityGroupMask = 0;
 
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
@@ -611,7 +717,7 @@ public class PredefinedPatternsProcessor {
             }
             extraLaneSignal.m_YieldGroupMask = 0;
             extraLaneSignal.m_IgnorePriorityGroupMask = 0;
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_ExtraTypeHandle.m_ExtraLaneSignal[subLane] = extraLaneSignal;
         }

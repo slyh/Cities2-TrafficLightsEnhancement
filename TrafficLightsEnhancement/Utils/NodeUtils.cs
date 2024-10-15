@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using C2VM.TrafficLightsEnhancement.Components;
-using C2VM.TrafficLightsEnhancement.Systems.UISystem;
+using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
+using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem;
 
 namespace C2VM.TrafficLightsEnhancement.Utils;
 

@@ -1,4 +1,3 @@
-using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 using Colossal.Serialization.Entities;
 using Unity.Entities;
 

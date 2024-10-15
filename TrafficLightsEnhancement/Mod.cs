@@ -19,7 +19,7 @@ public class Mod : IMod
 
     public static Unity.Entities.World m_World;
 
-    public static C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem m_UISystem;
+    public static C2VM.TrafficLightsEnhancement.Systems.UI.UISystem m_UISystem;
 
     public void OnLoad(UpdateSystem updateSystem)
     {
@@ -47,18 +47,18 @@ public class Mod : IMod
         updateSystem.World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = false;
         updateSystem.World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = false;
 
-        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
-        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
+        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
+        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
 
         Colossal.IO.AssetDatabase.AssetDatabase.global.LoadSettings(typeof(Settings).GetCustomAttribute<Colossal.IO.AssetDatabase.FileLocationAttribute>().fileName, m_Settings);
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+        C2VM.TrafficLightsEnhancement.Systems.UI.UISystem.UpdateLocale();
 
-        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.LdtRetirementSystem>();
+        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.LdtRetirementSystem>();
 
-        m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
-        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>(SystemUpdatePhase.UIUpdate);
-        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UISystem.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
-        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.UISystem.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
+        m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>();
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
+        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.UI.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
     }
 
     public void OnDispose()

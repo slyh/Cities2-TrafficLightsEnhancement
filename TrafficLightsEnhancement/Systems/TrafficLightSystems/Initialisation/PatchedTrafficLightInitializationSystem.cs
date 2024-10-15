@@ -19,7 +19,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
 [CompilerGenerated]
 public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
@@ -138,7 +138,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         pattern = CustomTrafficLights.Patterns.Vanilla;
                         customTrafficLights.SetPattern(pattern);
                     }
-                    if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.SplitPhasing && edgeInfoArray.Length <= 7)
+                    if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.SplitPhasing)
                     {
                         PredefinedPatternsProcessor.SetupSplitPhasing(ref this, connectedEdgeAccessor[i], subLanes, out groupCount, ref trafficLights);
                     }
@@ -507,7 +507,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                         laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
                     }
 
-                    TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+                    Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
                     m_LaneSignalData[subLane] = laneSignal;
                 }
             }

@@ -51,7 +51,7 @@ public class LocalisationUtils
         {
             m_Locale = m_DefaultLocale;
         }
-        string resourceName = "C2VM.TrafficLightsEnhancement.Assets.Localisations." + m_Locale + ".json";
+        string resourceName = "C2VM.TrafficLightsEnhancement.Resources.Localisations." + m_Locale + ".json";
         using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
         if (stream == null)
         {

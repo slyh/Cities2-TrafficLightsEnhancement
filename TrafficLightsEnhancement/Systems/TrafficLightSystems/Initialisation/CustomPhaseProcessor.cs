@@ -1,12 +1,13 @@
 using C2VM.TrafficLightsEnhancement.Components;
+using C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem;
+using static C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
 public struct CustomPhaseProcessor
 {
@@ -116,7 +117,7 @@ public struct CustomPhaseProcessor
                 }
             }
 
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             if (job.m_LaneSignalData.HasComponent(subLane))
             {
                 job.m_LaneSignalData[subLane] = laneSignal;
@@ -159,7 +160,7 @@ public struct CustomPhaseProcessor
             }
 
             ExtraLaneSignal extraLaneSignal = new();
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
         }
 
@@ -219,7 +220,7 @@ public struct CustomPhaseProcessor
                 }
             }
 
-            TrafficLightSystem.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             // Do not check if the component exists because it has already been added to the ecb in the previous loop
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, laneSignal);
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);

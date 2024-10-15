@@ -3,7 +3,7 @@ using C2VM.TrafficLightsEnhancement.Components;
 using Unity.Collections;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 
 public struct ExtraTypeHandle
 {

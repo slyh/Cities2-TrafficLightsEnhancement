@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using C2VM.CommonLibraries.LaneSystem;
 using C2VM.TrafficLightsEnhancement.Components;
-using C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
+using C2VM.TrafficLightsEnhancement.Systems.Rendering;
+using C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Colossal.Entities;
 using Colossal.UI.Binding;
@@ -20,7 +21,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.UI;
 
 public partial class UISystem : UISystemBase
 {
@@ -44,7 +45,7 @@ public partial class UISystem : UISystemBase
 
     private LdtRetirementSystem m_LdtRetirementSystem;
 
-    private RenderSystem.RenderSystem m_RenderSystem;
+    private RenderSystem m_RenderSystem;
 
     private Entity m_TrafficLightsAssetEntity = Entity.Null;
 
@@ -79,6 +80,7 @@ public partial class UISystem : UISystemBase
     protected override void OnCreate()
     {
         base.OnCreate();
+        m_TypeHandle.AssignHandles(ref base.CheckedStateRef);
 
         m_Camera = Camera.main;
         m_ScreenHeight = Screen.height;
@@ -91,7 +93,7 @@ public partial class UISystem : UISystemBase
         m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LdtRetirementSystem>();
-        m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem.RenderSystem>();
+        m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
 
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
         AddBinding(m_LocaleBinding = new GetterValueBinding<string>("C2VM.TLE", "GetLocale", GetLocale));
@@ -123,12 +125,6 @@ public partial class UISystem : UISystemBase
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallOpenBrowser", CallOpenBrowser));
 
         AddBinding(new TriggerBinding<int>("C2VM.TLE", "SetDebugDisplayGroup", (group) => { m_DebugDisplayGroup = group; RedrawGizmo(); }));
-    }
-
-    protected override void OnCreateForCompiler()
-    {
-        base.OnCreateForCompiler();
-        m_TypeHandle.AssignHandles(ref base.CheckedStateRef);
     }
 
     protected override void OnUpdate()
@@ -232,10 +228,10 @@ public partial class UISystem : UISystemBase
             {
                 var node = nodeArray[i];
                 var customTrafficLights = customTrafficLightsArray[i];
-                RenderSystem.RenderSystem.Icon icon = RenderSystem.RenderSystem.Icon.TrafficLight;
+                RenderSystem.Icon icon = RenderSystem.Icon.TrafficLight;
                 if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
                 {
-                    icon = RenderSystem.RenderSystem.Icon.TrafficLightWrench;
+                    icon = RenderSystem.Icon.TrafficLightWrench;
                 }
                 m_RenderSystem.AddIcon(node.m_Position, node.m_Rotation, icon);
             }

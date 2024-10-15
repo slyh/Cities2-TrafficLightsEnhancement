@@ -10,7 +10,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.RenderSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.Rendering;
 
 public partial class RenderSystem : GameSystemBase
 {
@@ -69,7 +69,7 @@ public partial class RenderSystem : GameSystemBase
         m_IconMesh.indexFormat = IndexFormat.UInt32;
         m_IconMesh.MarkDynamic();
         m_IconTexture = new(768, 256);
-        string imageResourceName = "C2VM.TrafficLightsEnhancement.Assets.Textures.TrafficLightIcons.png";
+        string imageResourceName = "C2VM.TrafficLightsEnhancement.Resources.Textures.TrafficLightIcons.png";
         using Stream imageStream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(imageResourceName);
         if (imageStream != null)
         {

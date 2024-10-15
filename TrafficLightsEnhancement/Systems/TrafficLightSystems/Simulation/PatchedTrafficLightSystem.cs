@@ -19,7 +19,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 
 [CompilerGenerated]
 public partial class PatchedTrafficLightSystem : GameSystemBase

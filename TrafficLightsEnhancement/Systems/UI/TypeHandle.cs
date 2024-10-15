@@ -4,7 +4,7 @@ using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.UI;
 
 public struct TypeHandle
 {

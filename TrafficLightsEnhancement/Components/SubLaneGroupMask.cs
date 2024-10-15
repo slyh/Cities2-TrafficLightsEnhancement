@@ -2,7 +2,7 @@ using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
 using Unity.Entities;
 using Unity.Mathematics;
-using static C2VM.TrafficLightsEnhancement.Systems.UISystem.UITypes;
+using static C2VM.TrafficLightsEnhancement.Systems.UI.UITypes;
 
 namespace C2VM.TrafficLightsEnhancement.Components;
 

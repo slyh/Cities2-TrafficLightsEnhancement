@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Colossal.UI.Binding;
 using Newtonsoft.Json;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.UI;
 
 public static class UITypes
 {

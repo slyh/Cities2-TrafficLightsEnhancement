@@ -4,7 +4,7 @@ using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
 public struct ExtraTypeHandle
 {

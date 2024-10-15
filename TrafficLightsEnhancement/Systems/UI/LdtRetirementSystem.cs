@@ -4,7 +4,7 @@ using Game;
 using Game.PSI;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.UI;
 
 public partial class LdtRetirementSystem : GameSystemBase
 {

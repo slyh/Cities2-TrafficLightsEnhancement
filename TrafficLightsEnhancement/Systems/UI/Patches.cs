@@ -3,7 +3,7 @@ using Game.Prefabs;
 using HarmonyLib;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UISystem;
+namespace C2VM.TrafficLightsEnhancement.Systems.UI;
 
 [HarmonyPatch]
 class Patches
@@ -12,7 +12,7 @@ class Patches
     [HarmonyPostfix]
     static void NotifyActiveDictionaryChanged()
     {
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
+        C2VM.TrafficLightsEnhancement.Systems.UI.UISystem.UpdateLocale();
     }
 
     [HarmonyPatch(typeof(Game.Tools.NetToolSystem), "SetAppliedUpgrade")]
