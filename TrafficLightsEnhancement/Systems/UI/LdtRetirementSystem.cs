@@ -51,7 +51,7 @@ public partial class LdtRetirementSystem : GameSystemBase
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
-        EntityQuery entityQuery = Mod.m_World.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<CustomLaneDirection>());
+        EntityQuery entityQuery = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<CustomLaneDirection>());
         m_UnmigratedNodeCount = entityQuery.CalculateEntityCount();
     }
 }

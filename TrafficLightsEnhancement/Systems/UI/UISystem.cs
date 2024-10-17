@@ -125,6 +125,8 @@ public partial class UISystem : UISystemBase
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallOpenBrowser", CallOpenBrowser));
 
         AddBinding(new TriggerBinding<int>("C2VM.TLE", "SetDebugDisplayGroup", (group) => { m_DebugDisplayGroup = group; RedrawGizmo(); }));
+
+        UpdateLocale();
     }
 
     protected override void OnUpdate()
@@ -134,6 +136,11 @@ public partial class UISystem : UISystemBase
             m_CameraPosition = m_CameraUpdateSystem.position;
             m_ScreenPointBinding.Update();
         }
+    }
+
+    protected override void OnDestroy()
+    {
+        ClearEdgeInfo();
     }
 
     protected override void OnGameLoadingComplete(Colossal.Serialization.Entities.Purpose purpose, GameMode mode)
@@ -277,7 +284,7 @@ public partial class UISystem : UISystemBase
 
     public static void UpdateLocale()
     {
-        Utils.LocalisationUtils localisationsHelper = new Utils.LocalisationUtils(GetLocaleCode());
+        LocalisationUtils localisationsHelper = new LocalisationUtils(GetLocaleCode());
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
 
         if (m_LocaleBinding != null)

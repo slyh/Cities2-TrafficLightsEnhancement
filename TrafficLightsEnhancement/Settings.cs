@@ -8,7 +8,7 @@ using Unity.Entities;
 
 namespace C2VM.TrafficLightsEnhancement;
 
-[FileLocation("C2VM-TrafficLightsEnhancement")]
+[FileLocation("ModsSettings/C2VM.TrafficLightsEnhancement/Settings")]
 [SettingsUIGroupOrder(["General", "Default", "Version"])]
 [SettingsUIShowGroupName]
 public class Settings : ModSetting
@@ -122,6 +122,8 @@ public class Settings : ModSetting
     public Settings(IMod mod) : base(mod)
     {
         SetDefaults();
+        RegisterInOptionsUI();
+        AssetDatabase.global.LoadSettings(nameof(Settings), this);
     }
 
     public override void SetDefaults()
