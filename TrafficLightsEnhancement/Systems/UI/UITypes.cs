@@ -197,6 +197,12 @@ public static class UITypes
 
         public int left;
 
+        public ScreenPoint(int topPos, int leftPos)
+        {
+            left = leftPos;
+            top = topPos;
+        }
+
         public ScreenPoint(UnityEngine.Vector3 pos, int screenHeight)
         {
             left = (int)pos.x;

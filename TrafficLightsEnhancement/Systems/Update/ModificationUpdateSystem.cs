@@ -1,8 +1,9 @@
+using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Game;
 using Game.Common;
 using Unity.Entities;
 
-namespace C2VM.TrafficLightsEnhancement.Systems.UI;
+namespace C2VM.TrafficLightsEnhancement.Systems.Update;
 
 public partial class ModificationUpdateSystem : GameSystemBase
 {

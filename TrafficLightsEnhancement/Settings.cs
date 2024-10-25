@@ -1,5 +1,6 @@
 using System.Reflection;
 using Colossal.IO.AssetDatabase;
+using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
 using Game.Settings;
@@ -9,10 +10,27 @@ using Unity.Entities;
 namespace C2VM.TrafficLightsEnhancement;
 
 [FileLocation("ModsSettings/C2VM.TrafficLightsEnhancement/Settings")]
-[SettingsUIGroupOrder(["General", "Default", "Version"])]
+[SettingsUITabOrder(kTabGeneral, kTabKeyBindings)]
+[SettingsUIGroupOrder(kGroupLanguage, kGroupDefault, kGroupVersion, kGroupMainPanel, kGroupKeyBindingReset)]
 [SettingsUIShowGroupName]
 public class Settings : ModSetting
 {
+    public const string kTabGeneral = "TabGeneral";
+
+    public const string kTabKeyBindings = "TabKeyBindings";
+
+    public const string kGroupLanguage = "GroupLanguage";
+
+    public const string kGroupDefault = "GroupDefault";
+
+    public const string kGroupVersion = "GroupVersion";
+
+    public const string kGroupMainPanel = "GroupMainPanel";
+
+    public const string kGroupKeyBindingReset = "GroupKeyBindingReset";
+
+    public const string kKeyboardBindingMainPanelToggle = "KeyboardBindingMainPanelToggle";
+
     public struct Values
     {
         public bool m_DefaultSplitPhasing;
@@ -24,12 +42,12 @@ public class Settings : ModSetting
         public Values(Settings settings)
         {
             m_DefaultSplitPhasing = settings.m_DefaultSplitPhasing;
-            m_DefaultAlwaysGreenKerbsideTurn = settings.m_DefaultExclusivePedestrian;
+            m_DefaultAlwaysGreenKerbsideTurn = settings.m_DefaultAlwaysGreenKerbsideTurn;
             m_DefaultExclusivePedestrian = settings.m_DefaultExclusivePedestrian;
         }
     }
 
-    [SettingsUISection("General")]
+    [SettingsUISection(kTabGeneral, kGroupLanguage)]
     [SettingsUIDropdown(typeof(Settings), "GetLanguageValues")]
     public string m_LocaleOption
     {
@@ -45,40 +63,27 @@ public class Settings : ModSetting
         }
     }
 
-    [SettingsUISection("General")]
-    public bool m_ShowFloatingButton { get; set; }
+    public string m_Locale { get; private set; }
 
-    public string m_Locale;
+    [SettingsUISection(kTabGeneral, kGroupVersion)]
+    public string m_ReleaseChannel => IsNotCanary() ? "Alpha" : "Canary";
 
-    [SettingsUISection("Version")]
-    public string m_ReleaseChannel
-    {
-        get
-        {
-            if (!IsNotCanary())
-            {
-                return "Canary";
-            }
-            return "Alpha";
-        }
-    }
-
-    [SettingsUISection("Version")]
+    [SettingsUISection(kTabGeneral, kGroupVersion)]
     public string m_TleVersion => Mod.m_InformationalVersion.Substring(0, 20);
 
-    [SettingsUISection("Version")]
+    [SettingsUISection(kTabGeneral, kGroupVersion)]
     public string m_LaneSystemVersion => C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion.Substring(0, 20);
 
-    [SettingsUISection("Default")]
+    [SettingsUISection(kTabGeneral, kGroupDefault)]
     public bool m_DefaultSplitPhasing { get; set; }
 
-    [SettingsUISection("Default")]
+    [SettingsUISection(kTabGeneral, kGroupDefault)]
     public bool m_DefaultAlwaysGreenKerbsideTurn { get; set; }
 
-    [SettingsUISection("Default")]
+    [SettingsUISection(kTabGeneral, kGroupDefault)]
     public bool m_DefaultExclusivePedestrian { get; set; }
 
-    [SettingsUISection("Default")]
+    [SettingsUISection(kTabGeneral, kGroupDefault)]
     [SettingsUIButton]
     [SettingsUIConfirmation(null, null)]
     [SettingsUIDisableByCondition(typeof(Settings), "IsNotInGame")]
@@ -95,7 +100,7 @@ public class Settings : ModSetting
         }
     }
 
-    [SettingsUISection("Version")]
+    [SettingsUISection(kTabGeneral, kGroupVersion)]
     [SettingsUIButton]
     [SettingsUIConfirmation(null, null)]
     [SettingsUIHideByCondition(typeof(Settings), "IsNotCanary")]
@@ -110,6 +115,7 @@ public class Settings : ModSetting
             if (value == true)
             {
                 m_SuppressCanaryWarningVersion = Mod.m_InformationalVersion;
+                Systems.UI.UISystem.m_MainPanelBinding?.Update();
             }
         }
     }
@@ -119,17 +125,32 @@ public class Settings : ModSetting
 
     public string m_SuppressCanaryWarningVersion;
 
+    [SettingsUIKeyboardBinding(BindingKeyboard.None, kKeyboardBindingMainPanelToggle)]
+    [SettingsUISection(kTabKeyBindings, kGroupMainPanel)]
+    public ProxyBinding m_MainPanelToggleKeyboardBinding { get; set; }
+
+    [SettingsUISection(kTabKeyBindings, kGroupKeyBindingReset)]
+    [SettingsUIButton]
+    [SettingsUIConfirmation(null, null)]
+    public bool m_ResetBindings
+    {
+        set
+        {
+            ResetKeyBindings();
+        }
+    }
+
     public Settings(IMod mod) : base(mod)
     {
         SetDefaults();
         RegisterInOptionsUI();
+        RegisterKeyBindings();
         AssetDatabase.global.LoadSettings(nameof(Settings), this);
     }
 
     public override void SetDefaults()
     {
         m_LocaleOption = "auto";
-        m_ShowFloatingButton = true;
         m_DefaultSplitPhasing = false;
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;

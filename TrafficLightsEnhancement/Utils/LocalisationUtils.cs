@@ -95,9 +95,13 @@ public class LocalisationUtils
             return;
         }
         dictionary.Add(Mod.m_Settings.GetSettingsLocaleID(), "Traffic Lights Enhancement");
-        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("General"), this.GetString("General"));
-        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("Default"), this.GetString("Default"));
-        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID("Version"), this.GetString("Version"));
+        dictionary.Add(Mod.m_Settings.GetOptionTabLocaleID(Settings.kTabGeneral), this.GetString("General"));
+        dictionary.Add(Mod.m_Settings.GetOptionTabLocaleID(Settings.kTabKeyBindings), this.GetString("KeyBindings"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupLanguage), this.GetString("LocaleLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupDefault), this.GetString("Default"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupVersion), this.GetString("Version"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupMainPanel), this.GetString("MainPanel"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupKeyBindingReset), this.GetString("Reset"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LocaleOption"), this.GetString("LocaleLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ShowFloatingButton"), this.GetString("ShowFloatingButtonLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingLabel"));
@@ -108,6 +112,8 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_TleVersion"), Mod.m_Id);
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_Id);
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_MainPanelToggleKeyboardBinding"), this.GetString("MainPanelToggleKeyboardBindingLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ResetBindings"), this.GetString("ResetBindingsLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LocaleOption"), this.GetString("LocaleDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ShowFloatingButton"), this.GetString("ShowFloatingButtonDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingDesc"));
@@ -118,8 +124,11 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_TleVersion"), Mod.m_InformationalVersion);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LaneSystemVersion"), C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion);
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_MainPanelToggleKeyboardBinding"), this.GetString("MainPanelToggleKeyboardBindingDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ResetBindings"), this.GetString("ResetBindingsDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ResetBindings"), this.GetString("ResetBindingsDesc"));
         dictionary.Add("Menu.NOTIFICATION_TITLE[C2VM.TLE.LdtMigrationNotificationTitle]", this.GetString("LdtMigrationNotificationTitle"));
         dictionary.Add("Menu.NOTIFICATION_DESCRIPTION[C2VM.TLE.LdtMigrationNotificationText]", this.GetString("LdtMigrationNotificationText"));
     }

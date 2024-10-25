@@ -146,6 +146,25 @@ public partial class RenderSystem : GameSystemBase
         }
     }
 
+    public void AddBounds(Bounds3 bounds, Color color, float scale = 1f)
+    {
+        Vector3 centre = (bounds.min + bounds.max) / 2;
+        Vector3 vector = (centre - (Vector3)bounds.min) * scale;
+        Quaternion quaternion = Quaternion.AngleAxis(10, Vector3.up);
+        int verticesCount = m_LineVertices.Count;
+        m_LineVertices.Add(centre);
+        m_LineColors.Add(color);
+        for (int i = 0; i < 36; i++)
+        {
+            vector = quaternion * vector;
+            m_LineVertices.Add(centre + vector);
+            m_LineColors.Add(color);
+            m_LineIndices.Add(verticesCount);
+            m_LineIndices.Add(verticesCount + i);
+            m_LineIndices.Add(verticesCount + (i < 35 ? i : 0) + 1);
+        }
+    }
+
     public void BuildLineMesh()
     {
         m_LineMesh.Clear();

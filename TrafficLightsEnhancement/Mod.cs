@@ -48,10 +48,10 @@ public class Mod : IMod
 
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
-
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>(SystemUpdatePhase.UIUpdate);
-        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
-        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.UI.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Tool.ToolSystem>(SystemUpdatePhase.ToolUpdate);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
+        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
 
         m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.LdtRetirementSystem>();
     }
@@ -65,8 +65,9 @@ public class Mod : IMod
         m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem>().Enabled = false;
         m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem>().Enabled = false;
         m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>().Enabled = false;
-        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.ModificationUpdateSystem>().Enabled = false;
-        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.SimulationUpdateSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Tool.ToolSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>().Enabled = false;
 
         m_World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = true;
         m_World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = true;
