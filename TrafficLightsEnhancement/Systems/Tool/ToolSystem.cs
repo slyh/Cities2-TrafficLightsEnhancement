@@ -1,4 +1,4 @@
-using C2VM.TrafficLightsEnhancement.Systems.Rendering;
+using C2VM.TrafficLightsEnhancement.Systems.Overlay;
 using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Colossal.Entities;
 using Game.Net;
@@ -21,7 +21,7 @@ public partial class ToolSystem : NetToolSystem
 
     private NativeList<ControlPoint> m_ParentControlPoints;
 
-    private Entity m_AssetEntity = Entity.Null;
+    private Entity m_PrefabEntity = Entity.Null;
 
     private Entity m_RaycastResult = Entity.Null;
 
@@ -43,9 +43,9 @@ public partial class ToolSystem : NetToolSystem
             m_ToolRaycastSystem.raycastFlags |= Game.Common.RaycastFlags.UIDisable;
         }
         var result = base.OnUpdate(inputDeps);
-        if (!m_Suspended && (m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
+        if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
-            if (m_ParentControlPoints.Length >= 4 && m_ParentControlPoints[m_ParentControlPoints.Length - 3].m_OriginalEntity == m_ParentControlPoints[m_ParentControlPoints.Length - 2].m_OriginalEntity)
+            if (m_ParentControlPoints.Length >= 4)
             {
                 Entity originalEntity = m_ParentControlPoints[m_ParentControlPoints.Length - 3].m_OriginalEntity;
                 if (originalEntity != m_RaycastResult)
@@ -54,7 +54,7 @@ public partial class ToolSystem : NetToolSystem
                     m_RenderSystem.ClearLineMesh();
                     if (!EntityManager.HasComponent<Roundabout>(m_RaycastResult) && EntityManager.TryGetComponent<NodeGeometry>(m_RaycastResult, out var nodeGeometry))
                     {
-                        m_RenderSystem.AddBounds(nodeGeometry.m_Bounds, new UnityEngine.Color(0.2941f, 0.7647f, 0.9451f, 1.0f), 0.5f);
+                        m_RenderSystem.AddBounds(nodeGeometry.m_Bounds, new UnityEngine.Color(0.5f, 1.0f, 2.0f, 1.0f), 0.5f);
                         m_RenderSystem.BuildLineMesh();
                     }
                 }
@@ -79,22 +79,24 @@ public partial class ToolSystem : NetToolSystem
 
     protected override void OnGameLoadingComplete(Colossal.Serialization.Entities.Purpose purpose, Game.GameMode mode)
     {
-        NativeArray<Entity> placeablePrefabsList = GetEntityQuery(ComponentType.ReadOnly<PlaceableNetData>()).ToEntityArray(Allocator.Temp);
-        m_AssetEntity = Entity.Null;
-        for (int i = 0; i < placeablePrefabsList.Length; i++)
+        Mod.m_Log.Info($"Searching for traffic light prefab asset entities");
+        m_PrefabEntity = Entity.Null;
+        EntityQuery query = GetEntityQuery(ComponentType.ReadOnly<PlaceableNetData>());
+        NativeArray<Entity> entityArray = query.ToEntityArray(Allocator.Temp);
+        NativeArray<PlaceableNetData> placeableNetDataArray = query.ToComponentDataArray<PlaceableNetData>(Allocator.Temp);
+        for (int i = 0; i < entityArray.Length; i++)
         {
-            Entity entity = placeablePrefabsList[i];
-            PlaceableNetData placeableNetData = EntityManager.GetComponentData<PlaceableNetData>(entity);
-            if ((placeableNetData.m_SetUpgradeFlags.m_General & CompositionFlags.General.TrafficLights) != 0)
+            if ((placeableNetDataArray[i].m_SetUpgradeFlags.m_General & CompositionFlags.General.TrafficLights) == 0)
             {
-                m_AssetEntity = entity;
-                break;
+                continue;
+            }
+            if (m_PrefabSystem.TryGetPrefab(entityArray[i], out PrefabBase prefabBase) && prefabBase is NetPrefab)
+            {
+                m_PrefabEntity = entityArray[i];
+                Mod.m_Log.Info($"{m_PrefabEntity} prefabBase.uiTag: {prefabBase.uiTag}");
             }
         }
-        if (m_AssetEntity == Entity.Null)
-        {
-            Mod.m_Log.Error($"Traffic lights prefab asset entity not found. The tool system will not work.");
-        }
+        Mod.Assert(m_PrefabEntity != Entity.Null, "Traffic lights prefab asset entity not found. The tool system will not work.");
     }
 
     protected override bool GetAllowApply()
@@ -114,12 +116,11 @@ public partial class ToolSystem : NetToolSystem
 
     public void Enable()
     {
-        PrefabBase prefab = m_PrefabSystem.GetPrefab<PrefabBase>(m_AssetEntity);
-        if (prefab is NetPrefab netPrefab)
+        if (m_PrefabSystem.TryGetPrefab(m_PrefabEntity, out NetPrefab netPrefab))
         {
-            m_Suspended = false;
             this.prefab = netPrefab;
             this.underground = m_ToolSystem.activeTool.requireUnderground;
+            m_Suspended = false;
             m_ToolSystem.activeTool = this;
         }
     }

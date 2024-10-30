@@ -1,5 +1,5 @@
 using C2VM.TrafficLightsEnhancement.Components;
-using C2VM.TrafficLightsEnhancement.Systems.Rendering;
+using C2VM.TrafficLightsEnhancement.Systems.Overlay;
 using Colossal.Entities;
 using Game.Net;
 using Game.UI;

@@ -77,13 +77,9 @@ public class LocalisationUtils
 
     public string GetString(string key)
     {
-        try
+        if (m_Dictionary.ContainsKey(key))
         {
             return m_Dictionary[key];
-        }
-        catch (System.Exception)
-        {
-            // Mod.m_Log.Error(e);
         }
         return key;
     }

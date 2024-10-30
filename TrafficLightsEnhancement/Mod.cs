@@ -45,6 +45,7 @@ public class Mod : IMod
 
         m_World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = false;
         m_World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<Game.Tools.NetToolSystem>(); // Ensure NetToolSystem is created before our tool
 
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
@@ -54,6 +55,9 @@ public class Mod : IMod
         updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
 
         m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.LdtRetirementSystem>();
+
+        string netToolSystemToolID = m_World.GetOrCreateSystemManaged<Game.Tools.NetToolSystem>().toolID;
+        Assert(netToolSystemToolID == "Net Tool", $"netToolSystemToolID: {netToolSystemToolID}");
     }
 
     public void OnDispose()
@@ -80,5 +84,17 @@ public class Mod : IMod
         #else
         return false;
         #endif
+    }
+
+    public static void Assert(bool condition, string message = "", bool showInUI = false, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(condition))] string expression = "")
+    {
+        if (condition == true)
+        {
+            return;
+        }
+        bool showsErrorsInUI = m_Log.showsErrorsInUI;
+        m_Log.SetShowsErrorsInUI(showInUI);
+        m_Log.Error($"Assertion failed!\n{message}\nExpression: {expression}");
+        m_Log.SetShowsErrorsInUI(showsErrorsInUI);
     }
 }
