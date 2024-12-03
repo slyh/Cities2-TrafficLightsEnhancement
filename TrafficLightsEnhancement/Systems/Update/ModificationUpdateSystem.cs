@@ -19,8 +19,15 @@ public partial class ModificationUpdateSystem : GameSystemBase
     {
         if (m_UISystem.m_SelectedEntity != Entity.Null && EntityManager.HasComponent<Updated>(m_UISystem.m_SelectedEntity))
         {
-            m_UISystem.RedrawGizmo();
-            m_UISystem.UpdateEdgeInfo(m_UISystem.m_SelectedEntity);
+            if (EntityManager.HasComponent<Game.Net.TrafficLights>(m_UISystem.m_SelectedEntity))
+            {
+                m_UISystem.RedrawGizmo();
+                m_UISystem.UpdateEdgeInfo(m_UISystem.m_SelectedEntity);
+            }
+            else
+            {
+                m_UISystem.ChangeSelectedEntity(Entity.Null);
+            }
         }
     }
 }

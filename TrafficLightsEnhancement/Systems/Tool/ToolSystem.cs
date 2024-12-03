@@ -38,7 +38,7 @@ public partial class ToolSystem : NetToolSystem
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (m_Suspended)
+        if (m_Suspended || !GetAllowApply())
         {
             m_ToolRaycastSystem.raycastFlags |= Game.Common.RaycastFlags.UIDisable;
         }
@@ -64,7 +64,7 @@ public partial class ToolSystem : NetToolSystem
                 m_RaycastResult = Entity.Null;
                 m_RenderSystem.ClearLineMesh();
             }
-            if (applyAction.action.WasReleasedThisFrame())
+            if (applyAction.WasReleasedThisFrame())
             {
                 Entity entity = Traverse.Create(this).Field("m_AppliedUpgrade").Property("value").Field("m_Entity").GetValue<Entity>();
                 CompositionFlags flags = Traverse.Create(this).Field("m_AppliedUpgrade").Property("value").Field("m_Flags").GetValue<CompositionFlags>();
@@ -101,7 +101,7 @@ public partial class ToolSystem : NetToolSystem
 
     protected override bool GetAllowApply()
     {
-        return !(secondaryApplyAction.action.WasReleasedThisFrame() || secondaryApplyAction.action.WasPressedThisFrame());
+        return !(secondaryApplyAction.WasReleasedThisFrame() || secondaryApplyAction.WasPressedThisFrame());
     }
 
     public override bool TrySetPrefab(PrefabBase prefab)

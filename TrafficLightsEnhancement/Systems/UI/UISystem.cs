@@ -3,10 +3,10 @@ using System.Globalization;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
 using C2VM.TrafficLightsEnhancement.Systems.Tool;
+using C2VM.TrafficLightsEnhancement.Systems.Update;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Game;
 using Game.Common;
-using Game.Net;
 using Game.Rendering;
 using Game.SceneFlow;
 using Game.UI;
@@ -42,6 +42,10 @@ public partial class UISystem : UISystemBase
     private RenderSystem m_RenderSystem;
 
     private ToolSystem m_ToolSystem;
+
+    private ModificationUpdateSystem m_ModificationUpdateSystem;
+
+    private SimulationUpdateSystem m_SimulationUpdateSystem;
 
     private Camera m_Camera;
 
@@ -80,6 +84,11 @@ public partial class UISystem : UISystemBase
         m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LdtRetirementSystem>();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
         m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+        m_ModificationUpdateSystem = World.GetOrCreateSystemManaged<ModificationUpdateSystem>();
+        m_SimulationUpdateSystem = World.GetOrCreateSystemManaged<SimulationUpdateSystem>();
+
+        m_ModificationUpdateSystem.Enabled = false;
+        m_SimulationUpdateSystem.Enabled = false;
 
         AddUIBindings();
         SetupKeyBindings();
@@ -138,6 +147,8 @@ public partial class UISystem : UISystemBase
         {
             m_ToolSystem.Suspend();
         }
+        m_ModificationUpdateSystem.Enabled = m_MainPanelState != MainPanelState.Hidden;
+        m_SimulationUpdateSystem.Enabled = m_MainPanelState != MainPanelState.Hidden;
         m_RenderSystem.ClearLineMesh();
     }
 
@@ -230,14 +241,19 @@ public partial class UISystem : UISystemBase
             m_RenderSystem.ClearLineMesh();
             ClearEdgeInfo();
 
-            if (EntityManager.HasComponent<Roundabout>(entity))
-            {
-                entity = Entity.Null;
-            }
-
             if (!entity.Equals(Entity.Null))
             {
+                UpdateEdgeInfo(entity);
                 SetMainPanelState(MainPanelState.Main);
+
+                if (EntityManager.HasComponent<CustomTrafficLights>(entity))
+                {
+                    m_CustomTrafficLights = EntityManager.GetComponentData<CustomTrafficLights>(entity);
+                }
+                else
+                {
+                    m_CustomTrafficLights = new CustomTrafficLights(CustomTrafficLights.Patterns.ModDefault);
+                }
             }
             else if (m_MainPanelState != MainPanelState.Hidden)
             {
@@ -245,15 +261,6 @@ public partial class UISystem : UISystemBase
             }
 
             m_SelectedEntity = entity;
-
-            m_CustomTrafficLights = new CustomTrafficLights(CustomTrafficLights.Patterns.ModDefault);
-
-            if (EntityManager.HasComponent<CustomTrafficLights>(m_SelectedEntity))
-            {
-                m_CustomTrafficLights = EntityManager.GetComponentData<CustomTrafficLights>(m_SelectedEntity);
-            }
-
-            UpdateEdgeInfo(m_SelectedEntity);
         }
     }
 }
