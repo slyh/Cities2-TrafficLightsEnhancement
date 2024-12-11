@@ -66,8 +66,8 @@ public partial class ToolSystem : NetToolSystem
             }
             if (applyAction.WasReleasedThisFrame())
             {
-                Entity entity = Traverse.Create(this).Field("m_AppliedUpgrade").Property("value").Field("m_Entity").GetValue<Entity>();
-                CompositionFlags flags = Traverse.Create(this).Field("m_AppliedUpgrade").Property("value").Field("m_Flags").GetValue<CompositionFlags>();
+                Entity entity = Traverse.Create(this).Field("m_AppliedUpgrade").Property("Value").Field("m_Entity").GetValue<Entity>();
+                CompositionFlags flags = Traverse.Create(this).Field("m_AppliedUpgrade").Property("Value").Field("m_Flags").GetValue<CompositionFlags>();
                 if (entity != Entity.Null && (flags.m_General & CompositionFlags.General.TrafficLights) != 0)
                 {
                     m_UISystem.ChangeSelectedEntity(entity);
