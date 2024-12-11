@@ -24,8 +24,8 @@ class Patches
             return;
         }
 
-        Entity entity = Traverse.Create(__instance).Field("m_AppliedUpgrade").Property("value").Field("m_Entity").GetValue<Entity>();
-        CompositionFlags flags = Traverse.Create(__instance).Field("m_AppliedUpgrade").Property("value").Field("m_Flags").GetValue<CompositionFlags>();
+        Entity entity = Traverse.Create(__instance).Field("m_AppliedUpgrade").Property("Value").Field("m_Entity").GetValue<Entity>();
+        CompositionFlags flags = Traverse.Create(__instance).Field("m_AppliedUpgrade").Property("Value").Field("m_Flags").GetValue<CompositionFlags>();
 
         if ((flags.m_General & CompositionFlags.General.TrafficLights) != 0)
         {
