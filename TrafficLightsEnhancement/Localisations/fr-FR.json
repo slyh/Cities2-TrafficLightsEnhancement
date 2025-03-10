@@ -18,6 +18,6 @@
     "ReleaseChannel": "Version stable",
     "LdtMigrationNotificationTitle": "Message important de Traffic Lights Enhancement",
     "LdtMigrationNotificationText": "Cliquez ici pour lire (Ouvrir dans le navigateur Web)",
-    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
-    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+    "SuppressCanaryWarningLabel": "Supprimer l'avertissement Canary",
+    "SuppressCanaryWarningDesc": "Supprime temporairement l'avertissement Canary. Il sera réactivé lors de la mise à jour du mod."
 }

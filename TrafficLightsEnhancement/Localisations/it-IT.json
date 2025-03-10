@@ -18,6 +18,6 @@
     "ReleaseChannel": "Canale di rilascio",
     "LdtMigrationNotificationTitle": "Messaggio importante dal potenziamento delle luci del traffico",
     "LdtMigrationNotificationText": "Clicca qui per leggere (Apri nel browser web)",
-    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
+    "SuppressCanaryWarningLabel": "Sopprimi l'avviso Canary",
     "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
 }
