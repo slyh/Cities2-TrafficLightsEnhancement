@@ -1,13 +1,16 @@
 {
+    "General": "Ogólne",
+    "KeyBindings": "Key Bindings",
+    "Default": "Domyślne",
+    "Version": "Wersja",
+    "MainPanel": "Main Panel",
+    "Reset": "Reset",
     "LocaleLabel": "Język",
     "LocaleDesc": "Ustaw język dla tego moda. Jeśli wybierzesz \"Auto\", automatycznie wybierze język na podstawie ustawień gry i ustawień regionalnych systemu.",
     "ShowFloatingButtonLabel": "Pływający przycisk",
     "ShowFloatingButtonDesc": "Wyświetl przycisk w lewym górnym rogu ekranu, aby włączyć lub wyłączyć główny panel.",
-    "Version": "Wersja",
-    "General": "Ogólne",
-    "Default": "Domyślne",
-    "DefaultSplitPhasingLabel": "Podział faz",
-    "DefaultSplitPhasingDesc": "Ustaw wszystkie sygnalizacje świetlne bez konfiguracji w tryb podziału faz. Ma to zastosowanie do nowo wybudowanych dróg, jak i do istniejących już dróg po zaktualizowaniu stanu gry.",
+    "DefaultSplitPhasingLabel": "Bezkolizyjna",
+    "DefaultSplitPhasingDesc": "Ustaw wszystkie sygnalizacje świetlne bez konfiguracji w tryb bezkolizyjny. Ma to zastosowanie do nowo wybudowanych dróg, jak i do istniejących już dróg po zaktualizowaniu stanu gry.",
     "DefaultAlwaysGreenKerbsideTurnLabel": "Skręcanie na czerwonym",
     "DefaultAlwaysGreenKerbsideTurnDesc": "Ustaw wszystkie sygnalizacje świetlne bez konfiguracji na pozwalaj na skręcanie na czerwonym. Ma to zastosowanie do nowo wybudowanych dróg, jak i do istniejących już dróg po zaktualizowaniu stanu gry.",
     "DefaultExclusivePedestrianLabel": "Dedykowana faza dla pieszych",
@@ -19,5 +22,9 @@
     "LdtMigrationNotificationTitle": "Ważna wiadomość od Traffic Lights Enhancement",
     "LdtMigrationNotificationText": "Kliknij tutaj, aby przeczytać. (Otwórz w przeglądarce)",
     "SuppressCanaryWarningLabel": "Wyłącz ostrzeżenie o wersji canary",
-    "SuppressCanaryWarningDesc": "Tymczasowo wyłącz ostrzeżenie o wersji canary. Zostanie ono ponownie włączone po aktualizacji moda."
+    "SuppressCanaryWarningDesc": "Tymczasowo wyłącz ostrzeżenie o wersji canary. Zostanie ono ponownie włączone po aktualizacji moda.",
+    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
+    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
+    "ResetBindingsLabel": "Reset Key Bindings",
+    "ResetBindingsDesc": "Reset all key bindings."
 }

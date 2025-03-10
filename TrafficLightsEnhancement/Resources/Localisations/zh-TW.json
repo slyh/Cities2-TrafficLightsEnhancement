@@ -1,11 +1,14 @@
 {
+    "General": "一般",
+    "KeyBindings": "輸入設定",
+    "Default": "預設",
+    "Version": "版本",
+    "MainPanel": "主面板",
+    "Reset": "重設",
     "LocaleLabel": "語言",
     "LocaleDesc": "設定此模組的語言。若你選擇「自動」，它將根據遊戲和系統的語言設定自動選擇語言。",
     "ShowFloatingButtonLabel": "懸浮按鈕",
     "ShowFloatingButtonDesc": "在螢幕左上角顯示按鈕，用作開關主面板。",
-    "Version": "版本",
-    "General": "一般",
-    "Default": "預設",
     "DefaultSplitPhasingLabel": "輪放多時相號誌",
     "DefaultSplitPhasingDesc": "將所有未經設定的交通燈設定為輪放多時相號誌。此選項適用於新建的道路，在遊戲數據更新時，亦會變更現有道路。",
     "DefaultAlwaysGreenKerbsideTurnLabel": "容許於紅燈時轉彎",
@@ -19,5 +22,9 @@
     "LdtMigrationNotificationTitle": "來自 TLE 的重要訊息",
     "LdtMigrationNotificationText": "點擊此處閱讀（在網頁瀏覽器中開啟）",
     "SuppressCanaryWarningLabel": "暫停Canary警告",
-    "SuppressCanaryWarningDesc": "在模組更新後，該警告會被重新啟用。"
+    "SuppressCanaryWarningDesc": "在模組更新後，該警告會被重新啟用。",
+    "MainPanelToggleKeyboardBindingLabel": "開關主面板",
+    "MainPanelToggleKeyboardBindingDesc": "開啟或關閉主面板。",
+    "ResetBindingsLabel": "重設輸入設定",
+    "ResetBindingsDesc": "重設所有輸入設定。"
 }

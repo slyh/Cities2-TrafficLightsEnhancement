@@ -1,11 +1,14 @@
 {
+    "General": "General",
+    "KeyBindings": "Key Bindings",
+    "Default": "Default",
+    "Version": "Version",
+    "MainPanel": "Main Panel",
+    "Reset": "Reset",
     "LocaleLabel": "Language",
     "LocaleDesc": "Set the language for this mod. If you choose \"Auto\", it will automatically select a language based on your in-game settings and system locale.",
     "ShowFloatingButtonLabel": "Floating Button",
     "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
-    "Version": "Version",
-    "General": "General",
-    "Default": "Default",
     "DefaultSplitPhasingLabel": "Split Phasing",
     "DefaultSplitPhasingDesc": "Set all traffic lights without custom configurations to split phasing mode. It applies to newly built roads and will apply to existing roads upon a game state update.",
     "DefaultAlwaysGreenKerbsideTurnLabel": "Turning on Red",
@@ -19,5 +22,9 @@
     "LdtMigrationNotificationTitle": "Important message from Traffic Lights Enhancement",
     "LdtMigrationNotificationText": "Click here to read (Open in web browser)",
     "SuppressCanaryWarningLabel": "Suppress Canary Warning",
-    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated.",
+    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
+    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
+    "ResetBindingsLabel": "Reset Key Bindings",
+    "ResetBindingsDesc": "Reset all key bindings."
 }

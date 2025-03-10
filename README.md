@@ -2,7 +2,7 @@
 
 * Set traffic lights to various predefined signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.1.7f1
+* Compatible with version 1.2.3f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -45,19 +45,19 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * French: [PsykotropyK](https://github.com/PsykotropyK), [Edou24](https://github.com/Edou24), [Clark](https://crowdin.com/profile/clarkent), [rorobuibui](https://crowdin.com/profile/rorobuibui) and [Morgan Touverey Quilling](https://crowdin.com/profile/mtouverey)
 
-* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen), [fahei](https://github.com/fahei) and [KaeseKuchen](https://crowdin.com/profile/kaesemitkuchen)
+* German: [TheL0ki](https://github.com/TheL0ki), [Simanova86](https://github.com/Simanova86), [Mark](https://crowdin.com/profile/randomkuchen), [fahei](https://github.com/fahei), [KaeseKuchen](https://crowdin.com/profile/kaesemitkuchen) and [PoxiiHD](https://crowdin.com/profile/poxiihd)
 
-* Italian: [Stefano](https://crowdin.com/profile/furios)
+* Italian: [Stefano](https://crowdin.com/profile/furios) and [Amazing Amazon](https://crowdin.com/profile/bertrandmati)
 
 * Japanese: [macoto-hino](https://github.com/macoto-hino) and [amanao](https://crowdin.com/profile/amanao)
 
-* Korean: [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst) and [DevelopmentAnything](https://github.com/DevelopmentAnything)
+* Korean: [Twotoolus-FLY-LShst](https://github.com/Twotoolus-FLY-LShst), [DevelopmentAnything](https://github.com/DevelopmentAnything) and [Leo Han](https://crowdin.com/profile/akdls4707)
 
 * Polish: [karmel68](https://crowdin.com/profile/karmel68)
 
 * Portuguese (Brazil): [djotabr](https://github.com/djotabr) and [lucianoedipo](https://github.com/lucianoedipo)
 
-* Russian: [Mellaway](https://github.com/Mellaway), [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder), [Alex Motor](https://crowdin.com/profile/orwester) and [Sivenesis](https://crowdin.com/profile/sivenesis)
+* Russian: [Mellaway](https://github.com/Mellaway), [BuiIdTheBuilder](https://github.com/BuiIdTheBuilder), [Alex Motor](https://crowdin.com/profile/orwester), [Sivenesis](https://crowdin.com/profile/sivenesis) and [KIRFEDO](https://crowdin.com/profile/kirfedo)
 
 * Spanish: [Fabio Rodriguez](https://crowdin.com/profile/elwingcr) and [elGendo87](https://crowdin.com/profile/elgendo87)
 

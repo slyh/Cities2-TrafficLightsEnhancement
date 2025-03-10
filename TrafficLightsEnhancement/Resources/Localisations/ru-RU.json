@@ -1,11 +1,14 @@
 {
+    "General": "Общее",
+    "KeyBindings": "Key Bindings",
+    "Default": "По-умолчанию",
+    "Version": "Версия",
+    "MainPanel": "Main Panel",
+    "Reset": "Reset",
     "LocaleLabel": "Язык",
     "LocaleDesc": "Выберите язык для этого мода. Если вы выберете \"Авто\", он автоматически выберет язык, на основе настроек игры и системы.",
     "ShowFloatingButtonLabel": "Floating Button",
     "ShowFloatingButtonDesc": "Display a button in the top-left corner of the screen to toggle the main panel on or off.",
-    "Version": "Версия",
-    "General": "Общее",
-    "Default": "По-умолчанию",
     "DefaultSplitPhasingLabel": "Очередь",
     "DefaultSplitPhasingDesc": "Set all traffic lights without custom configurations to split phasing mode. It applies to newly built roads and will apply to existing roads upon a game state update.",
     "DefaultAlwaysGreenKerbsideTurnLabel": "Turning on Red",
@@ -19,5 +22,9 @@
     "LdtMigrationNotificationTitle": "Важное сообщение от Enhancement Traffic Lights",
     "LdtMigrationNotificationText": "Нажмите здесь, чтобы прочитать (Открыть в браузере)",
     "SuppressCanaryWarningLabel": "Suppress Canary Warning",
-    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated.",
+    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
+    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
+    "ResetBindingsLabel": "Reset Key Bindings",
+    "ResetBindingsDesc": "Reset all key bindings."
 }

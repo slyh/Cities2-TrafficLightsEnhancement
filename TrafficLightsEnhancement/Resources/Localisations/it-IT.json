@@ -1,11 +1,14 @@
 {
+    "General": "Generale",
+    "KeyBindings": "Key Bindings",
+    "Default": "Predefinito",
+    "Version": "Versione",
+    "MainPanel": "Main Panel",
+    "Reset": "Reset",
     "LocaleLabel": "Lingua",
     "LocaleDesc": "Imposta la lingua per questa mod. Se scegli \"Auto\", selezionerà automaticamente una lingua in base alle tue impostazioni di gioco e impostazioni di sistema.",
     "ShowFloatingButtonLabel": "Pulsante mobile",
     "ShowFloatingButtonDesc": "Mostra un pulsante nell'angolo in alto a sinistra dello schermo per attivare o disattivare il pannello principale.",
-    "Version": "Versione",
-    "General": "Generale",
-    "Default": "Predefinito",
     "DefaultSplitPhasingLabel": "Fasi separate",
     "DefaultSplitPhasingDesc": "Impostare tutti i semafori senza configurazioni personalizzate in modalità di stadio. Si applica alle strade di nuova costruzione e si applicherà alle strade esistenti su un aggiornamento dello stato del gioco.",
     "DefaultAlwaysGreenKerbsideTurnLabel": "Consenti svolta con rosso",
@@ -18,6 +21,10 @@
     "ReleaseChannel": "Canale di rilascio",
     "LdtMigrationNotificationTitle": "Messaggio importante dal potenziamento delle luci del traffico",
     "LdtMigrationNotificationText": "Clicca qui per leggere (Apri nel browser web)",
-    "SuppressCanaryWarningLabel": "Suppress Canary Warning",
-    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated."
+    "SuppressCanaryWarningLabel": "Sopprimi l'avviso Canary",
+    "SuppressCanaryWarningDesc": "Temporarily suppress the canary warning. It will be re-enabled when the mod is updated.",
+    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
+    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
+    "ResetBindingsLabel": "Reset Key Bindings",
+    "ResetBindingsDesc": "Reset all key bindings."
 }

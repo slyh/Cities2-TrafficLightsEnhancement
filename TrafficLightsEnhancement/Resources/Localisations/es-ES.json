@@ -1,11 +1,14 @@
 {
+    "General": "General",
+    "KeyBindings": "Key Bindings",
+    "Default": "Por defecto",
+    "Version": "Versión",
+    "MainPanel": "Main Panel",
+    "Reset": "Reset",
     "LocaleLabel": "Idioma",
     "LocaleDesc": "Establece el idioma de este mod. Si eliges \"Auto\", automáticamente seleccionará un idioma basado en tu configuración del juego y la configuración del sistema.",
     "ShowFloatingButtonLabel": "Botón flotante",
     "ShowFloatingButtonDesc": "Mostrar el botón en la esquina superior izquierda de la pantalla para encender o desactivar el panel principal.",
-    "Version": "Versión",
-    "General": "General",
-    "Default": "Por defecto",
     "DefaultSplitPhasingLabel": "Fase de división",
     "DefaultSplitPhasingDesc": "Establecer todos los semáforos sin configuraciones personalizadas en modo de fase de división. Se aplica a las carreteras de nueva construcción y se aplicará a las ya existentes al actualizarse el estado del juego.",
     "DefaultAlwaysGreenKerbsideTurnLabel": "Permitir giros en rojo",
@@ -19,5 +22,9 @@
     "LdtMigrationNotificationTitle": "Mensaje importante de Traffic Lights Enhancement",
     "LdtMigrationNotificationText": "Haga clic aquí para leer (Abrir en el navegador web)",
     "SuppressCanaryWarningLabel": "Quitar advertencia de versión Canary",
-    "SuppressCanaryWarningDesc": "Quita temporalmente la advertencia de versión Canary. Se volverá a activar automáticamente cuando se actualice el mod."
+    "SuppressCanaryWarningDesc": "Quita temporalmente la advertencia de versión Canary. Se volverá a activar automáticamente cuando se actualice el mod.",
+    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
+    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
+    "ResetBindingsLabel": "Reset Key Bindings",
+    "ResetBindingsDesc": "Reset all key bindings."
 }
