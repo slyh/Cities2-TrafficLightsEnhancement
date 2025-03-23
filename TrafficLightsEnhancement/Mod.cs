@@ -54,8 +54,6 @@ public class Mod : IMod
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
         updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
 
-        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.LdtRetirementSystem>();
-
         string netToolSystemToolID = m_World.GetOrCreateSystemManaged<Game.Tools.NetToolSystem>().toolID;
         Assert(netToolSystemToolID == "Net Tool", $"netToolSystemToolID: {netToolSystemToolID}");
     }

@@ -1,9 +1,9 @@
 {
     "General": "Ogólne",
-    "KeyBindings": "Key Bindings",
+    "KeyBindings": "Sterowanie",
     "Default": "Domyślne",
     "Version": "Wersja",
-    "MainPanel": "Main Panel",
+    "MainPanel": "Panel główny",
     "Reset": "Reset",
     "LocaleLabel": "Język",
     "LocaleDesc": "Ustaw język dla tego moda. Jeśli wybierzesz \"Auto\", automatycznie wybierze język na podstawie ustawień gry i ustawień regionalnych systemu.",
@@ -23,8 +23,8 @@
     "LdtMigrationNotificationText": "Kliknij tutaj, aby przeczytać. (Otwórz w przeglądarce)",
     "SuppressCanaryWarningLabel": "Wyłącz ostrzeżenie o wersji canary",
     "SuppressCanaryWarningDesc": "Tymczasowo wyłącz ostrzeżenie o wersji canary. Zostanie ono ponownie włączone po aktualizacji moda.",
-    "MainPanelToggleKeyboardBindingLabel": "Toggle Main Panel",
-    "MainPanelToggleKeyboardBindingDesc": "Open or close the main panel.",
-    "ResetBindingsLabel": "Reset Key Bindings",
-    "ResetBindingsDesc": "Reset all key bindings."
+    "MainPanelToggleKeyboardBindingLabel": "Przełącz Panel główny",
+    "MainPanelToggleKeyboardBindingDesc": "Otwórz lub zamknij panel główny.",
+    "ResetBindingsLabel": "Zresetuj Sterowanie",
+    "ResetBindingsDesc": "Resetuje wszystkie przypisane klawisze."
 }

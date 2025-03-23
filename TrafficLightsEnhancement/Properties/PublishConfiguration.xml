@@ -12,7 +12,7 @@
 
 * Set traffic lights to various signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.2.3f1
+* Compatible with version 1.2.5f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -82,13 +82,11 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Allow users to temporarily suppress canary warnings (Idea: qualiall)
+* Fixed error: Invalid host locations map
 
-* Improved handling of the IgnorePriority flag (related to issue #95; regression possible)
+* Removed LDT retirement notification
 
-* Seamless transition between phases when "Allow Turning on Red" is enabled
-
-* Translation updates (Credit: karmel68, elGendo87)
+* Translation updates (Credit: TwotoolusFLY_LSh.st, KIRFEDO, Edou24, Amazing Amazon, PoxiiHD, karmel68, Leo Han, RilkeXS)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

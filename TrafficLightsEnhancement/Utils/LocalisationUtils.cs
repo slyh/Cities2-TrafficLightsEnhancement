@@ -125,7 +125,5 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ResetBindings"), this.GetString("ResetBindingsDesc"));
-        dictionary.Add("Menu.NOTIFICATION_TITLE[C2VM.TLE.LdtMigrationNotificationTitle]", this.GetString("LdtMigrationNotificationTitle"));
-        dictionary.Add("Menu.NOTIFICATION_DESCRIPTION[C2VM.TLE.LdtMigrationNotificationText]", this.GetString("LdtMigrationNotificationText"));
     }
 }

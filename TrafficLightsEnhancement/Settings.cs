@@ -120,9 +120,6 @@ public class Settings : ModSetting
         }
     }
 
-    [SettingsUIHidden]
-    public bool m_HasReadLdtRetirementNotice { get; set; }
-
     public string m_SuppressCanaryWarningVersion;
 
     [SettingsUIKeyboardBinding(BindingKeyboard.None, kKeyboardBindingMainPanelToggle)]
@@ -154,7 +151,6 @@ public class Settings : ModSetting
         m_DefaultSplitPhasing = false;
         m_DefaultAlwaysGreenKerbsideTurn = false;
         m_DefaultExclusivePedestrian = false;
-        m_HasReadLdtRetirementNotice = false;
         m_SuppressCanaryWarningVersion = "";
     }
 

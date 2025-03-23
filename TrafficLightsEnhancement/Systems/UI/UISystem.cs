@@ -37,8 +37,6 @@ public partial class UISystem : UISystemBase
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
 
-    private LdtRetirementSystem m_LdtRetirementSystem;
-
     private RenderSystem m_RenderSystem;
 
     private ToolSystem m_ToolSystem;
@@ -81,7 +79,6 @@ public partial class UISystem : UISystemBase
 
         m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
-        m_LdtRetirementSystem = World.GetOrCreateSystemManaged<LdtRetirementSystem>();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
         m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
         m_ModificationUpdateSystem = World.GetOrCreateSystemManaged<ModificationUpdateSystem>();

@@ -68,7 +68,7 @@ public partial class UISystem : UISystemBase
         var menu = new
         {
             title = Mod.IsCanary() ? "TLE Canary" : "Traffic Lights Enhancement",
-            image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
+            image = "Media/Game/Icons/TrafficLights.svg",
             position = m_MainPanelPosition,
             showPanel = m_MainPanelState != MainPanelState.Hidden,
             showFloatingButton = true,
@@ -129,17 +129,10 @@ public partial class UISystem : UISystemBase
                 }
             }
             menu.items.Add(default(UITypes.ItemDivider));
-            if (m_LdtRetirementSystem.m_UnmigratedNodeCount > 0)
+            if (EntityManager.HasBuffer<C2VM.CommonLibraries.LaneSystem.CustomLaneDirection>(m_SelectedEntity))
             {
                 menu.items.Add(new UITypes.ItemTitle{title = "LaneDirectionTool"});
                 menu.items.Add(new UITypes.ItemButton{label = "Reset", key = "status", value = "0", engineEventName = "C2VM.TLE.CallLaneDirectionToolReset"});
-                menu.items.Add(default(UITypes.ItemDivider));
-                menu.items.Add(new UITypes.ItemNotification{label = "LdtMigrationNotice", notificationType = "notice", value = LdtRetirementSystem.kRetirementNoticeLink, engineEventName = "C2VM.TLE.CallOpenBrowser"});
-                menu.items.Add(default(UITypes.ItemDivider));
-            }
-            else if (Mod.m_Settings != null && !Mod.m_Settings.m_HasReadLdtRetirementNotice)
-            {
-                menu.items.Add(new UITypes.ItemNotification{label = "LdtRetirementNotice", notificationType = "notice"});
                 menu.items.Add(default(UITypes.ItemDivider));
             }
             menu.items.Add(new UITypes.ItemButton{label = "Save", key = "save", value = "1", engineEventName = "C2VM.TLE.CallMainPanelSave"});
@@ -307,6 +300,7 @@ public partial class UISystem : UISystemBase
         if (m_SelectedEntity != Entity.Null)
         {
             EntityManager.RemoveComponent<CommonLibraries.LaneSystem.CustomLaneDirection>(m_SelectedEntity);
+            m_MainPanelBinding.Update();
         }
         return "";
     }
