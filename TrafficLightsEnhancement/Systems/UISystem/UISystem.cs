@@ -197,7 +197,7 @@ public partial class UISystem : UISystemBase
     {
         var menu = new {
             title = Mod.IsCanary() ? "TLE Canary" : "Traffic Lights Enhancement",
-            image = "coui://GameUI/Media/Game/Icons/TrafficLights.svg",
+            image = "Media/Game/Icons/TrafficLights.svg",
             showPanel = m_ShouldShowPanel,
             showFloatingButton = Mod.m_Settings != null && Mod.m_Settings.m_ShowFloatingButton,
             trafficLightsAssetEntityIndex = m_TrafficLightsAssetEntity.Index,
