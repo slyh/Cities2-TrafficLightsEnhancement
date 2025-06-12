@@ -1,33 +1,69 @@
 #region Assembly Game, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // location unknown
-// Decompiled with ICSharpCode.Decompiler 8.1.1.7464
+// Decompiled with ICSharpCode.Decompiler 9.1.0.7988
 #endregion
 
 using System.Runtime.CompilerServices;
+using Colossal.Collections;
 using C2VM.TrafficLightsEnhancement.Components;
 using Colossal.Mathematics;
-using Game;
 using Game.Common;
-using Game.Net;
+using Game.Objects;
+using Game.Pathfind;
+using Game.Prefabs;
 using Game.Simulation;
+using Game.Tools;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Entities.Internal;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
 
+using TrafficLights = Game.Net.TrafficLights;
+using MasterLane = Game.Net.MasterLane;
+using SlaveLane = Game.Net.SlaveLane;
+using CarLane = Game.Net.CarLane;
+using PedestrianLane = Game.Net.PedestrianLane;
+using SecondaryLane = Game.Net.SecondaryLane;
+using Curve = Game.Net.Curve;
+using Edge = Game.Net.Edge;
+using Node = Game.Net.Node;
+using Lane = Game.Net.Lane;
+using LaneOverlap = Game.Net.LaneOverlap;
+using ConnectedEdge = Game.Net.ConnectedEdge;
+using LaneSignal = Game.Net.LaneSignal;
+using SubLane = Game.Net.SubLane;
+using TrafficLightFlags = Game.Net.TrafficLightFlags;
+using EdgeIterator = Game.Net.EdgeIterator;
+using EdgeIteratorValue = Game.Net.EdgeIteratorValue;
+using PedestrianLaneFlags = Game.Net.PedestrianLaneFlags;
+using CarLaneFlags = Game.Net.CarLaneFlags;
+using RoadTypes = Game.Net.RoadTypes;
+using TrafficLightState = Game.Net.TrafficLightState;
+using LaneSignalFlags = Game.Net.LaneSignalFlags;
+
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem;
 
 [CompilerGenerated]
-public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
+public partial class PatchedTrafficLightInitializationSystem : Game.GameSystemBase
 {
     // [BurstCompile]
     private struct InitializeTrafficLightsJob : IJobChunk
     {
         [ReadOnly]
+        public EntityTypeHandle m_EntityType;
+
+        [ReadOnly]
+        public ComponentTypeHandle<Owner> m_OwnerType;
+
+        [ReadOnly]
         public BufferTypeHandle<SubLane> m_SubLaneType;
+
+        [ReadOnly]
+        public BufferTypeHandle<Game.Objects.SubObject> m_SubObjectType;
 
         public ComponentTypeHandle<TrafficLights> m_TrafficLightsType;
 
@@ -50,7 +86,43 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
         public ComponentLookup<Curve> m_CurveData;
 
         [ReadOnly]
+        public ComponentLookup<Edge> m_EdgeData;
+
+        [ReadOnly]
+        public ComponentLookup<Node> m_NodeData;
+
+        [ReadOnly]
+        public ComponentLookup<Lane> m_LaneData;
+
+        [ReadOnly]
+        public ComponentLookup<PointOfInterest> m_PointOfInterestData;
+
+        [ReadOnly]
+        public ComponentLookup<Temp> m_TempData;
+
+        [ReadOnly]
+        public ComponentLookup<Hidden> m_HiddenData;
+
+        [ReadOnly]
+        public ComponentLookup<PrefabRef> m_PrefabRefData;
+
+        [ReadOnly]
+        public ComponentLookup<CarLaneData> m_PrefabCarLaneData;
+
+        [ReadOnly]
+        public ComponentLookup<MoveableBridgeData> m_PrefabMoveableBridgeData;
+
+        [ReadOnly]
+        public BufferLookup<SubLane> m_SubLanes;
+
+        [ReadOnly]
         public BufferLookup<LaneOverlap> m_Overlaps;
+
+        [ReadOnly]
+        public BufferLookup<ConnectedEdge> m_ConnectedEdges;
+
+        [ReadOnly]
+        public BufferLookup<Game.Objects.SubObject> m_SubObjects;
 
         [NativeDisableParallelForRestriction]
         public ComponentLookup<LaneSignal> m_LaneSignalData;
@@ -68,13 +140,40 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             NativeList<LaneGroup> groups = new NativeList<LaneGroup>(16, Allocator.Temp);
             NativeList<LaneGroup> vehicleLanes = new NativeList<LaneGroup>(16, Allocator.Temp);
             NativeList<LaneGroup> pedestrianLanes = new NativeList<LaneGroup>(16, Allocator.Temp);
-            NativeArray<TrafficLights> nativeArray = chunk.GetNativeArray(ref m_TrafficLightsType);
+            NativeHashMap<PathNode, int> groupIndexMap = default(NativeHashMap<PathNode, int>);
+            NativeArray<Entity> nativeArray = chunk.GetNativeArray(m_EntityType);
+            NativeArray<Owner> nativeArray2 = chunk.GetNativeArray(ref m_OwnerType);
+            NativeArray<TrafficLights> nativeArray3 = chunk.GetNativeArray(ref m_TrafficLightsType);
             BufferAccessor<SubLane> bufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
+            BufferAccessor<Game.Objects.SubObject> bufferAccessor2 = chunk.GetBufferAccessor(ref m_SubObjectType);
             NativeArray<CustomTrafficLights> customTrafficLightsArray = chunk.GetNativeArray(ref m_CustomTrafficLightsType);
-            for (int i = 0; i < nativeArray.Length; i++)
+            for (int i = 0; i < nativeArray3.Length; i++)
             {
-                TrafficLights trafficLights = nativeArray[i];
+                Entity entity = nativeArray[i];
+                TrafficLights trafficLights = nativeArray3[i];
                 DynamicBuffer<SubLane> subLanes = bufferAccessor[i];
+                bool flag = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
+                bool flag2 = false;
+                bool isSubNode = false;
+                int groupCount = 0;
+                MoveableBridgeData moveableBridgeData = default(MoveableBridgeData);
+                if (flag && CollectionUtils.TryGet(nativeArray2, i, out var owner) && FindMoveableBridgeData(entity, owner.m_Owner, out moveableBridgeData))
+                {
+                    flag2 = true;
+                    isSubNode = true;
+                    trafficLights.m_Flags |= TrafficLightFlags.MoveableBridge | TrafficLightFlags.IsSubNode;
+                }
+                else if (flag && CollectionUtils.TryGet(bufferAccessor2, i, out var subObjects) && FindMoveableBridgeData(subObjects, out moveableBridgeData))
+                {
+                    flag2 = true;
+                    trafficLights.m_Flags &= ~TrafficLightFlags.IsSubNode;
+                    trafficLights.m_Flags |= TrafficLightFlags.MoveableBridge;
+                }
+                else
+                {
+                    trafficLights.m_Flags &= ~(TrafficLightFlags.MoveableBridge | TrafficLightFlags.IsSubNode);
+                }
+
                 CustomTrafficLights customTrafficLights;
                 if (i < customTrafficLightsArray.Length)
                 {
@@ -99,12 +198,20 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                     customTrafficLights.SetPattern(defaultPattern);
                 }
                 customTrafficLights.SetPedestrianPhaseGroupMask(0);
-                bool isLevelCrossing = (trafficLights.m_Flags & TrafficLightFlags.LevelCrossing) != 0;
+
                 FillLaneBuffers(subLanes, vehicleLanes, pedestrianLanes);
-                ProcessVehicleLaneGroups(vehicleLanes, groups, isLevelCrossing, out var groupCount, ref customTrafficLights, out int ways, out TrafficLightPatterns.Pattern pattern);
-                ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, isLevelCrossing, ref groupCount, ref customTrafficLights, ways, pattern);
-                InitializeTrafficLights(subLanes, groups, groupCount, isLevelCrossing, ref trafficLights, unfilteredChunkIndex);
-                nativeArray[i] = trafficLights;
+                if (flag2)
+                {
+                    ProcessMoveableBridgeLanes(entity, vehicleLanes, pedestrianLanes, groups, subLanes, moveableBridgeData, isSubNode, ref groupIndexMap, out groupCount);
+                }
+                else
+                {
+                    ProcessVehicleLaneGroups(vehicleLanes, groups, flag, out groupCount, ref customTrafficLights, out int ways, out TrafficLightPatterns.Pattern pattern);
+                    ProcessPedestrianLaneGroups(subLanes, pedestrianLanes, groups, flag, ref groupCount, ref customTrafficLights, ways, pattern);
+                }
+
+                InitializeTrafficLights(subLanes, groups, groupCount, flag, flag2, ref trafficLights, unfilteredChunkIndex);
+                nativeArray3[i] = trafficLights;
                 if (i < customTrafficLightsArray.Length)
                 {
                     customTrafficLightsArray[i] = customTrafficLights;
@@ -117,6 +224,115 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             groups.Dispose();
             vehicleLanes.Dispose();
             pedestrianLanes.Dispose();
+            if (groupIndexMap.IsCreated)
+            {
+                groupIndexMap.Dispose();
+            }
+        }
+
+        private bool FindMoveableBridgeData(Entity node, Entity owner, out MoveableBridgeData moveableBridgeData)
+        {
+            moveableBridgeData = default(MoveableBridgeData);
+            if (!m_EdgeData.TryGetComponent(owner, out var componentData))
+            {
+                return false;
+            }
+
+            Node node2 = m_NodeData[node];
+            Curve curve = m_CurveData[owner];
+            float num = math.distancesq(node2.m_Position, curve.m_Bezier.a);
+            float num2 = math.distancesq(node2.m_Position, curve.m_Bezier.d);
+            Entity entity = ((num <= num2) ? componentData.m_Start : componentData.m_End);
+            if (!m_SubObjects.TryGetBuffer(entity, out var bufferData))
+            {
+                return false;
+            }
+
+            return FindMoveableBridgeData(bufferData, out moveableBridgeData);
+        }
+
+        private bool FindMoveableBridgeData(DynamicBuffer<Game.Objects.SubObject> subObjects, out MoveableBridgeData moveableBridgeData)
+        {
+            for (int i = 0; i < subObjects.Length; i++)
+            {
+                Entity subObject = subObjects[i].m_SubObject;
+                if (m_PointOfInterestData.HasComponent(subObject))
+                {
+                    PrefabRef prefabRef = m_PrefabRefData[subObject];
+                    if (m_PrefabMoveableBridgeData.TryGetComponent(prefabRef.m_Prefab, out moveableBridgeData))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            moveableBridgeData = default(MoveableBridgeData);
+            return false;
+        }
+
+        private void ProcessMoveableBridgeLanes(Entity entity, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes, NativeList<LaneGroup> groups, DynamicBuffer<SubLane> subLanes, MoveableBridgeData moveableBridgeData, bool isSubNode, ref NativeHashMap<PathNode, int> groupIndexMap, out int groupCount)
+        {
+            if (groupIndexMap.IsCreated)
+            {
+                groupIndexMap.Clear();
+            }
+            else
+            {
+                groupIndexMap = new NativeHashMap<PathNode, int>(32, Allocator.Temp);
+            }
+
+            PrefabRef prefabRef = m_PrefabRefData[entity];
+            bool2 x = moveableBridgeData.m_LiftOffsets.z != moveableBridgeData.m_LiftOffsets.xy;
+            groupCount = math.select(2, 3, math.all(x));
+            int trueValue = math.select(math.select(0, 1, x.x), 2, math.all(x));
+            EdgeIterator edgeIterator = new EdgeIterator(Entity.Null, entity, m_ConnectedEdges, m_EdgeData, m_TempData, m_HiddenData);
+            EdgeIteratorValue value;
+            while (edgeIterator.GetNext(out value))
+            {
+                if (m_SubLanes.TryGetBuffer(value.m_Edge, out var bufferData))
+                {
+                    int falseValue = math.select(1, 0, m_PrefabRefData[value.m_Edge].m_Prefab == prefabRef.m_Prefab);
+                    falseValue = math.select(falseValue, trueValue, isSubNode);
+                    for (int i = 0; i < bufferData.Length; i++)
+                    {
+                        Lane lane = m_LaneData[bufferData[i].m_SubLane];
+                        groupIndexMap.TryAdd(lane.m_StartNode, falseValue);
+                        groupIndexMap.TryAdd(lane.m_EndNode, falseValue);
+                    }
+                }
+            }
+
+            for (int j = 0; j < vehicleLanes.Length; j++)
+            {
+                LaneGroup value2 = vehicleLanes[j];
+                if (!groupIndexMap.TryGetValue(m_LaneData[subLanes[value2.m_LaneRange.x].m_SubLane].m_StartNode, out value2.m_GroupIndex))
+                {
+                    value2.m_GroupIndex = groupCount;
+                }
+
+                value2.m_GroupMask = (ushort)(1 << (value2.m_GroupIndex & 0xF));
+                groups.Add(in value2);
+            }
+
+            for (int k = 0; k < pedestrianLanes.Length; k++)
+            {
+                LaneGroup value3 = pedestrianLanes[k];
+                if (value3.m_IsWaterway)
+                {
+                    value3.m_GroupMask = (ushort)(~(-1 << groupCount));
+                }
+                else
+                {
+                    if (!groupIndexMap.TryGetValue(m_LaneData[subLanes[value3.m_LaneRange.x].m_SubLane].m_StartNode, out value3.m_GroupIndex))
+                    {
+                        value3.m_GroupIndex = groupCount;
+                    }
+
+                    value3.m_GroupMask = (ushort)(1 << (value3.m_GroupIndex & 0xF));
+                }
+
+                groups.Add(in value3);
+            }
         }
 
         private void FillLaneBuffers(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> vehicleLanes, NativeList<LaneGroup> pedestrianLanes)
@@ -129,35 +345,42 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
                     continue;
                 }
 
-                if (m_PedestrianLaneData.HasComponent(subLane))
+                MasterLane componentData2;
+                if (m_PedestrianLaneData.TryGetComponent(subLane, out var componentData))
                 {
-                    PedestrianLane pedestrianLane = m_PedestrianLaneData[subLane];
                     Curve curve = m_CurveData[subLane];
-                    LaneGroup laneGroup = default(LaneGroup);
-                    laneGroup.m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve.m_Bezier).xz);
-                    laneGroup.m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve.m_Bezier).xz);
-                    laneGroup.m_LaneRange = new int2(i, i);
-                    laneGroup.m_IsUnsafe = (pedestrianLane.m_Flags & PedestrianLaneFlags.Unsafe) != 0;
-                    LaneGroup value = laneGroup;
+                    LaneGroup value = new LaneGroup
+                    {
+                        m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve.m_Bezier).xz),
+                        m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve.m_Bezier).xz),
+                        m_LaneRange = new int2(i, i),
+                        m_IsUnsafe = ((componentData.m_Flags & PedestrianLaneFlags.Unsafe) != 0),
+                        m_IsWaterway = ((componentData.m_Flags & PedestrianLaneFlags.OnWater) != 0),
+                        m_IsPedestrian = true
+                    };
                     pedestrianLanes.Add(in value);
                 }
-                else if (m_MasterLaneData.HasComponent(subLane))
+                else if (m_MasterLaneData.TryGetComponent(subLane, out componentData2))
                 {
-                    MasterLane masterLane = m_MasterLaneData[subLane];
                     Curve curve2 = m_CurveData[subLane];
-                    LaneGroup laneGroup = default(LaneGroup);
-                    laneGroup.m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve2.m_Bezier).xz);
-                    laneGroup.m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve2.m_Bezier).xz);
-                    laneGroup.m_LaneRange = new int2(masterLane.m_MinIndex - 1, masterLane.m_MaxIndex);
-                    LaneGroup value2 = laneGroup;
-                    if (m_CarLaneData.HasComponent(subLane))
+                    PrefabRef prefabRef = m_PrefabRefData[subLane];
+                    LaneGroup value2 = new LaneGroup
                     {
-                        CarLane carLane = m_CarLaneData[subLane];
-                        value2.m_IsStraight = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
-                        value2.m_IsUnsafe = (carLane.m_Flags & CarLaneFlags.Unsafe) != 0;
-                        value2.m_IsTurnLeft = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0;
-                        value2.m_IsTurnRight = (carLane.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnRight)) != 0;
-                        value2.m_IsUTurn = (carLane.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
+                        m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve2.m_Bezier).xz),
+                        m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve2.m_Bezier).xz),
+                        m_LaneRange = new int2(componentData2.m_MinIndex - 1, componentData2.m_MaxIndex)
+                    };
+                    if (m_CarLaneData.TryGetComponent(subLane, out var componentData3))
+                    {
+                        value2.m_IsStraight = (componentData3.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
+                        value2.m_IsUnsafe = (componentData3.m_Flags & CarLaneFlags.Unsafe) != 0;
+                        if (m_PrefabCarLaneData.TryGetComponent(prefabRef.m_Prefab, out var componentData4))
+                        {
+                            value2.m_IsWaterway = (componentData4.m_RoadTypes & RoadTypes.Watercraft) != 0;
+                        }
+                        value2.m_IsTurnLeft = (componentData3.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.GentleTurnLeft)) != 0;
+                        value2.m_IsTurnRight = (componentData3.m_Flags & (CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnRight)) != 0;
+                        value2.m_IsUTurn = (componentData3.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.UTurnRight)) != 0;
                     }
                     else
                     {
@@ -166,19 +389,29 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
 
                     vehicleLanes.Add(in value2);
                 }
-                else if (!m_SlaveLaneData.HasComponent(subLane))
+                else
                 {
-                    Curve curve3 = m_CurveData[subLane];
-                    LaneGroup laneGroup = default(LaneGroup);
-                    laneGroup.m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve3.m_Bezier).xz);
-                    laneGroup.m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve3.m_Bezier).xz);
-                    laneGroup.m_LaneRange = new int2(i, i);
-                    LaneGroup value3 = laneGroup;
-                    if (m_CarLaneData.HasComponent(subLane))
+                    if (m_SlaveLaneData.HasComponent(subLane))
                     {
-                        CarLane carLane2 = m_CarLaneData[subLane];
-                        value3.m_IsStraight = (carLane2.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
-                        value3.m_IsUnsafe = (carLane2.m_Flags & CarLaneFlags.Unsafe) != 0;
+                        continue;
+                    }
+
+                    Curve curve3 = m_CurveData[subLane];
+                    PrefabRef prefabRef2 = m_PrefabRefData[subLane];
+                    LaneGroup value3 = new LaneGroup
+                    {
+                        m_StartDirection = math.normalizesafe(MathUtils.StartTangent(curve3.m_Bezier).xz),
+                        m_EndDirection = math.normalizesafe(-MathUtils.EndTangent(curve3.m_Bezier).xz),
+                        m_LaneRange = new int2(i, i)
+                    };
+                    if (m_CarLaneData.TryGetComponent(subLane, out var componentData5))
+                    {
+                        value3.m_IsStraight = (componentData5.m_Flags & (CarLaneFlags.UTurnLeft | CarLaneFlags.TurnLeft | CarLaneFlags.TurnRight | CarLaneFlags.UTurnRight | CarLaneFlags.GentleTurnLeft | CarLaneFlags.GentleTurnRight)) == 0;
+                        value3.m_IsUnsafe = (componentData5.m_Flags & CarLaneFlags.Unsafe) != 0;
+                        if (m_PrefabCarLaneData.TryGetComponent(prefabRef2.m_Prefab, out var componentData6))
+                        {
+                            value3.m_IsWaterway = (componentData6.m_RoadTypes & RoadTypes.Watercraft) != 0;
+                        }
                     }
                     else
                     {
@@ -450,7 +683,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             }
         }
 
-        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, ref TrafficLights trafficLights, int unfilteredChunkIndex)
+        private void InitializeTrafficLights(DynamicBuffer<SubLane> subLanes, NativeList<LaneGroup> groups, int groupCount, bool isLevelCrossing, bool isMoveableBridge, ref TrafficLights trafficLights, int unfilteredChunkIndex)
         {
             trafficLights.m_SignalGroupCount = (byte)math.min(16, groupCount);
             if (trafficLights.m_CurrentSignalGroup > trafficLights.m_SignalGroupCount || trafficLights.m_NextSignalGroup > trafficLights.m_SignalGroupCount)
@@ -464,16 +697,21 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             for (int i = 0; i < groups.Length; i++)
             {
                 LaneGroup laneGroup = groups[i];
-                sbyte @default = (sbyte)math.select(0, -1, isLevelCrossing & laneGroup.m_IsTrack);
+                sbyte b = (sbyte)math.select(0, -1, isLevelCrossing & ((laneGroup.m_IsTrack && !isMoveableBridge) | (laneGroup.m_IsWaterway & !laneGroup.m_IsPedestrian)));
                 for (int j = laneGroup.m_LaneRange.x; j <= laneGroup.m_LaneRange.y; j++)
                 {
                     Entity subLane = subLanes[j].m_SubLane;
                     LaneSignal laneSignal = m_LaneSignalData[subLane];
                     laneSignal.m_GroupMask = laneGroup.m_GroupMask;
-                    laneSignal.m_Default = @default;
-                    if (m_CarLaneData.HasComponent(subLane))
+                    laneSignal.m_Default = b;
+                    if (!isLevelCrossing && m_CarLaneData.HasComponent(subLane))
                     {
                         laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
+                    }
+
+                    if (isMoveableBridge)
+                    {
+                        laneSignal.m_Flags |= LaneSignalFlags.Physical;
                     }
 
                     ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal(laneGroup);
@@ -501,7 +739,16 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
     private struct TypeHandle
     {
         [ReadOnly]
+        public EntityTypeHandle __Unity_Entities_Entity_TypeHandle;
+
+        [ReadOnly]
+        public ComponentTypeHandle<Owner> __Game_Common_Owner_RO_ComponentTypeHandle;
+
+        [ReadOnly]
         public BufferTypeHandle<SubLane> __Game_Net_SubLane_RO_BufferTypeHandle;
+
+        [ReadOnly]
+        public BufferTypeHandle<Game.Objects.SubObject> __Game_Objects_SubObject_RO_BufferTypeHandle;
 
         public ComponentTypeHandle<TrafficLights> __Game_Net_TrafficLights_RW_ComponentTypeHandle;
 
@@ -524,7 +771,43 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
         public ComponentLookup<Curve> __Game_Net_Curve_RO_ComponentLookup;
 
         [ReadOnly]
+        public ComponentLookup<Edge> __Game_Net_Edge_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<Node> __Game_Net_Node_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<Lane> __Game_Net_Lane_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<PointOfInterest> __Game_Common_PointOfInterest_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<Temp> __Game_Tools_Temp_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<Hidden> __Game_Tools_Hidden_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<PrefabRef> __Game_Prefabs_PrefabRef_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<CarLaneData> __Game_Prefabs_CarLaneData_RO_ComponentLookup;
+
+        [ReadOnly]
+        public ComponentLookup<MoveableBridgeData> __Game_Prefabs_MoveableBridgeData_RO_ComponentLookup;
+
+        [ReadOnly]
+        public BufferLookup<SubLane> __Game_Net_SubLane_RO_BufferLookup;
+
+        [ReadOnly]
         public BufferLookup<LaneOverlap> __Game_Net_LaneOverlap_RO_BufferLookup;
+
+        [ReadOnly]
+        public BufferLookup<ConnectedEdge> __Game_Net_ConnectedEdge_RO_BufferLookup;
+
+        [ReadOnly]
+        public BufferLookup<Game.Objects.SubObject> __Game_Objects_SubObject_RO_BufferLookup;
 
         public ComponentLookup<LaneSignal> __Game_Net_LaneSignal_RW_ComponentLookup;
 
@@ -535,7 +818,10 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void __AssignHandles(ref SystemState state)
         {
+            __Unity_Entities_Entity_TypeHandle = state.GetEntityTypeHandle();
+            __Game_Common_Owner_RO_ComponentTypeHandle = state.GetComponentTypeHandle<Owner>(isReadOnly: true);
             __Game_Net_SubLane_RO_BufferTypeHandle = state.GetBufferTypeHandle<SubLane>(isReadOnly: true);
+            __Game_Objects_SubObject_RO_BufferTypeHandle = state.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true);
             __Game_Net_TrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<TrafficLights>();
             __Game_Net_MasterLane_RO_ComponentLookup = state.GetComponentLookup<MasterLane>(isReadOnly: true);
             __Game_Net_SlaveLane_RO_ComponentLookup = state.GetComponentLookup<SlaveLane>(isReadOnly: true);
@@ -543,7 +829,19 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
             __Game_Net_PedestrianLane_RO_ComponentLookup = state.GetComponentLookup<PedestrianLane>(isReadOnly: true);
             __Game_Net_SecondaryLane_RO_ComponentLookup = state.GetComponentLookup<SecondaryLane>(isReadOnly: true);
             __Game_Net_Curve_RO_ComponentLookup = state.GetComponentLookup<Curve>(isReadOnly: true);
+            __Game_Net_Edge_RO_ComponentLookup = state.GetComponentLookup<Edge>(isReadOnly: true);
+            __Game_Net_Node_RO_ComponentLookup = state.GetComponentLookup<Node>(isReadOnly: true);
+            __Game_Net_Lane_RO_ComponentLookup = state.GetComponentLookup<Lane>(isReadOnly: true);
+            __Game_Common_PointOfInterest_RO_ComponentLookup = state.GetComponentLookup<PointOfInterest>(isReadOnly: true);
+            __Game_Tools_Temp_RO_ComponentLookup = state.GetComponentLookup<Temp>(isReadOnly: true);
+            __Game_Tools_Hidden_RO_ComponentLookup = state.GetComponentLookup<Hidden>(isReadOnly: true);
+            __Game_Prefabs_PrefabRef_RO_ComponentLookup = state.GetComponentLookup<PrefabRef>(isReadOnly: true);
+            __Game_Prefabs_CarLaneData_RO_ComponentLookup = state.GetComponentLookup<CarLaneData>(isReadOnly: true);
+            __Game_Prefabs_MoveableBridgeData_RO_ComponentLookup = state.GetComponentLookup<MoveableBridgeData>(isReadOnly: true);
+            __Game_Net_SubLane_RO_BufferLookup = state.GetBufferLookup<SubLane>(isReadOnly: true);
             __Game_Net_LaneOverlap_RO_BufferLookup = state.GetBufferLookup<LaneOverlap>(isReadOnly: true);
+            __Game_Net_ConnectedEdge_RO_BufferLookup = state.GetBufferLookup<ConnectedEdge>(isReadOnly: true);
+            __Game_Objects_SubObject_RO_BufferLookup = state.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true);
             __Game_Net_LaneSignal_RW_ComponentLookup = state.GetComponentLookup<LaneSignal>();
             __TLE_CustomTrafficLights_RW_ComponentTypeHandle = state.GetComponentTypeHandle<CustomTrafficLights>();
             __TLE_ExtraLaneSignal_RW_ComponentLookup = state.GetComponentLookup<ExtraLaneSignal>();
@@ -555,7 +853,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
     private TypeHandle __TypeHandle;
 
     private Game.City.CityConfigurationSystem m_CityConfigurationSystem;
-    
+
     private ModificationBarrier4B m_ModificationBarrier;
 
     [Preserve]
@@ -575,34 +873,38 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
     [Preserve]
     protected override void OnUpdate()
     {
-        __TypeHandle.__Game_Net_LaneSignal_RW_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_LaneOverlap_RO_BufferLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_Curve_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_SecondaryLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_PedestrianLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_CarLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_SlaveLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
-        __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle.Update(ref base.CheckedStateRef);
-        __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle.Update(ref base.CheckedStateRef);
-        __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup.Update(ref base.CheckedStateRef);
-        InitializeTrafficLightsJob jobData = default(InitializeTrafficLightsJob);
-        jobData.m_SubLaneType = __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle;
-        jobData.m_TrafficLightsType = __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle;
-        jobData.m_MasterLaneData = __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup;
-        jobData.m_SlaveLaneData = __TypeHandle.__Game_Net_SlaveLane_RO_ComponentLookup;
-        jobData.m_CarLaneData = __TypeHandle.__Game_Net_CarLane_RO_ComponentLookup;
-        jobData.m_PedestrianLaneData = __TypeHandle.__Game_Net_PedestrianLane_RO_ComponentLookup;
-        jobData.m_SecondaryLaneData = __TypeHandle.__Game_Net_SecondaryLane_RO_ComponentLookup;
-        jobData.m_CurveData = __TypeHandle.__Game_Net_Curve_RO_ComponentLookup;
-        jobData.m_Overlaps = __TypeHandle.__Game_Net_LaneOverlap_RO_BufferLookup;
-        jobData.m_LaneSignalData = __TypeHandle.__Game_Net_LaneSignal_RW_ComponentLookup;
-        jobData.m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic;
-        jobData.m_CustomTrafficLightsType = __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle;
-        jobData.m_ExtraLaneSignalData = __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup;
-        jobData.m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer().AsParallelWriter();
-        JobHandle dependency = JobChunkExtensions.ScheduleParallel(jobData, m_TrafficLightsQuery, base.Dependency);
+        JobHandle dependency = JobChunkExtensions.ScheduleParallel(new InitializeTrafficLightsJob
+        {
+            m_EntityType = InternalCompilerInterface.GetEntityTypeHandle(ref __TypeHandle.__Unity_Entities_Entity_TypeHandle, ref base.CheckedStateRef),
+            m_OwnerType = InternalCompilerInterface.GetComponentTypeHandle(ref __TypeHandle.__Game_Common_Owner_RO_ComponentTypeHandle, ref base.CheckedStateRef),
+            m_SubLaneType = InternalCompilerInterface.GetBufferTypeHandle(ref __TypeHandle.__Game_Net_SubLane_RO_BufferTypeHandle, ref base.CheckedStateRef),
+            m_SubObjectType = InternalCompilerInterface.GetBufferTypeHandle(ref __TypeHandle.__Game_Objects_SubObject_RO_BufferTypeHandle, ref base.CheckedStateRef),
+            m_TrafficLightsType = InternalCompilerInterface.GetComponentTypeHandle(ref __TypeHandle.__Game_Net_TrafficLights_RW_ComponentTypeHandle, ref base.CheckedStateRef),
+            m_MasterLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_MasterLane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_SlaveLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_SlaveLane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_CarLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_CarLane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_PedestrianLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_PedestrianLane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_SecondaryLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_SecondaryLane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_CurveData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_Curve_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_EdgeData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_Edge_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_NodeData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_Node_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_LaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_Lane_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_PointOfInterestData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Common_PointOfInterest_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_TempData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Tools_Temp_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_HiddenData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Tools_Hidden_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_PrefabRefData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_PrefabCarLaneData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Prefabs_CarLaneData_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_PrefabMoveableBridgeData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Prefabs_MoveableBridgeData_RO_ComponentLookup, ref base.CheckedStateRef),
+            m_SubLanes = InternalCompilerInterface.GetBufferLookup(ref __TypeHandle.__Game_Net_SubLane_RO_BufferLookup, ref base.CheckedStateRef),
+            m_Overlaps = InternalCompilerInterface.GetBufferLookup(ref __TypeHandle.__Game_Net_LaneOverlap_RO_BufferLookup, ref base.CheckedStateRef),
+            m_ConnectedEdges = InternalCompilerInterface.GetBufferLookup(ref __TypeHandle.__Game_Net_ConnectedEdge_RO_BufferLookup, ref base.CheckedStateRef),
+            m_SubObjects = InternalCompilerInterface.GetBufferLookup(ref __TypeHandle.__Game_Objects_SubObject_RO_BufferLookup, ref base.CheckedStateRef),
+            m_LaneSignalData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__Game_Net_LaneSignal_RW_ComponentLookup, ref base.CheckedStateRef),
+            m_LeftHandTraffic = m_CityConfigurationSystem.leftHandTraffic,
+            m_CustomTrafficLightsType = InternalCompilerInterface.GetComponentTypeHandle(ref __TypeHandle.__TLE_CustomTrafficLights_RW_ComponentTypeHandle, ref base.CheckedStateRef),
+            m_ExtraLaneSignalData = InternalCompilerInterface.GetComponentLookup(ref __TypeHandle.__TLE_ExtraLaneSignal_RW_ComponentLookup, ref base.CheckedStateRef),
+            m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer().AsParallelWriter()
+        }, m_TrafficLightsQuery, base.Dependency);
         m_ModificationBarrier.AddJobHandleForProducer(dependency);
         base.Dependency = dependency;
     }
@@ -610,6 +912,7 @@ public partial class PatchedTrafficLightInitializationSystem : GameSystemBase
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void __AssignQueries(ref SystemState state)
     {
+        new EntityQueryBuilder(Allocator.Temp).Dispose();
     }
 
     protected override void OnCreateForCompiler()

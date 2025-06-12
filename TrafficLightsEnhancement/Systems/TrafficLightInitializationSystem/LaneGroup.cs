@@ -24,6 +24,10 @@ public struct LaneGroup
 
     public bool m_IsTrack;
 
+    public bool m_IsWaterway;
+
+    public bool m_IsPedestrian;
+
     public bool m_IsTurnLeft;
 
     public bool m_IsTurnRight;
