@@ -10,9 +10,9 @@
     <LongDescription>
 ## Traffic Lights Enhancement Alpha
 
-* Set traffic lights to various predefined signal modes
+* Set traffic lights to various signal modes
 * Guide available [here](https://github.com/slyh/Cities2-TrafficLightsEnhancement/tree/master/GUIDE.md)
-* Compatible with version 1.2.0f1
+* Compatible with version 1.2.5f1
 
 This mod stores extra data in your saves to provide additional functionality. Once the mod is removed, traffic lights and junctions should revert to default settings when a road update is triggered, but this cannot be guaranteed.
 
@@ -48,19 +48,19 @@ Additionally, gratitude is extended to the individuals listed below for their tr
 
 * French: PsykotropyK, Edou24, Clark, rorobuibui and Morgan Touverey Quilling
 
-* German: TheL0ki, Simanova86, Mark, fahei and KaeseKuchen
+* German: TheL0ki, Simanova86, Mark, fahei, KaeseKuchen and PoxiiHD
 
-* Italian: Stefano
+* Italian: Stefano and Amazing Amazon
 
 * Japanese: macoto-hino and amanao
 
-* Korean: Twotoolus-FLY-LShst and DevelopmentAnything
+* Korean: Twotoolus-FLY-LShst, DevelopmentAnything and Leo Han
 
 * Polish: karmel68
 
 * Portuguese (Brazil): djotabr and lucianoedipo
 
-* Russian: Mellaway, BuiIdTheBuilder, Alex Motor and Sivenesis
+* Russian: Mellaway, BuiIdTheBuilder, Alex Motor, Sivenesis and KIRFEDO
 
 * Spanish: Fabio Rodriguez and elGendo87
 
@@ -75,22 +75,18 @@ Finally, heartfelt thanks to all the players who have submitted bug reports and 
     <!--Link to the forum post where the mod can be discussed-->
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/traffic-lights-enhancement.1667080/" />
     <!--Version of the mod-->
-    <ModVersion Value="0.2.27" />
+    <ModVersion Value="0.3.0" />
     <!--Recommended version of the base game to use the mod-->
     <GameVersion Value="1.2.*" />
     <!--Dependency for the mod, can be set multiple times-->
     <Dependency Id="" />
     <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
     <ChangeLog>
-* Allow users to temporarily suppress canary warnings (Idea: qualiall)
+* Fixed error: Invalid host locations map
 
-* Improved handling of the IgnorePriority flag (related to issue #95; regression possible)
+* Removed LDT retirement notification
 
-* Seamless transition between phases when "Allow Turning on Red" is enabled
-
-* Translation updates (Credit: karmel68, elGendo87)
-
-* Compatibility update for the 1.2.0f1 patch
+* Translation updates (Credit: TwotoolusFLY_LSh.st, KIRFEDO, Edou24, Amazing Amazon, PoxiiHD, karmel68, Leo Han, RilkeXS)
     </ChangeLog>
     <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
     <ExternalLink Type="github" Url="https://github.com/slyh/Cities2-TrafficLightsEnhancement" />

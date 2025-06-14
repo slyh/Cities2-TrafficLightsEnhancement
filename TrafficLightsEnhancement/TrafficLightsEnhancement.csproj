@@ -7,10 +7,7 @@
 
         <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
         <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
-        <Version>0.2.27</Version>
-
-        <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
-        <CustomManagedPath></CustomManagedPath>
+        <Version>0.3.0</Version>
 
         <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
         <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -63,10 +60,16 @@
         <Reference Include="Unity.Entities">
             <Private>false</Private>
         </Reference>
+        <Reference Include="Unity.InputSystem">
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Unity.Mathematics">
             <Private>false</Private>
         </Reference>
         <Reference Include="UnityEngine.CoreModule">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.ImageConversionModule">
             <Private>false</Private>
         </Reference>
     </ItemGroup>
@@ -89,7 +92,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Localisations\**\*.json" />
+        <EmbeddedResource Include="Resources\**\*" />
     </ItemGroup>
 
     <ItemGroup>

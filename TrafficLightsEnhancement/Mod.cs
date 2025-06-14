@@ -19,7 +19,7 @@ public class Mod : IMod
 
     public static Unity.Entities.World m_World;
 
-    public static C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem m_UISystem;
+    private Harmony m_Harmony;
 
     public void OnLoad(UpdateSystem updateSystem)
     {
@@ -38,29 +38,41 @@ public class Mod : IMod
 
         m_World = updateSystem.World;
 
-        var harmony = new Harmony(m_Id);
-        harmony.PatchAll();
+        m_Harmony = new Harmony(m_Id);
+        m_Harmony.PatchAll();
 
         m_Settings = new Settings(this);
-        m_Settings.RegisterInOptionsUI();
 
-        updateSystem.World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = false;
-        updateSystem.World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<Game.Tools.NetToolSystem>(); // Ensure NetToolSystem is created before our tool
 
-        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightInitializationSystem.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
-        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystem.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
+        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(Game.SystemUpdatePhase.Modification4B);
+        updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(Game.SystemUpdatePhase.GameSimulation);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Tool.ToolSystem>(SystemUpdatePhase.ToolUpdate);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);
+        updateSystem.UpdateAfter<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>(SystemUpdatePhase.GameSimulation);
 
-        Colossal.IO.AssetDatabase.AssetDatabase.global.LoadSettings(typeof(Settings).GetCustomAttribute<Colossal.IO.AssetDatabase.FileLocationAttribute>().fileName, m_Settings);
-        C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem.UpdateLocale();
-
-        updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.LDTRetirementSystem>();
-
-        m_UISystem = updateSystem.World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UISystem.UISystem>();
+        string netToolSystemToolID = m_World.GetOrCreateSystemManaged<Game.Tools.NetToolSystem>().toolID;
+        Assert(netToolSystemToolID == "Net Tool", $"netToolSystemToolID: {netToolSystemToolID}");
     }
 
     public void OnDispose()
     {
         m_Log.Info(nameof(OnDispose));
+        m_Harmony?.UnpatchAll(m_Id);
+        m_Settings?.UnregisterInOptionsUI();
+
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Tool.ToolSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>().Enabled = false;
+        m_World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.Update.SimulationUpdateSystem>().Enabled = false;
+
+        m_World.GetOrCreateSystemManaged<Game.Net.TrafficLightInitializationSystem>().Enabled = true;
+        m_World.GetOrCreateSystemManaged<Game.Simulation.TrafficLightSystem>().Enabled = true;
     }
 
     public static bool IsCanary()
@@ -70,5 +82,17 @@ public class Mod : IMod
         #else
         return false;
         #endif
+    }
+
+    public static void Assert(bool condition, string message = "", bool showInUI = false, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(condition))] string expression = "")
+    {
+        if (condition == true)
+        {
+            return;
+        }
+        bool showsErrorsInUI = m_Log.showsErrorsInUI;
+        m_Log.SetShowsErrorsInUI(showInUI);
+        m_Log.Error($"Assertion failed!\n{message}\nExpression: {expression}");
+        m_Log.SetShowsErrorsInUI(showsErrorsInUI);
     }
 }
