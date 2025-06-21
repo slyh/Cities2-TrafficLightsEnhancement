@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
-using C2VM.TrafficLightsEnhancement.Systems.Tool;
 using C2VM.TrafficLightsEnhancement.Systems.Update;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Game;
@@ -39,9 +38,9 @@ public partial class UISystem : UISystemBase
 
     private RenderSystem m_RenderSystem;
 
-    private ToolSystem m_ToolSystem;
+    private Tool.ToolSystem m_ToolSystem;
 
-    private ModificationUpdateSystem m_ModificationUpdateSystem;
+    private Update.ModificationUpdateSystem m_ModificationUpdateSystem;
 
     private SimulationUpdateSystem m_SimulationUpdateSystem;
 
@@ -80,8 +79,8 @@ public partial class UISystem : UISystemBase
         m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
         m_CityConfigurationSystem = World.GetOrCreateSystemManaged<Game.City.CityConfigurationSystem>();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
-        m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-        m_ModificationUpdateSystem = World.GetOrCreateSystemManaged<ModificationUpdateSystem>();
+        m_ToolSystem = World.GetOrCreateSystemManaged<Tool.ToolSystem>();
+        m_ModificationUpdateSystem = World.GetOrCreateSystemManaged<Update.ModificationUpdateSystem>();
         m_SimulationUpdateSystem = World.GetOrCreateSystemManaged<SimulationUpdateSystem>();
 
         m_ModificationUpdateSystem.Enabled = false;

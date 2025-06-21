@@ -1,5 +1,4 @@
 using C2VM.TrafficLightsEnhancement.Components;
-using C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 using C2VM.TrafficLightsEnhancement.Utils;
 using Game.Net;
 using Unity.Collections;
@@ -563,7 +562,7 @@ public class PredefinedPatternsProcessor {
                 laneSignal.m_Flags |= LaneSignalFlags.CanExtend;
             }
             laneSignal.m_Default = 0;
-            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+            Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
         }
     }
@@ -608,7 +607,7 @@ public class PredefinedPatternsProcessor {
                 continue;
             }
             laneSignal.m_GroupMask = pedestrianGroupMask;
-            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
+            Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
         }
     }
@@ -660,7 +659,7 @@ public class PredefinedPatternsProcessor {
             extraLaneSignal.m_YieldGroupMask = groupMask;
             extraLaneSignal.m_IgnorePriorityGroupMask = groupMask;
 
-            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
@@ -693,7 +692,7 @@ public class PredefinedPatternsProcessor {
             extraLaneSignal.m_YieldGroupMask = laneSignal.m_GroupMask;
             extraLaneSignal.m_IgnorePriorityGroupMask = 0;
 
-            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_CommandBuffer.AddComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
             job.m_CommandBuffer.SetComponent(unfilteredChunkIndex, subLane, extraLaneSignal);
@@ -715,7 +714,7 @@ public class PredefinedPatternsProcessor {
             }
             extraLaneSignal.m_YieldGroupMask = 0;
             extraLaneSignal.m_IgnorePriorityGroupMask = 0;
-            PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
+            Simulation.PatchedTrafficLightSystem.UpdateLaneSignal(trafficLights, ref laneSignal, ref extraLaneSignal);
             job.m_LaneSignalData[subLane] = laneSignal;
             job.m_ExtraTypeHandle.m_ExtraLaneSignal[subLane] = extraLaneSignal;
         }

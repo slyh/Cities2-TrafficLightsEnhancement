@@ -1,4 +1,3 @@
-using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Game;
 using Game.Common;
 using Unity.Entities;
@@ -7,12 +6,12 @@ namespace C2VM.TrafficLightsEnhancement.Systems.Update;
 
 public partial class ModificationUpdateSystem : GameSystemBase
 {
-    private UISystem m_UISystem;
+    private C2VM.TrafficLightsEnhancement.Systems.UI.UISystem m_UISystem;
 
     protected override void OnCreate()
     {
         base.OnCreate();
-        m_UISystem = World.GetOrCreateSystemManaged<UISystem>();
+        m_UISystem = World.GetOrCreateSystemManaged<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>();
     }
 
     protected override void OnUpdate()

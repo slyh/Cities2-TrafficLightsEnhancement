@@ -1,5 +1,4 @@
 using C2VM.TrafficLightsEnhancement.Components;
-using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Game.Net;
 using Unity.Collections;
 using Unity.Entities;
@@ -167,7 +166,7 @@ public partial struct NodeUtils
         return edgeInfoList;
     }
 
-    public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, Entity nodeEntity, UISystem uISystem)
+    public static NativeList<EdgeInfo> GetEdgeInfoList(Allocator allocator, Entity nodeEntity, Systems.UI.UISystem uISystem)
     {
         uISystem.m_TypeHandle.Update(uISystem);
         uISystem.m_TypeHandle.m_SubLane.TryGetBuffer(nodeEntity, out var nodeSubLaneBuffer);

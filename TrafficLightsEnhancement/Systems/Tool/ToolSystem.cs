@@ -1,5 +1,4 @@
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
-using C2VM.TrafficLightsEnhancement.Systems.UI;
 using Colossal.Entities;
 using Game.Net;
 using Game.Prefabs;
@@ -17,7 +16,7 @@ public partial class ToolSystem : NetToolSystem
 
     private RenderSystem m_RenderSystem;
 
-    private UISystem m_UISystem;
+    private UI.UISystem m_UISystem;
 
     private NativeList<ControlPoint> m_ParentControlPoints;
 
@@ -31,18 +30,20 @@ public partial class ToolSystem : NetToolSystem
     {
         base.OnCreate();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
-        m_UISystem = World.GetOrCreateSystemManaged<UISystem>();
+        m_UISystem = World.GetOrCreateSystemManaged<UI.UISystem>();
         m_ParentControlPoints = GetControlPoints(out JobHandle _);
         m_ToolSystem.EventToolChanged += ToolChanged;
     }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (m_Suspended || !GetAllowApply())
+        if (m_Suspended)
         {
             m_ToolRaycastSystem.raycastFlags |= Game.Common.RaycastFlags.UIDisable;
         }
         var result = base.OnUpdate(inputDeps);
+        base.applyAction.enabled = !m_Suspended;
+        base.secondaryApplyAction.enabled = false;
         if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
             if (m_ParentControlPoints.Length >= 4)
@@ -142,7 +143,7 @@ public partial class ToolSystem : NetToolSystem
     {
         if (system != this)
         {
-            m_UISystem.SetMainPanelState(UISystem.MainPanelState.Hidden);
+            m_UISystem.SetMainPanelState(UI.UISystem.MainPanelState.Hidden);
         }
     }
 }

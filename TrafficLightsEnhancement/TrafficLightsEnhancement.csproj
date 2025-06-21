@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net472</TargetFramework>
+        <TargetFramework>net48</TargetFramework>
         <Configurations>Debug;Release</Configurations>
-        <LangVersion>12.0</LangVersion>
 
         <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
         <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>
@@ -17,11 +16,18 @@
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" Condition="'$(DisablePostProcessors)' != 'true'" />
 
+    <PropertyGroup>
+        <LangVersion>12.0</LangVersion>
+    </PropertyGroup>
+
     <ItemGroup>
         <Reference Include="Game">
             <Private>false</Private>
         </Reference>
         <Reference Include="cohtml.Net">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Colossal.Collections">
             <Private>false</Private>
         </Reference>
         <Reference Include="Colossal.Core">
