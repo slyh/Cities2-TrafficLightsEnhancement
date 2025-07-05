@@ -8,7 +8,8 @@ using static C2VM.TrafficLightsEnhancement.Utils.NodeUtils;
 
 namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation;
 
-public class PredefinedPatternsProcessor {
+public class PredefinedPatternsProcessor
+{
     public static bool IsValidPattern(NativeArray<EdgeInfo> edgeInfoArray, CustomTrafficLights.Patterns pattern)
     {
         if (HasTrainTrack(edgeInfoArray))

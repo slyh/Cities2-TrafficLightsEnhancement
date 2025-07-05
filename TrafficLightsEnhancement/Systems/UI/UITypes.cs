@@ -122,7 +122,8 @@ public static class UITypes
         public string engineEventName;
     }
 
-    public struct ItemCustomPhase {
+    public struct ItemCustomPhase
+    {
         [JsonProperty]
         const string itemType = "customPhase";
 
@@ -134,7 +135,41 @@ public static class UITypes
 
         public int length;
 
-        public float minimumDurationMultiplier;
+        public int timer;
+
+        public ushort turnsSinceLastRun;
+
+        public ushort lowFlowTimer;
+
+        public float carFlow;
+
+        public ushort carLaneOccupied;
+
+        public ushort publicCarLaneOccupied;
+
+        public ushort trackLaneOccupied;
+
+        public ushort pedestrianLaneOccupied;
+
+        public float weightedWaiting;
+
+        public float targetDuration;
+
+        public int priority;
+
+        public ushort minimumDuration;
+
+        public float targetDurationMultiplier;
+
+        public float laneOccupiedMultiplier;
+
+        public float intervalExponent;
+
+        public bool prioritiseTrack;
+
+        public bool prioritisePublicCar;
+
+        public bool prioritisePedestrian;
     }
 
     public struct WorldPosition : IJsonWritable

@@ -18,17 +18,21 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
 
     public ushort m_IgnorePriorityGroupMask;
 
+    public Entity m_SourceSubLane;
+
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
         writer.Write(m_SchemaVersion);
         writer.Write(m_YieldGroupMask);
         writer.Write(m_IgnorePriorityGroupMask);
+        writer.Write(m_SourceSubLane);
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
     {
-        reader.Read(out m_SchemaVersion);
-        if (m_SchemaVersion == 1)
+        Initialisation();
+        reader.Read(out int schemaVersion);
+        if (schemaVersion == 1)
         {
             reader.Read(out uint flags);
             if ((flags & (uint)Flags.Yield) != 0)
@@ -40,17 +44,27 @@ public struct ExtraLaneSignal : IComponentData, IQueryTypeParameter, ISerializab
                 m_IgnorePriorityGroupMask = ushort.MaxValue;
             }
         }
-        else if (m_SchemaVersion == 2)
+        if (schemaVersion >= 2)
         {
             reader.Read(out m_YieldGroupMask);
             reader.Read(out m_IgnorePriorityGroupMask);
         }
+        if (schemaVersion >= 3)
+        {
+            reader.Read(out m_SourceSubLane);
+        }
+    }
+
+    private void Initialisation()
+    {
+        m_SchemaVersion = 3;
+        m_YieldGroupMask = 0;
+        m_IgnorePriorityGroupMask = 0;
+        m_SourceSubLane = Entity.Null;
     }
 
     public ExtraLaneSignal()
     {
-        m_SchemaVersion = 2;
-        m_YieldGroupMask = 0;
-        m_IgnorePriorityGroupMask = 0;
+        Initialisation();
     }
 }

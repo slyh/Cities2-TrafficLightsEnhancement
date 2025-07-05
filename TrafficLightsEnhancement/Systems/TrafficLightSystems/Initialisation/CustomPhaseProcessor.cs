@@ -38,13 +38,14 @@ public struct CustomPhaseProcessor
             {
                 continue;
             }
-            LaneSignal laneSignal = job.m_LaneSignalData[subLane];
-            ExtraLaneSignal extraLaneSignal = new();
-            laneSignal.m_GroupMask = ushort.MaxValue;
-            laneSignal.m_Default = 0;
             var laneConnection = NodeUtils.GetLaneConnectionFromNodeSubLane(subLane, laneConnectionMap, (pedestrianLane.m_Flags & PedestrianLaneFlags.Crosswalk) != 0);
             var sourceEdge = laneConnection.m_SourceEdge == Entity.Null && isPedestrian ? laneConnection.m_DestEdge : laneConnection.m_SourceEdge;
             var edgePosition = NodeUtils.GetEdgePosition(ref job, nodeEntity, sourceEdge);
+            LaneSignal laneSignal = job.m_LaneSignalData[subLane];
+            laneSignal.m_GroupMask = ushort.MaxValue;
+            laneSignal.m_Default = 0;
+            ExtraLaneSignal extraLaneSignal = new ExtraLaneSignal();
+            extraLaneSignal.m_SourceSubLane = laneConnection.m_SourceSubLane;
             if (CustomPhaseUtils.TryGet(edgeGroupMasks, sourceEdge, edgePosition, out EdgeGroupMask groupMask) >= 0)
             {
                 if ((groupMask.m_Options & EdgeGroupMask.Options.PerLaneSignal) != 0)
