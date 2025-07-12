@@ -61,9 +61,9 @@ public struct CustomPhaseProcessor
                     Entity searchKey = isPedestrian ? subLane : laneConnection.m_SourceSubLane;
                     float3 subLanePosition = NodeUtils.GetSubLanePosition(searchKey, job.m_CurveData);
                     CustomPhaseUtils.TryGet(subLaneGroupMasks, searchKey, subLanePosition, out SubLaneGroupMask subLaneGroupMask);
-                    groupMask.m_Car = subLaneGroupMask.m_Vehicle;
-                    groupMask.m_PublicCar = subLaneGroupMask.m_Vehicle;
-                    groupMask.m_Track = subLaneGroupMask.m_Vehicle;
+                    groupMask.m_Car = subLaneGroupMask.m_Car;
+                    groupMask.m_PublicCar = subLaneGroupMask.m_Car;
+                    groupMask.m_Track = subLaneGroupMask.m_Track;
                     groupMask.m_PedestrianStopLine = subLaneGroupMask.m_Pedestrian;
                     groupMask.m_PedestrianNonStopLine = subLaneGroupMask.m_Pedestrian;
                 }

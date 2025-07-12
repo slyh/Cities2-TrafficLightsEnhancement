@@ -125,6 +125,7 @@ public partial class UISystem : UISystemBase
                         min = 0.5f,
                         max = 10,
                         step = 0.5f,
+                        enableTextField = false,
                         value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
                         engineEventName = "C2VM.TLE.CallMainPanelUpdateValue"
                     });

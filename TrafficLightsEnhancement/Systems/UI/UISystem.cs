@@ -69,7 +69,7 @@ public partial class UISystem : UISystemBase
 
         m_Camera = Camera.main;
         m_ScreenHeight = Screen.height;
-        m_MainPanelPosition = new(-999, -999);
+        m_MainPanelPosition = new(-999999, -999999);
 
         m_WorldPositionList = [];
         m_EdgeInfoDictionary = [];

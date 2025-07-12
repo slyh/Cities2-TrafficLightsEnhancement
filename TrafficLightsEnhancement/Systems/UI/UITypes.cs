@@ -119,6 +119,10 @@ public static class UITypes
 
         public float step;
 
+        public bool enableTextField;
+
+        public string textFieldRegExp;
+
         public string engineEventName;
     }
 

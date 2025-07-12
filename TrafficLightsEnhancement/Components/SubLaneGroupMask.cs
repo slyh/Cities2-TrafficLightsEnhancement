@@ -20,7 +20,9 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
 
     public Options m_Options;
 
-    public GroupMask.Turn m_Vehicle;
+    public GroupMask.Turn m_Car;
+
+    public GroupMask.Turn m_Track;
 
     public GroupMask.Signal m_Pedestrian;
 
@@ -30,7 +32,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         writer.Write(m_SubLane);
         writer.Write((float3)m_Position);
         writer.Write((uint)m_Options);
-        writer.Write(m_Vehicle);
+        writer.Write(m_Car);
+        writer.Write(m_Track);
         writer.Write(m_Pedestrian);
     }
 
@@ -40,7 +43,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         reader.Read(out m_SubLane);
         reader.Read(out float3 subLanePosition);
         reader.Read(out uint options);
-        reader.Read(out m_Vehicle);
+        reader.Read(out m_Car);
+        reader.Read(out m_Track);
         reader.Read(out m_Pedestrian);
         m_Position = subLanePosition;
         m_Options = (Options)options;
@@ -55,8 +59,10 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         writer.Write<WorldPosition>(m_Position);
         writer.PropertyName("m_Options");
         writer.Write((uint)m_Options);
-        writer.PropertyName("m_Vehicle");
-        writer.Write(m_Vehicle);
+        writer.PropertyName("m_Car");
+        writer.Write(m_Car);
+        writer.PropertyName("m_Track");
+        writer.Write(m_Track);
         writer.PropertyName("m_Pedestrian");
         writer.Write(m_Pedestrian);
         writer.TypeEnd();
@@ -68,7 +74,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         m_SubLane = Entity.Null;
         m_Position = 0.0f;
         m_Options = 0;
-        m_Vehicle = new GroupMask.Turn();
+        m_Car = new GroupMask.Turn();
+        m_Track = new GroupMask.Turn();
         m_Pedestrian = new GroupMask.Signal();
     }
 
@@ -78,7 +85,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         m_SubLane = subLane;
         m_Position = position;
         m_Options = 0;
-        m_Vehicle = new GroupMask.Turn();
+        m_Car = new GroupMask.Turn();
+        m_Track = new GroupMask.Turn();
         m_Pedestrian = new GroupMask.Signal();
     }
 
@@ -88,7 +96,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         m_SubLane = subLane;
         m_Position = position;
         m_Options = newValue.m_Options;
-        m_Vehicle = newValue.m_Vehicle;
+        m_Car = newValue.m_Car;
+        m_Track = newValue.m_Track;
         m_Pedestrian = newValue.m_Pedestrian;
     }
 
@@ -98,7 +107,8 @@ public struct SubLaneGroupMask : IBufferElementData, ISerializable, IJsonWritabl
         m_SubLane = oldValue.m_SubLane;
         m_Position = oldValue.m_Position;
         m_Options = newValue.m_Options;
-        m_Vehicle = newValue.m_Vehicle;
+        m_Car = newValue.m_Car;
+        m_Track = newValue.m_Track;
         m_Pedestrian = newValue.m_Pedestrian;
     }
 }

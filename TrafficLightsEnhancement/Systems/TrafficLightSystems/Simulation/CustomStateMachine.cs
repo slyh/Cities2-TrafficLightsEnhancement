@@ -19,6 +19,11 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
             }
             else if (trafficLights.m_State == TrafficLightState.Beginning)
             {
+                if (trafficLights.m_NextSignalGroup <= 0)
+                {
+                    trafficLights.m_State = TrafficLightState.Changing; // roll a new group
+                    return true;
+                }
                 trafficLights.m_State = TrafficLightState.Ongoing;
                 trafficLights.m_CurrentSignalGroup = trafficLights.m_NextSignalGroup;
                 trafficLights.m_NextSignalGroup = 0;
@@ -41,8 +46,14 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
             }
             else if (trafficLights.m_State == TrafficLightState.Ongoing)
             {
+                int currentSignalIndex = trafficLights.m_CurrentSignalGroup - 1;
+                if (currentSignalIndex < 0 || currentSignalIndex >= customPhaseDataBuffer.Length)
+                {
+                    trafficLights.m_State = TrafficLightState.Changing; // roll a new group
+                    return true;
+                }
                 trafficLights.m_Timer++;
-                CustomPhaseData phase = customPhaseDataBuffer[trafficLights.m_CurrentSignalGroup - 1];
+                CustomPhaseData phase = customPhaseDataBuffer[currentSignalIndex];
                 ushort minDuration = phase.m_MinimumDuration;
                 float targetDuration = 10f * (phase.AverageCarFlow() + (float)(phase.m_TrackLaneOccupied * 0.5)) * phase.m_TargetDurationMultiplier;
                 bool preferChange = false;
@@ -70,7 +81,7 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                 {
                     preferChange = true;
                 }
-                customPhaseDataBuffer[trafficLights.m_CurrentSignalGroup - 1] = phase;
+                customPhaseDataBuffer[currentSignalIndex] = phase;
                 if (preferChange && GetNextSignalGroup(customPhaseDataBuffer) != trafficLights.m_CurrentSignalGroup)
                 {
                     trafficLights.m_State = TrafficLightState.Ending;
