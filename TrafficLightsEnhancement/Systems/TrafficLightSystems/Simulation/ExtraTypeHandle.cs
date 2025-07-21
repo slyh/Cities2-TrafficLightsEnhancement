@@ -8,7 +8,6 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation;
 
 public struct ExtraTypeHandle
 {
-    [ReadOnly]
     public ComponentTypeHandle<CustomTrafficLights> m_CustomTrafficLights;
 
     [ReadOnly]
@@ -36,15 +35,15 @@ public struct ExtraTypeHandle
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AssignHandles(ref SystemState state)
     {
-        m_CustomTrafficLights = state.GetComponentTypeHandle<CustomTrafficLights>(true);
-        m_ExtraLaneSignal = state.GetComponentLookup<ExtraLaneSignal>(true);
-        m_CustomPhaseData = state.GetBufferTypeHandle<CustomPhaseData>(false);
-        m_LaneFlow = state.GetComponentLookup<LaneFlow>(true);
-        m_LaneFlowHistory = state.GetComponentLookup<LaneFlowHistory>(false);
-        m_MasterLane = state.GetComponentLookup<MasterLane>(true);
-        m_CarLane = state.GetComponentLookup<CarLane>(true);
-        m_TrackLane = state.GetComponentLookup<TrackLane>(true);
-        m_PedestrianLane = state.GetComponentLookup<PedestrianLane>(true);
+        m_CustomTrafficLights = state.GetComponentTypeHandle<CustomTrafficLights>(isReadOnly: false);
+        m_ExtraLaneSignal = state.GetComponentLookup<ExtraLaneSignal>(isReadOnly: true);
+        m_CustomPhaseData = state.GetBufferTypeHandle<CustomPhaseData>(isReadOnly: false);
+        m_LaneFlow = state.GetComponentLookup<LaneFlow>(isReadOnly: true);
+        m_LaneFlowHistory = state.GetComponentLookup<LaneFlowHistory>(isReadOnly: false);
+        m_MasterLane = state.GetComponentLookup<MasterLane>(isReadOnly: true);
+        m_CarLane = state.GetComponentLookup<CarLane>(isReadOnly: true);
+        m_TrackLane = state.GetComponentLookup<TrackLane>(isReadOnly: true);
+        m_PedestrianLane = state.GetComponentLookup<PedestrianLane>(isReadOnly: true);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

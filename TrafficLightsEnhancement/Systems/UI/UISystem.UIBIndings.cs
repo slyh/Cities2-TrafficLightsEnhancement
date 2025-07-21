@@ -98,9 +98,7 @@ public partial class UISystem : UISystemBase
             menu.items.Add(UITypes.MainPanelItemPattern("CustomPhase", (uint)CustomTrafficLights.Patterns.CustomPhase, (uint)m_CustomTrafficLights.GetPattern()));
             if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
             {
-                menu.items.Add(default(UITypes.ItemDivider));
-                menu.items.Add(new UITypes.ItemTitle{title = "CustomPhase"});
-                menu.items.Add(new UITypes.ItemButton{label = "Setup", key = "state", value = "3", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
+                menu.items.Add(new UITypes.ItemButton{label = "CustomPhaseEditor", key = "state", value = "3", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
             }
             if (m_CustomTrafficLights.GetPatternOnly() < CustomTrafficLights.Patterns.ModDefault && !NodeUtils.HasTrainTrack(m_EdgeInfoDictionary[m_SelectedEntity]))
             {
@@ -125,6 +123,7 @@ public partial class UISystem : UISystemBase
                         min = 0.5f,
                         max = 10,
                         step = 0.5f,
+                        defaultValue = 1f,
                         enableTextField = false,
                         value = m_CustomTrafficLights.m_PedestrianPhaseDurationMultiplier,
                         engineEventName = "C2VM.TLE.CallMainPanelUpdateValue"
@@ -153,6 +152,7 @@ public partial class UISystem : UISystemBase
                 customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
             EntityManager.TryGetComponent(m_SelectedEntity, out TrafficLights trafficLights);
+            EntityManager.TryGetComponent(m_SelectedEntity, out CustomTrafficLights customTrafficLights);
             for (int i = 0; i < customPhaseDataBuffer.Length; i++)
             {
                 menu.items.Add(new UITypes.ItemCustomPhase
@@ -161,7 +161,7 @@ public partial class UISystem : UISystemBase
                     currentSignalGroup = trafficLights.m_CurrentSignalGroup,
                     index = i,
                     length = customPhaseDataBuffer.Length,
-                    timer = trafficLights.m_CurrentSignalGroup == i + 1 ? trafficLights.m_Timer : 0,
+                    timer = trafficLights.m_CurrentSignalGroup == i + 1 ? customTrafficLights.m_Timer : 0,
                     turnsSinceLastRun = customPhaseDataBuffer[i].m_TurnsSinceLastRun,
                     lowFlowTimer = customPhaseDataBuffer[i].m_LowFlowTimer,
                     carFlow = customPhaseDataBuffer[i].AverageCarFlow(),
@@ -173,12 +173,14 @@ public partial class UISystem : UISystemBase
                     targetDuration = customPhaseDataBuffer[i].m_TargetDuration,
                     priority = customPhaseDataBuffer[i].m_Priority,
                     minimumDuration = customPhaseDataBuffer[i].m_MinimumDuration,
+                    maximumDuration = customPhaseDataBuffer[i].m_MaximumDuration,
                     targetDurationMultiplier = customPhaseDataBuffer[i].m_TargetDurationMultiplier,
                     laneOccupiedMultiplier = customPhaseDataBuffer[i].m_LaneOccupiedMultiplier,
                     intervalExponent = customPhaseDataBuffer[i].m_IntervalExponent,
                     prioritiseTrack = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.PrioritiseTrack) != 0,
                     prioritisePublicCar = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.PrioritisePublicCar) != 0,
                     prioritisePedestrian = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.PrioritisePedestrian) != 0,
+                    linkedWithNextPhase = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.LinkedWithNextPhase) != 0,
                 });
             }
         }
@@ -512,8 +514,7 @@ public partial class UISystem : UISystemBase
 
     protected string CallUpdateCustomPhaseData(string jsonString)
     {
-        var definition = new { key = "", value = 0d };
-        var input = JsonConvert.DeserializeAnonymousType(jsonString, definition);
+        var input = JsonConvert.DeserializeObject<UITypes.UpdateCustomPhaseData>(jsonString);
         if (!m_SelectedEntity.Equals(Entity.Null))
         {
             DynamicBuffer<CustomPhaseData> customPhaseDataBuffer;
@@ -521,36 +522,59 @@ public partial class UISystem : UISystemBase
             {
                 customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
-            var newValue = customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value];
+
+            int index = input.index >= 0 ? input.index : m_ActiveEditingCustomPhaseIndexBinding.value;
+            if (index < 0 || index >= customPhaseDataBuffer.Length)
+            {
+                return "";
+            }
+            var newValue = customPhaseDataBuffer[index];
+
             if (input.key == "MinimumDuration")
             {
                 newValue.m_MinimumDuration = (ushort)input.value;
+                if (newValue.m_MinimumDuration > newValue.m_MaximumDuration)
+                {
+                    newValue.m_MaximumDuration = newValue.m_MinimumDuration;
+                }
             }
-            if (input.key == "TargetDurationMultiplier")
+            else if (input.key == "MaximumDuration")
+            {
+                newValue.m_MaximumDuration = (ushort)input.value;
+                if (newValue.m_MinimumDuration > newValue.m_MaximumDuration)
+                {
+                    newValue.m_MinimumDuration = newValue.m_MaximumDuration;
+                }
+            }
+            else if (input.key == "TargetDurationMultiplier")
             {
                 newValue.m_TargetDurationMultiplier = (float)input.value;
             }
-            if (input.key == "LaneOccupiedMultiplier")
+            else if (input.key == "LaneOccupiedMultiplier")
             {
                 newValue.m_LaneOccupiedMultiplier = (float)input.value;
             }
-            if (input.key == "IntervalExponent")
+            else if (input.key == "IntervalExponent")
             {
                 newValue.m_IntervalExponent = (float)input.value;
             }
-            if (input.key == "PrioritiseTrack")
+            else if (input.key == "PrioritiseTrack")
             {
                 newValue.m_Options ^= CustomPhaseData.Options.PrioritiseTrack;
             }
-            if (input.key == "PrioritisePublicCar")
+            else if (input.key == "PrioritisePublicCar")
             {
                 newValue.m_Options ^= CustomPhaseData.Options.PrioritisePublicCar;
             }
-            if (input.key == "PrioritisePedestrian")
+            else if (input.key == "PrioritisePedestrian")
             {
                 newValue.m_Options ^= CustomPhaseData.Options.PrioritisePedestrian;
             }
-            customPhaseDataBuffer[m_ActiveEditingCustomPhaseIndexBinding.value] = newValue;
+            else if (input.key == "LinkedWithNextPhase")
+            {
+                newValue.m_Options ^= CustomPhaseData.Options.LinkedWithNextPhase;
+            }
+            customPhaseDataBuffer[index] = newValue;
 
             m_MainPanelBinding.Update();
             UpdateEdgeInfo(m_SelectedEntity);

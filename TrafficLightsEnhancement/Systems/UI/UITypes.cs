@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.ComponentModel;
 using Colossal.UI.Binding;
 using Newtonsoft.Json;
 
@@ -119,6 +119,8 @@ public static class UITypes
 
         public float step;
 
+        public float defaultValue;
+
         public bool enableTextField;
 
         public string textFieldRegExp;
@@ -139,7 +141,7 @@ public static class UITypes
 
         public int length;
 
-        public int timer;
+        public uint timer;
 
         public ushort turnsSinceLastRun;
 
@@ -163,6 +165,8 @@ public static class UITypes
 
         public ushort minimumDuration;
 
+        public ushort maximumDuration;
+
         public float targetDurationMultiplier;
 
         public float laneOccupiedMultiplier;
@@ -174,6 +178,19 @@ public static class UITypes
         public bool prioritisePublicCar;
 
         public bool prioritisePedestrian;
+
+        public bool linkedWithNextPhase;
+    }
+
+    public struct UpdateCustomPhaseData
+    {
+        [DefaultValue(-1)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int index;
+
+        public string key;
+
+        public double value;
     }
 
     public struct WorldPosition : IJsonWritable
@@ -292,41 +309,6 @@ public static class UITypes
             this.engineEventName = engineEventName;
         }
     }
-
-    public struct LaneDirectionToolPanel
-    {
-        public string title;
-
-        public string image;
-
-        public bool visible;
-
-        public WorldPosition position;
-
-        public List<LaneDirection> lanes;
-
-        public List<dynamic> items;
-    }
-
-    public struct LaneDirection
-    {
-        [JsonProperty]
-        const string itemType = "lane";
-
-        public WorldPosition position;
-
-        public bool leftHandTraffic;
-        
-        public string label;
-
-        public bool banLeft;
-
-        public bool banRight;
-
-        public bool banStraight;
-
-        public bool banUTurn;
-    };
 
     public static ItemRadio MainPanelItemPattern(string label, uint pattern, uint selectedPattern)
     {

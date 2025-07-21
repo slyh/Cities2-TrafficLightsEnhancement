@@ -7,27 +7,29 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
 {
     public struct CustomStateMachine
     {
-        public static bool UpdateTrafficLightState(ref TrafficLights trafficLights, DynamicBuffer<CustomPhaseData> customPhaseDataBuffer)
+        public static bool UpdateTrafficLightState(ref TrafficLights trafficLights, ref CustomTrafficLights customTrafficLights, DynamicBuffer<CustomPhaseData> customPhaseDataBuffer)
         {
             if (trafficLights.m_State == TrafficLightState.None || trafficLights.m_State == TrafficLightState.Extending || trafficLights.m_State == TrafficLightState.Extended)
             {
                 trafficLights.m_State = TrafficLightState.Beginning;
                 trafficLights.m_CurrentSignalGroup = 0;
-                trafficLights.m_NextSignalGroup = GetNextSignalGroup(customPhaseDataBuffer);
+                trafficLights.m_NextSignalGroup = GetNextSignalGroup(trafficLights.m_CurrentSignalGroup, customPhaseDataBuffer, out _);
                 trafficLights.m_Timer = 0;
+                customTrafficLights.m_Timer = 0;
                 return true;
             }
             else if (trafficLights.m_State == TrafficLightState.Beginning)
             {
                 if (trafficLights.m_NextSignalGroup <= 0)
                 {
-                    trafficLights.m_State = TrafficLightState.Changing; // roll a new group
+                    trafficLights.m_State = TrafficLightState.None; // roll a new group
                     return true;
                 }
                 trafficLights.m_State = TrafficLightState.Ongoing;
                 trafficLights.m_CurrentSignalGroup = trafficLights.m_NextSignalGroup;
                 trafficLights.m_NextSignalGroup = 0;
                 trafficLights.m_Timer = 0;
+                customTrafficLights.m_Timer = 0;
                 for (int i = 0; i < customPhaseDataBuffer.Length; i++)
                 {
                     CustomPhaseData phase = customPhaseDataBuffer[i];
@@ -49,22 +51,25 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                 int currentSignalIndex = trafficLights.m_CurrentSignalGroup - 1;
                 if (currentSignalIndex < 0 || currentSignalIndex >= customPhaseDataBuffer.Length)
                 {
-                    trafficLights.m_State = TrafficLightState.Changing; // roll a new group
+                    trafficLights.m_State = TrafficLightState.None; // roll a new group
                     return true;
                 }
-                trafficLights.m_Timer++;
+                customTrafficLights.m_Timer++;
                 CustomPhaseData phase = customPhaseDataBuffer[currentSignalIndex];
-                ushort minDuration = phase.m_MinimumDuration;
                 float targetDuration = 10f * (phase.AverageCarFlow() + (float)(phase.m_TrackLaneOccupied * 0.5)) * phase.m_TargetDurationMultiplier;
                 bool preferChange = false;
                 phase.m_TargetDuration = targetDuration;
-                if (trafficLights.m_Timer <= minDuration)
+                if (customTrafficLights.m_Timer <= phase.m_MinimumDuration)
                 {
                     phase.m_LowFlowTimer = 0;
                 }
                 else if (phase.m_Priority > 0 && phase.m_Priority >= MaxPriority(customPhaseDataBuffer))
                 {
-                    if (trafficLights.m_Timer <= targetDuration)
+                    if (customTrafficLights.m_Timer >= phase.m_MaximumDuration)
+                    {
+                        preferChange = true;
+                    }
+                    else if (customTrafficLights.m_Timer <= targetDuration)
                     {
                         phase.m_LowFlowTimer = 0;
                     }
@@ -82,9 +87,23 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                     preferChange = true;
                 }
                 customPhaseDataBuffer[currentSignalIndex] = phase;
-                if (preferChange && GetNextSignalGroup(customPhaseDataBuffer) != trafficLights.m_CurrentSignalGroup)
+                byte nextGroup = GetNextSignalGroup(trafficLights.m_CurrentSignalGroup, customPhaseDataBuffer, out var linked);
+                if (preferChange && nextGroup != trafficLights.m_CurrentSignalGroup)
                 {
                     trafficLights.m_State = TrafficLightState.Ending;
+                    trafficLights.m_NextSignalGroup = nextGroup;
+                    if (linked)
+                    {
+                        for (int i = trafficLights.m_CurrentSignalGroup; i < trafficLights.m_NextSignalGroup - 1; i++)
+                        {
+                            CustomPhaseData nextPhase = customPhaseDataBuffer[i];
+                            if (nextPhase.m_Priority <= 0)
+                            {
+                                nextPhase.m_TurnsSinceLastRun = 0;
+                                customPhaseDataBuffer[i] = nextPhase;
+                            }
+                        }
+                    }
                     return true;
                 }
                 return false;
@@ -97,7 +116,6 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
             else if (trafficLights.m_State == TrafficLightState.Changing)
             {
                 trafficLights.m_State = TrafficLightState.Beginning;
-                trafficLights.m_NextSignalGroup = GetNextSignalGroup(customPhaseDataBuffer);
                 return true;
             }
             return false;
@@ -276,16 +294,16 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
             }
         }
 
-        public static byte GetNextSignalGroup(DynamicBuffer<CustomPhaseData> customPhaseDataBuffer)
+        public static byte GetNextSignalGroup(byte currentGroup, DynamicBuffer<CustomPhaseData> customPhaseDataBuffer, out bool linked)
         {
+            linked = false;
             byte nextGroup = 0;
             int maxPriority = -1;
             float maxWaiting = -1;
             for (int i = 0; i < customPhaseDataBuffer.Length; i++)
             {
                 CustomPhaseData phase = customPhaseDataBuffer[i];
-                int totalWaiting = phase.m_CarLaneOccupied + phase.m_PublicCarLaneOccupied + phase.m_TrackLaneOccupied + phase.m_PedestrianLaneOccupied;
-                float weightedWaiting = (float)totalWaiting * phase.m_LaneOccupiedMultiplier * math.pow((float)phase.m_TurnsSinceLastRun / (float)customPhaseDataBuffer.Length, phase.m_IntervalExponent);
+                float weightedWaiting = ((float)phase.TotalLaneOccupied()) * phase.m_LaneOccupiedMultiplier * math.pow((float)phase.m_TurnsSinceLastRun / (float)customPhaseDataBuffer.Length, phase.m_IntervalExponent);
                 if (phase.m_Priority > maxPriority)
                 {
                     nextGroup = (byte)(i + 1);
@@ -299,6 +317,42 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                 }
                 phase.m_WeightedWaiting = weightedWaiting;
                 customPhaseDataBuffer[i] = phase;
+            }
+
+            int linkedPriority = -1;
+            byte linkedNextGroup = 0;
+            for (int i = currentGroup - 1; i >= 0 && i < customPhaseDataBuffer.Length - 1; i++)
+            {
+                CustomPhaseData phase = customPhaseDataBuffer[i];
+                if ((phase.m_Options & CustomPhaseData.Options.LinkedWithNextPhase) == 0)
+                {
+                    break;
+                }
+
+                CustomPhaseData nextPhase = customPhaseDataBuffer[i + 1];
+                if (linkedNextGroup == 0 && nextPhase.m_Priority > 0)
+                {
+                    linkedNextGroup = (byte)(i + 2);
+                }
+                linkedPriority = math.max(linkedPriority, nextPhase.m_Priority);
+            }
+            if (linkedNextGroup > 0 && linkedPriority >= maxPriority)
+            {
+                linked = true;
+                return linkedNextGroup;
+            }
+
+            for (int i = nextGroup - 2; i >= 0; i--)
+            {
+                CustomPhaseData phase = customPhaseDataBuffer[i];
+                if ((phase.m_Options & CustomPhaseData.Options.LinkedWithNextPhase) == 0)
+                {
+                    break;
+                }
+                if (phase.m_Priority > 0)
+                {
+                    nextGroup = (byte)(i + 1);
+                }
             }
             return nextGroup;
         }

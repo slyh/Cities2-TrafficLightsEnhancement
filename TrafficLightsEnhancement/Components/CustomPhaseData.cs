@@ -13,6 +13,8 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         PrioritisePublicCar = 1 << 1,
 
         PrioritisePedestrian = 1 << 2,
+
+        LinkedWithNextPhase = 1 << 3,
     }
 
     private ushort m_SchemaVersion;
@@ -41,6 +43,8 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
 
     public ushort m_MinimumDuration;
 
+    public ushort m_MaximumDuration;
+
     public float m_TargetDurationMultiplier;
 
     public float m_LaneOccupiedMultiplier;
@@ -62,6 +66,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         writer.Write(m_Priority);
         writer.Write((uint)m_Options);
         writer.Write(m_MinimumDuration);
+        writer.Write(m_MaximumDuration);
         writer.Write(m_TargetDurationMultiplier);
         writer.Write(m_LaneOccupiedMultiplier);
         writer.Write(m_IntervalExponent);
@@ -83,6 +88,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         reader.Read(out m_Priority);
         reader.Read(out uint options);
         reader.Read(out m_MinimumDuration);
+        reader.Read(out m_MaximumDuration);
         reader.Read(out m_TargetDurationMultiplier);
         reader.Read(out m_LaneOccupiedMultiplier);
         reader.Read(out m_IntervalExponent);
@@ -104,6 +110,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         m_Priority = 0;
         m_Options = Options.PrioritiseTrack;
         m_MinimumDuration = 2;
+        m_MaximumDuration = 300;
         m_TargetDurationMultiplier = 1f;
         m_LaneOccupiedMultiplier = 1f;
         m_IntervalExponent = 2f;
@@ -117,5 +124,10 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
     public readonly float AverageCarFlow()
     {
         return (m_CarFlow.x + m_CarFlow.y + m_CarFlow.z) / 3f;
+    }
+
+    public readonly int TotalLaneOccupied()
+    {
+        return m_CarLaneOccupied + m_TrackLaneOccupied + m_PedestrianLaneOccupied;
     }
 }

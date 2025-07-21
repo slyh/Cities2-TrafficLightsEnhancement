@@ -143,7 +143,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                     DynamicBuffer<CustomPhaseData> customPhaseDataBuffer = customPhaseDataBufferAccessor[i];
                     CustomStateMachine.CalculatePriority(this, subLanes, customPhaseDataBuffer);
                     CustomStateMachine.CalculateFlow(this, unfilteredChunkIndex, subLanes, trafficLights, customPhaseDataBuffer);
-                    if (CustomStateMachine.UpdateTrafficLightState(ref trafficLights, customPhaseDataBuffer))
+                    if (CustomStateMachine.UpdateTrafficLightState(ref trafficLights, ref customTrafficLights, customPhaseDataBuffer))
                     {
                         UpdateLaneSignals(laneSignals, trafficLights);
                         UpdateTrafficLightObjects(subObjects, trafficLights);
@@ -159,6 +159,11 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                         UpdateMoveableBridge(trafficLights, m_TransformData[entity], moveableBridgeData, ref valueRW);
                         m_CommandBuffer.AddComponent<EffectsUpdated>(unfilteredChunkIndex, nativeArray[i]);
                     }
+                }
+
+                if (i < customTrafficLightsArray.Length)
+                {
+                    customTrafficLightsArray[i] = customTrafficLights;
                 }
 
                 nativeArray2[i] = trafficLights;

@@ -39,14 +39,18 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
 
     public int m_PedestrianPhaseGroupMask { get; private set; }
 
+    // Schema 4
+    public uint m_Timer;
+
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
-        m_SchemaVersion = 3;
+        m_SchemaVersion = 4;
         writer.Write(uint.MaxValue);
         writer.Write(m_SchemaVersion);
         writer.Write((uint)m_Pattern);
         writer.Write(m_PedestrianPhaseDurationMultiplier);
         writer.Write(m_PedestrianPhaseGroupMask);
+        writer.Write(m_Timer);
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
@@ -82,6 +86,10 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
             m_PedestrianPhaseDurationMultiplier = pedestrianPhaseDurationMultiplier;
             m_PedestrianPhaseGroupMask = pedestrianPhaseGroupMask;
         }
+        if (m_SchemaVersion >= 4)
+        {
+            reader.Read(out m_Timer);
+        }
         if (GetPatternOnly() == Patterns.SplitPhasingAdvancedObsolete)
         {
             SetPatternOnly(Patterns.SplitPhasing);
@@ -90,18 +98,20 @@ public struct CustomTrafficLights : IComponentData, IQueryTypeParameter, ISerial
 
     public CustomTrafficLights()
     {
-        m_SchemaVersion = 3;
+        m_SchemaVersion = 4;
         m_Pattern = Patterns.Vanilla;
         m_PedestrianPhaseDurationMultiplier = 1;
         m_PedestrianPhaseGroupMask = 0;
+        m_Timer = 0;
     }
 
     public CustomTrafficLights(Patterns pattern)
     {
-        m_SchemaVersion = 3;
+        m_SchemaVersion = 4;
         m_Pattern = pattern;
         m_PedestrianPhaseDurationMultiplier = 1;
         m_PedestrianPhaseGroupMask = 0;
+        m_Timer = 0;
     }
 
     public Patterns GetPattern()
