@@ -934,6 +934,30 @@ public partial class PatchedTrafficLightInitializationSystem : Game.GameSystemBa
         base.Dependency = dependency;
     }
 
+    public void SetCompatibilityMode(bool enable)
+    {
+        if (enable)
+        {
+            m_TrafficLightsQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[2]
+                {
+                    ComponentType.ReadOnly<TrafficLights>(),
+                    ComponentType.ReadWrite<CustomTrafficLights>()
+                },
+                Any = new ComponentType[1] { ComponentType.ReadOnly<Updated>() }
+            });
+        }
+        else
+        {
+            m_TrafficLightsQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[1] { ComponentType.ReadOnly<TrafficLights>() },
+                Any = new ComponentType[1] { ComponentType.ReadOnly<Updated>() }
+            });
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void __AssignQueries(ref SystemState state)
     {

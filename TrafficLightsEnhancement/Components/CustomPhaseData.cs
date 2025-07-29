@@ -15,10 +15,13 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         PrioritisePedestrian = 1 << 2,
 
         LinkedWithNextPhase = 1 << 3,
+
+        EndPhasePrematurely = 1 << 4,
     }
 
     private ushort m_SchemaVersion;
 
+    // Statistics
     public ushort m_TurnsSinceLastRun;
 
     public ushort m_LowFlowTimer;
@@ -39,6 +42,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
 
     public int m_Priority;
 
+    // User configurable variables
     public Options m_Options;
 
     public ushort m_MinimumDuration;

@@ -11,13 +11,15 @@ namespace C2VM.TrafficLightsEnhancement;
 
 [FileLocation("ModsSettings/C2VM.TrafficLightsEnhancement/Settings")]
 [SettingsUITabOrder(kTabGeneral, kTabKeyBindings)]
-[SettingsUIGroupOrder(kGroupLanguage, kGroupDefault, kGroupVersion, kGroupMainPanel, kGroupKeyBindingReset)]
+[SettingsUIGroupOrder(kGroupGeneral, kGroupDefault, kGroupVersion, kGroupMainPanel, kGroupKeyBindingReset)]
 [SettingsUIShowGroupName]
 public class Settings : ModSetting
 {
     public const string kTabGeneral = "TabGeneral";
 
     public const string kTabKeyBindings = "TabKeyBindings";
+
+    public const string kGroupGeneral = "GroupGeneral";
 
     public const string kGroupLanguage = "GroupLanguage";
 
@@ -47,7 +49,7 @@ public class Settings : ModSetting
         }
     }
 
-    [SettingsUISection(kTabGeneral, kGroupLanguage)]
+    [SettingsUISection(kTabGeneral, kGroupGeneral)]
     [SettingsUIDropdown(typeof(Settings), "GetLanguageValues")]
     public string m_LocaleOption
     {
@@ -65,6 +67,27 @@ public class Settings : ModSetting
 
     public string m_Locale { get; private set; }
 
+    [SettingsUISection(kTabGeneral, kGroupGeneral)]
+    public bool m_CompatibilityModeOption
+    {
+        get
+        {
+            return m_CompatibilityMode;
+        }
+        set
+        {
+            m_CompatibilityMode = value;
+            Mod.SetCompatibilityMode(value);
+            if (!IsNotInGame())
+            {
+                m_ForceNodeUpdate = true;
+            }
+        }
+    }
+
+    [SettingsUIHideByCondition(typeof(Settings), "IsTrue")]
+    public bool m_CompatibilityMode { get; private set; }
+
     [SettingsUISection(kTabGeneral, kGroupVersion)]
     public string m_ReleaseChannel => IsNotCanary() ? "Alpha" : "Canary";
 
@@ -75,18 +98,22 @@ public class Settings : ModSetting
     public string m_LaneSystemVersion => C2VM.CommonLibraries.LaneSystem.Mod.m_InformationalVersion.Substring(0, 20);
 
     [SettingsUISection(kTabGeneral, kGroupDefault)]
+    [SettingsUIHideByCondition(typeof(Settings), "IsCompatibilityMode")]
     public bool m_DefaultSplitPhasing { get; set; }
 
     [SettingsUISection(kTabGeneral, kGroupDefault)]
+    [SettingsUIHideByCondition(typeof(Settings), "IsCompatibilityMode")]
     public bool m_DefaultAlwaysGreenKerbsideTurn { get; set; }
 
     [SettingsUISection(kTabGeneral, kGroupDefault)]
+    [SettingsUIHideByCondition(typeof(Settings), "IsCompatibilityMode")]
     public bool m_DefaultExclusivePedestrian { get; set; }
 
     [SettingsUISection(kTabGeneral, kGroupDefault)]
     [SettingsUIButton]
     [SettingsUIConfirmation(null, null)]
     [SettingsUIDisableByCondition(typeof(Settings), "IsNotInGame")]
+    [SettingsUIHideByCondition(typeof(Settings), "IsCompatibilityMode")]
     public bool m_ForceNodeUpdate
     {
         get
@@ -254,5 +281,15 @@ public class Settings : ModSetting
     public bool IsNotCanary()
     {
         return !Mod.IsCanary();
+    }
+
+    public bool IsCompatibilityMode()
+    {
+        return m_CompatibilityMode;
+    }
+
+    public bool IsTrue()
+    {
+        return true;
     }
 }

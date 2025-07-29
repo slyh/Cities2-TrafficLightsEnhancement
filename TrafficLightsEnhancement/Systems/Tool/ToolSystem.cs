@@ -1,9 +1,9 @@
+using System.Reflection;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
 using Colossal.Entities;
 using Game.Net;
 using Game.Prefabs;
 using Game.Tools;
-using HarmonyLib;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -20,6 +20,8 @@ public partial class ToolSystem : NetToolSystem
 
     private NativeList<ControlPoint> m_ParentControlPoints;
 
+    private NativeReference<AppliedUpgrade> m_ParentAppliedUpgrade;
+
     private Entity m_PrefabEntity = Entity.Null;
 
     private Entity m_RaycastResult = Entity.Null;
@@ -32,6 +34,7 @@ public partial class ToolSystem : NetToolSystem
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
         m_UISystem = World.GetOrCreateSystemManaged<UI.UISystem>();
         m_ParentControlPoints = GetControlPoints(out JobHandle _);
+        m_ParentAppliedUpgrade = (NativeReference<AppliedUpgrade>)typeof(NetToolSystem).GetField("m_AppliedUpgrade", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
         m_ToolSystem.EventToolChanged += ToolChanged;
     }
 
@@ -67,8 +70,8 @@ public partial class ToolSystem : NetToolSystem
             }
             if (applyAction.WasReleasedThisFrame())
             {
-                Entity entity = Traverse.Create(this).Field("m_AppliedUpgrade").Property("Value").Field("m_Entity").GetValue<Entity>();
-                CompositionFlags flags = Traverse.Create(this).Field("m_AppliedUpgrade").Property("Value").Field("m_Flags").GetValue<CompositionFlags>();
+                Entity entity = m_ParentAppliedUpgrade.Value.m_Entity;
+                CompositionFlags flags = m_ParentAppliedUpgrade.Value.m_Flags;
                 if (entity != Entity.Null && (flags.m_General & CompositionFlags.General.TrafficLights) != 0)
                 {
                     m_UISystem.ChangeSelectedEntity(entity);

@@ -93,13 +93,14 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetSettingsLocaleID(), "Traffic Lights Enhancement");
         dictionary.Add(Mod.m_Settings.GetOptionTabLocaleID(Settings.kTabGeneral), this.GetString("General"));
         dictionary.Add(Mod.m_Settings.GetOptionTabLocaleID(Settings.kTabKeyBindings), this.GetString("KeyBindings"));
+        dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupGeneral), this.GetString("General"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupLanguage), this.GetString("LocaleLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupDefault), this.GetString("Default"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupVersion), this.GetString("Version"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupMainPanel), this.GetString("MainPanel"));
         dictionary.Add(Mod.m_Settings.GetOptionGroupLocaleID(Settings.kGroupKeyBindingReset), this.GetString("Reset"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_LocaleOption"), this.GetString("LocaleLabel"));
-        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ShowFloatingButton"), this.GetString("ShowFloatingButtonLabel"));
+        dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_CompatibilityModeOption"), this.GetString("CompatibilityModeLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianLabel"));
@@ -111,7 +112,7 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_MainPanelToggleKeyboardBinding"), this.GetString("MainPanelToggleKeyboardBindingLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionLabelLocaleID("m_ResetBindings"), this.GetString("ResetBindingsLabel"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_LocaleOption"), this.GetString("LocaleDesc"));
-        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_ShowFloatingButton"), this.GetString("ShowFloatingButtonDesc"));
+        dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_CompatibilityModeOption"), this.GetString("CompatibilityModeDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultSplitPhasing"), this.GetString("DefaultSplitPhasingDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultAlwaysGreenKerbsideTurn"), this.GetString("DefaultAlwaysGreenKerbsideTurnDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionDescLocaleID("m_DefaultExclusivePedestrian"), this.GetString("DefaultExclusivePedestrianDesc"));

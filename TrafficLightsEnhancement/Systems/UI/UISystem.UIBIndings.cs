@@ -181,6 +181,7 @@ public partial class UISystem : UISystemBase
                     prioritisePublicCar = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.PrioritisePublicCar) != 0,
                     prioritisePedestrian = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.PrioritisePedestrian) != 0,
                     linkedWithNextPhase = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.LinkedWithNextPhase) != 0,
+                    endPhasePrematurely = (customPhaseDataBuffer[i].m_Options & CustomPhaseData.Options.EndPhasePrematurely) != 0,
                 });
             }
         }
@@ -574,11 +575,15 @@ public partial class UISystem : UISystemBase
             {
                 newValue.m_Options ^= CustomPhaseData.Options.LinkedWithNextPhase;
             }
+            else if (input.key == "EndPhasePrematurely")
+            {
+                newValue.m_Options ^= CustomPhaseData.Options.EndPhasePrematurely;
+            }
             customPhaseDataBuffer[index] = newValue;
 
             m_MainPanelBinding.Update();
             UpdateEdgeInfo(m_SelectedEntity);
-            UpdateEntity();
+            UpdateEntity(addUpdated: false);
         }
         return "";
     }

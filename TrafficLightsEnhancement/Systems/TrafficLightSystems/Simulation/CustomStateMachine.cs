@@ -42,6 +42,7 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                     {
                         phase.m_TurnsSinceLastRun++;
                     }
+                    phase.m_Options &= ~CustomPhaseData.Options.EndPhasePrematurely;
                     customPhaseDataBuffer[i] = phase;
                 }
                 return true;
@@ -83,6 +84,10 @@ namespace C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation
                     }
                 }
                 else
+                {
+                    preferChange = true;
+                }
+                if ((phase.m_Options & CustomPhaseData.Options.EndPhasePrematurely) != 0)
                 {
                     preferChange = true;
                 }

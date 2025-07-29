@@ -180,6 +180,8 @@ public static class UITypes
         public bool prioritisePedestrian;
 
         public bool linkedWithNextPhase;
+
+        public bool endPhasePrematurely;
     }
 
     public struct UpdateCustomPhaseData
@@ -289,25 +291,6 @@ public static class UITypes
         }
 
         public override int GetHashCode() => (top, left).GetHashCode();
-    }
-
-    public struct LaneToolButton
-    {
-        public string image;
-
-        public bool visible;
-
-        public WorldPosition position;
-
-        public string engineEventName;
-
-        public LaneToolButton(WorldPosition position, bool visible, string engineEventName)
-        {
-            this.image = "Media/Game/Icons/RoadsServices.svg";
-            this.position = position;
-            this.visible = visible;
-            this.engineEventName = engineEventName;
-        }
     }
 
     public static ItemRadio MainPanelItemPattern(string label, uint pattern, uint selectedPattern)

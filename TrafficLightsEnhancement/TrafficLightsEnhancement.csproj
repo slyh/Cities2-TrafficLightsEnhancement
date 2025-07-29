@@ -102,7 +102,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Lib.Harmony" Version="2.2.2" />
         <ProjectReference Include="..\CommonLibraries\LaneSystem\LaneSystem.csproj" />
     </ItemGroup>
 

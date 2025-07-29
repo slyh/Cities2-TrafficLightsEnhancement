@@ -89,6 +89,8 @@ public partial class UISystem : UISystemBase
         AddUIBindings();
         SetupKeyBindings();
         UpdateLocale();
+
+        GameManager.instance.localizationManager.onActiveDictionaryChanged += UpdateLocale;
     }
 
     protected override void OnUpdate()
@@ -200,7 +202,7 @@ public partial class UISystem : UISystemBase
         m_MainPanelBinding.Update();
     }
 
-    public void UpdateEntity()
+    public void UpdateEntity(bool keepTimer = true, bool addUpdated = true)
     {
         if (m_SelectedEntity != Entity.Null)
         {
@@ -210,6 +212,11 @@ public partial class UISystem : UISystemBase
             }
             else
             {
+                if (keepTimer)
+                {
+                    var customTrafficLights = EntityManager.GetComponentData<CustomTrafficLights>(m_SelectedEntity);
+                    m_CustomTrafficLights.m_Timer = customTrafficLights.m_Timer;
+                }
                 EntityManager.SetComponentData<CustomTrafficLights>(m_SelectedEntity, m_CustomTrafficLights);
             }
 
@@ -218,7 +225,10 @@ public partial class UISystem : UISystemBase
                 EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
             }
 
-            EntityManager.AddComponentData(m_SelectedEntity, default(Updated));
+            if (addUpdated)
+            {
+                EntityManager.AddComponentData(m_SelectedEntity, default(Updated));
+            }
         }
     }
 
