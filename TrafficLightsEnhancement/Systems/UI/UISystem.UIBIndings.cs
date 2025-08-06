@@ -28,6 +28,8 @@ public partial class UISystem : UISystemBase
 
     private ValueBinding<int> m_ActiveEditingCustomPhaseIndexBinding;
 
+    private ValueBinding<int> m_ActiveViewingCustomPhaseIndexBinding;
+
     private void AddUIBindings()
     {
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
@@ -36,6 +38,7 @@ public partial class UISystem : UISystemBase
         AddBinding(m_ScreenPointBinding = new GetterValueBinding<Dictionary<string, UITypes.ScreenPoint>>("C2VM.TLE", "GetScreenPoint", GetScreenPoint, new DictionaryWriter<string, UITypes.ScreenPoint>(null, new ValueWriter<UITypes.ScreenPoint>()), new JsonWriter.FalseEqualityComparer<Dictionary<string, UITypes.ScreenPoint>>()));
         AddBinding(m_EdgeInfoBinding = new GetterValueBinding<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>("C2VM.TLE", "GetEdgeInfo", GetEdgeInfo, new JsonWriter.EdgeInfoWriter(), new JsonWriter.FalseEqualityComparer<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>()));
         AddBinding(m_ActiveEditingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveEditingCustomPhaseIndex", -1));
+        AddBinding(m_ActiveViewingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveViewingCustomPhaseIndex", -1));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateOption", CallMainPanelUpdateOption));
@@ -48,7 +51,7 @@ public partial class UISystem : UISystemBase
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallAddCustomPhase", CallAddCustomPhase));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallRemoveCustomPhase", CallRemoveCustomPhase));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallSwapCustomPhase", CallSwapCustomPhase));
-        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallSetActiveEditingCustomPhaseIndex", CallSetActiveEditingCustomPhaseIndex));
+        AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallSetActiveCustomPhaseIndex", CallSetActiveCustomPhaseIndex));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateEdgeGroupMask", CallUpdateEdgeGroupMask));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateSubLaneGroupMask", CallUpdateSubLaneGroupMask));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallUpdateCustomPhaseData", CallUpdateCustomPhaseData));
@@ -158,7 +161,9 @@ public partial class UISystem : UISystemBase
                 menu.items.Add(new UITypes.ItemCustomPhase
                 {
                     activeIndex = m_ActiveEditingCustomPhaseIndexBinding.value,
+                    activeViewingIndex = m_ActiveViewingCustomPhaseIndexBinding.value,
                     currentSignalGroup = trafficLights.m_CurrentSignalGroup,
+                    manualSignalGroup = customTrafficLights.m_ManualSignalGroup,
                     index = i,
                     length = customPhaseDataBuffer.Length,
                     timer = trafficLights.m_CurrentSignalGroup == i + 1 ? customTrafficLights.m_Timer : 0,
@@ -343,7 +348,7 @@ public partial class UISystem : UISystemBase
                 customPhaseDataBuffer = EntityManager.AddBuffer<CustomPhaseData>(m_SelectedEntity);
             }
             customPhaseDataBuffer.Add(new CustomPhaseData());
-            m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
+            UpdateActiveEditingCustomPhaseIndex(customPhaseDataBuffer.Length - 1);
             m_MainPanelBinding.Update();
             UpdateEdgeInfo(m_SelectedEntity);
             UpdateEntity();
@@ -382,7 +387,7 @@ public partial class UISystem : UISystemBase
 
             if (m_ActiveEditingCustomPhaseIndexBinding.value >= customPhaseDataBuffer.Length)
             {
-                m_ActiveEditingCustomPhaseIndexBinding.Update(customPhaseDataBuffer.Length - 1);
+                UpdateActiveEditingCustomPhaseIndex(customPhaseDataBuffer.Length - 1);
             }
 
             m_MainPanelBinding.Update();
@@ -420,7 +425,7 @@ public partial class UISystem : UISystemBase
             }
             CustomPhaseUtils.SwapBit(subLaneGroupMaskBuffer, value.index1, value.index2);
 
-            m_ActiveEditingCustomPhaseIndexBinding.Update(value.index2);
+            UpdateActiveEditingCustomPhaseIndex(value.index2);
             m_MainPanelBinding.Update();
             UpdateEdgeInfo(m_SelectedEntity);
 
@@ -429,13 +434,26 @@ public partial class UISystem : UISystemBase
         return "";
     }
 
-    protected string CallSetActiveEditingCustomPhaseIndex(string input)
+    protected string CallSetActiveCustomPhaseIndex(string input)
     {
-        var definition = new { index = 0 };
-        var value = JsonConvert.DeserializeAnonymousType(input, definition);
-        m_ActiveEditingCustomPhaseIndexBinding.Update(value.index);
+        var definition = new { key = "", value = 0 };
+        var result = JsonConvert.DeserializeAnonymousType(input, definition);
+        if (result.key == "ActiveEditingCustomPhaseIndex")
+        {
+            UpdateActiveEditingCustomPhaseIndex(result.value);
+            UpdateEntity();
+        }
+        else if (result.key == "ActiveViewingCustomPhaseIndex")
+        {
+            UpdateActiveViewingCustomPhaseIndex(result.value);
+            RedrawGizmo();
+        }
+        else if (result.key == "ManualSignalGroup")
+        {
+            UpdateManualSignalGroup(result.value);
+            RedrawGizmo();
+        }
         m_MainPanelBinding.Update();
-        UpdateEntity();
         return "";
     }
 
@@ -630,5 +648,42 @@ public partial class UISystem : UISystemBase
         var parsedKey = JsonConvert.DeserializeAnonymousType(jsonString, keyDefinition);
         System.Diagnostics.Process.Start(parsedKey.value);
         return "";
+    }
+
+    protected void UpdateActiveEditingCustomPhaseIndex(int index)
+    {
+        m_ActiveEditingCustomPhaseIndexBinding.Update(index);
+        if (index >= 0)
+        {
+            m_ActiveViewingCustomPhaseIndexBinding.Update(-1);
+        }
+    }
+
+    protected void UpdateActiveViewingCustomPhaseIndex(int index)
+    {
+        m_ActiveViewingCustomPhaseIndexBinding.Update(index);
+        if (index >= 0)
+        {
+            m_ActiveEditingCustomPhaseIndexBinding.Update(-1);
+        }
+    }
+
+    protected void UpdateManualSignalGroup(int group)
+    {
+        if (m_SelectedEntity != Entity.Null)
+        {
+            m_CustomTrafficLights.m_ManualSignalGroup = (byte)group;
+            if (group > 0 && EntityManager.TryGetComponent<TrafficLights>(m_SelectedEntity, out var trafficLights))
+            {
+                trafficLights.m_NextSignalGroup = (byte)group;
+                EntityManager.SetComponentData(m_SelectedEntity, trafficLights);
+            }
+            UpdateEntity(addUpdated: false);
+        }
+        if (group > 0)
+        {
+            m_ActiveViewingCustomPhaseIndexBinding.Update(-1);
+            m_ActiveEditingCustomPhaseIndexBinding.Update(-1);
+        }
     }
 }

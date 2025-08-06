@@ -26,6 +26,8 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
 
     public ushort m_LowFlowTimer;
 
+    public ushort m_LowPriorityTimer;
+
     public float3 m_CarFlow;
 
     public ushort m_CarLaneOccupied;
@@ -60,6 +62,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         writer.Write(m_SchemaVersion);
         writer.Write(m_TurnsSinceLastRun);
         writer.Write(m_LowFlowTimer);
+        writer.Write(m_LowPriorityTimer);
         writer.Write(m_CarFlow);
         writer.Write(m_CarLaneOccupied);
         writer.Write(m_PublicCarLaneOccupied);
@@ -82,6 +85,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         reader.Read(out m_SchemaVersion);
         reader.Read(out m_TurnsSinceLastRun);
         reader.Read(out m_LowFlowTimer);
+        reader.Read(out m_LowPriorityTimer);
         reader.Read(out m_CarFlow);
         reader.Read(out m_CarLaneOccupied);
         reader.Read(out m_PublicCarLaneOccupied);
@@ -104,6 +108,7 @@ public struct CustomPhaseData : IBufferElementData, ISerializable
         m_SchemaVersion = 1;
         m_TurnsSinceLastRun = 0;
         m_LowFlowTimer = 0;
+        m_LowPriorityTimer = 0;
         m_CarFlow = 0;
         m_CarLaneOccupied = 0;
         m_PublicCarLaneOccupied = 0;

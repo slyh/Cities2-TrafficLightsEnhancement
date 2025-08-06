@@ -135,7 +135,11 @@ public static class UITypes
 
         public int activeIndex;
 
+        public int activeViewingIndex;
+
         public int currentSignalGroup;
+
+        public int manualSignalGroup;
 
         public int index;
 

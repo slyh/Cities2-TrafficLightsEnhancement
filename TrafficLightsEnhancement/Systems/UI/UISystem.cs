@@ -128,9 +128,11 @@ public partial class UISystem : UISystemBase
         m_MainPanelState = state;
         m_MainPanelBinding.Update();
         RedrawIcon();
+        UpdateManualSignalGroup(0);
         if (m_MainPanelState != MainPanelState.CustomPhase)
         {
-            m_ActiveEditingCustomPhaseIndexBinding.Update(-1);
+            UpdateActiveEditingCustomPhaseIndex(-1);
+            UpdateActiveViewingCustomPhaseIndex(-1);
         }
         if (m_MainPanelState == MainPanelState.Hidden)
         {
@@ -234,6 +236,8 @@ public partial class UISystem : UISystemBase
 
     public void ChangeSelectedEntity(Entity entity)
     {
+        UpdateManualSignalGroup(0);
+
         if (entity != m_SelectedEntity && entity != Entity.Null && m_SelectedEntity != Entity.Null)
         {
             m_ShowNotificationUnsaved = true;

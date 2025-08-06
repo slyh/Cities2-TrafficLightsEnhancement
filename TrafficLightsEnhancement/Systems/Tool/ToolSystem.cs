@@ -1,4 +1,5 @@
 using System.Reflection;
+using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
 using Colossal.Entities;
 using Game.Net;
@@ -46,7 +47,7 @@ public partial class ToolSystem : NetToolSystem
         }
         var result = base.OnUpdate(inputDeps);
         base.applyAction.enabled = !m_Suspended;
-        base.secondaryApplyAction.enabled = false;
+        base.secondaryApplyAction.enabled = !m_Suspended;
         if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
             if (m_ParentControlPoints.Length >= 4)
@@ -75,6 +76,17 @@ public partial class ToolSystem : NetToolSystem
                 if (entity != Entity.Null && (flags.m_General & CompositionFlags.General.TrafficLights) != 0)
                 {
                     m_UISystem.ChangeSelectedEntity(entity);
+                }
+            }
+            else if (secondaryApplyAction.WasPressedThisFrame())
+            {
+                if (m_RaycastResult != Entity.Null)
+                {
+                    if (EntityManager.HasComponent<CustomTrafficLights>(m_RaycastResult))
+                    {
+                        EntityManager.RemoveComponent<CustomTrafficLights>(m_RaycastResult);
+                        m_UISystem.RedrawIcon();
+                    }
                 }
             }
         }

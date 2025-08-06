@@ -18,18 +18,26 @@ public partial class UISystem : UISystemBase
             m_RenderSystem.ClearLineMesh();
             if (EntityManager.TryGetBuffer<SubLane>(m_SelectedEntity, true, out var subLaneBuffer))
             {
-                int displayGroup = 16;
-                if (m_ActiveEditingCustomPhaseIndexBinding.value >= 0)
+                int displayIndex = 16;
+                if (EntityManager.TryGetComponent<CustomTrafficLights>(m_SelectedEntity, out var customTrafficLights) && customTrafficLights.m_ManualSignalGroup > 0)
                 {
-                    displayGroup = m_ActiveEditingCustomPhaseIndexBinding.value;
+                    displayIndex = customTrafficLights.m_ManualSignalGroup - 1;
+                }
+                else if (m_ActiveViewingCustomPhaseIndexBinding.value >= 0)
+                {
+                    displayIndex = m_ActiveViewingCustomPhaseIndexBinding.value;
+                }
+                else if (m_ActiveEditingCustomPhaseIndexBinding.value >= 0)
+                {
+                    displayIndex = m_ActiveEditingCustomPhaseIndexBinding.value;
                 }
                 else if (EntityManager.TryGetComponent<TrafficLights>(m_SelectedEntity, out var trafficLights))
                 {
-                    displayGroup = trafficLights.m_CurrentSignalGroup - 1;
+                    displayIndex = trafficLights.m_CurrentSignalGroup - 1;
                 }
-                if (m_DebugDisplayGroup >= 0)
+                if (m_DebugDisplayGroup > 0)
                 {
-                    displayGroup = m_DebugDisplayGroup;
+                    displayIndex = m_DebugDisplayGroup - 1;
                 }
                 foreach (var subLane in subLaneBuffer)
                 {
@@ -50,11 +58,11 @@ public partial class UISystem : UISystemBase
                     if (EntityManager.TryGetComponent<LaneSignal>(subLaneEntity, out var laneSignal) && EntityManager.TryGetComponent<Curve>(subLaneEntity, out var curve))
                     {
                         Color color = Color.green;
-                        if (EntityManager.TryGetComponent<ExtraLaneSignal>(subLaneEntity, out var extraLaneSignal) && (extraLaneSignal.m_YieldGroupMask & 1 << displayGroup) != 0)
+                        if (EntityManager.TryGetComponent<ExtraLaneSignal>(subLaneEntity, out var extraLaneSignal) && (extraLaneSignal.m_YieldGroupMask & 1 << displayIndex) != 0)
                         {
                             color = Color.cyan;
                         }
-                        if ((laneSignal.m_GroupMask & 1 << displayGroup) != 0)
+                        if ((laneSignal.m_GroupMask & 1 << displayIndex) != 0)
                         {
                             m_RenderSystem.AddBezier(curve.m_Bezier, color, curve.m_Length, 0.25f);
                         }
