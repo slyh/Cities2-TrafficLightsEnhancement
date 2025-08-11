@@ -3,6 +3,7 @@
         <OutputType>Library</OutputType>
         <TargetFramework>net48</TargetFramework>
         <Configurations>Debug;Release</Configurations>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
         <AssemblyName>C2VM.TrafficLightsEnhancement</AssemblyName>
         <RootNamespace>C2VM.TrafficLightsEnhancement</RootNamespace>

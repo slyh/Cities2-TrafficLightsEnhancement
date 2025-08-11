@@ -75,7 +75,7 @@ public partial class UISystem : UISystemBase
 
     public void RedrawIcon()
     {
-        m_RenderSystem.ClearIconMesh();
+        m_RenderSystem.ClearIconList();
         if (m_MainPanelState == MainPanelState.Empty)
         {
             var entityQuery = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<Node>(), ComponentType.ReadOnly<CustomTrafficLights>());
@@ -90,9 +90,8 @@ public partial class UISystem : UISystemBase
                 {
                     icon = RenderSystem.Icon.TrafficLightWrench;
                 }
-                m_RenderSystem.AddIcon(node.m_Position, node.m_Rotation, icon);
+                m_RenderSystem.AddIcon(node.m_Position, icon);
             }
         }
-        m_RenderSystem.BuildIconMesh();
     }
 }
