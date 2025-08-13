@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
@@ -29,6 +30,8 @@ public partial class ToolSystem : NetToolSystem
 
     public bool m_Suspended { get; private set; }
 
+    private PropertyInfo m_DisplayOverridePropertyInfo;
+
     protected override void OnCreate()
     {
         base.OnCreate();
@@ -36,6 +39,7 @@ public partial class ToolSystem : NetToolSystem
         m_UISystem = World.GetOrCreateSystemManaged<UI.UISystem>();
         m_ParentControlPoints = GetControlPoints(out JobHandle _);
         m_ParentAppliedUpgrade = (NativeReference<AppliedUpgrade>)typeof(NetToolSystem).GetField("m_AppliedUpgrade", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+        m_DisplayOverridePropertyInfo = typeof(Game.Input.ProxyAction).GetProperty("displayOverride");
         m_ToolSystem.EventToolChanged += ToolChanged;
     }
 
@@ -50,6 +54,19 @@ public partial class ToolSystem : NetToolSystem
         base.secondaryApplyAction.enabled = !m_Suspended;
         if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
+            if (secondaryApplyAction.WasReleasedThisFrame())
+            {
+                if (m_RaycastResult != Entity.Null)
+                {
+                    if (EntityManager.HasComponent<CustomTrafficLights>(m_RaycastResult))
+                    {
+                        EntityManager.RemoveComponent<CustomTrafficLights>(m_RaycastResult);
+                        EntityManager.AddComponentData(m_RaycastResult, default(Game.Common.Updated));
+                        m_UISystem.RedrawIcon();
+                        UpdateTooltip(m_RaycastResult);
+                    }
+                }
+            }
             if (m_ParentControlPoints.Length >= 4)
             {
                 Entity originalEntity = m_ParentControlPoints[m_ParentControlPoints.Length - 3].m_OriginalEntity;
@@ -57,17 +74,19 @@ public partial class ToolSystem : NetToolSystem
                 {
                     m_RaycastResult = originalEntity;
                     m_RenderSystem.ClearLineMesh();
-                    if (!EntityManager.HasComponent<Roundabout>(m_RaycastResult) && EntityManager.TryGetComponent<NodeGeometry>(m_RaycastResult, out var nodeGeometry))
+                    if (IsValidEntity(m_RaycastResult) && EntityManager.TryGetComponent<NodeGeometry>(m_RaycastResult, out var nodeGeometry))
                     {
                         m_RenderSystem.AddBounds(nodeGeometry.m_Bounds, new UnityEngine.Color(0.5f, 1.0f, 2.0f, 1.0f), 0.5f);
                         m_RenderSystem.BuildLineMesh();
                     }
+                    UpdateTooltip(m_RaycastResult);
                 }
             }
-            else
+            else if (m_RaycastResult != Entity.Null)
             {
                 m_RaycastResult = Entity.Null;
                 m_RenderSystem.ClearLineMesh();
+                UpdateTooltip(m_RaycastResult);
             }
             if (applyAction.WasReleasedThisFrame())
             {
@@ -78,17 +97,7 @@ public partial class ToolSystem : NetToolSystem
                     m_UISystem.ChangeSelectedEntity(entity);
                 }
             }
-            else if (secondaryApplyAction.WasPressedThisFrame())
-            {
-                if (m_RaycastResult != Entity.Null)
-                {
-                    if (EntityManager.HasComponent<CustomTrafficLights>(m_RaycastResult))
-                    {
-                        EntityManager.RemoveComponent<CustomTrafficLights>(m_RaycastResult);
-                        m_UISystem.RedrawIcon();
-                    }
-                }
-            }
+            DisableActionTooltips();
         }
         return result;
     }
@@ -117,7 +126,11 @@ public partial class ToolSystem : NetToolSystem
 
     protected override bool GetAllowApply()
     {
-        return !(secondaryApplyAction.WasReleasedThisFrame() || secondaryApplyAction.WasPressedThisFrame());
+        if (m_RaycastResult != Entity.Null && !EntityManager.HasComponent<CustomTrafficLights>(m_RaycastResult))
+        {
+            return true;
+        }
+        return !(secondaryApplyAction.WasReleasedThisFrame() || secondaryApplyAction.IsPressed());
     }
 
     public override bool TrySetPrefab(PrefabBase prefab)
@@ -128,6 +141,49 @@ public partial class ToolSystem : NetToolSystem
     public override PrefabBase GetPrefab()
     {
         return null;
+    }
+
+    private void UpdateTooltip(Entity entity)
+    {
+        var list = new List<UI.UITypes.ToolTooltipMessage>(2);
+        if (IsValidEntity(entity))
+        {
+            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/LMB.svg", "Configure"));
+        }
+        if (EntityManager.HasComponent<CustomTrafficLights>(entity))
+        {
+            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/RMB.svg", "RemoveTLEConfiguration"));
+        }
+        else if (EntityManager.HasComponent<TrafficLights>(entity))
+        {
+            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/RMB.svg", "RemoveTrafficLights"));
+        }
+        m_UISystem.m_ToolTooltipMessageBinding.Update(list.ToArray());
+    }
+
+    private void DisableActionTooltips()
+    {
+        if (applyAction is Game.Input.UIInputAction.State applyActionState)
+        {
+            m_DisplayOverridePropertyInfo.SetValue(applyActionState.action, null);
+        }
+        if (secondaryApplyAction is Game.Input.UIInputAction.State secondaryApplyActionState)
+        {
+            m_DisplayOverridePropertyInfo.SetValue(secondaryApplyActionState.action, null);
+        }
+    }
+
+    public bool IsValidEntity(Entity entity)
+    {
+        if (entity == Entity.Null)
+        {
+            return false;
+        }
+        if (EntityManager.HasComponent<Roundabout>(entity))
+        {
+            return false;
+        }
+        return true;
     }
 
     public void Enable()
@@ -156,7 +212,7 @@ public partial class ToolSystem : NetToolSystem
 
     private void ToolChanged(ToolBaseSystem system)
     {
-        if (system != this)
+        if (system != this && m_UISystem.m_MainPanelState != UI.UISystem.MainPanelState.Hidden)
         {
             m_UISystem.SetMainPanelState(UI.UISystem.MainPanelState.Hidden);
         }

@@ -222,7 +222,11 @@ public partial class UISystem : UISystemBase
                 EntityManager.SetComponentData<CustomTrafficLights>(m_SelectedEntity, m_CustomTrafficLights);
             }
 
-            if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.ModDefault)
+            if (!EntityManager.HasComponent<Game.Net.TrafficLights>(m_SelectedEntity))
+            {
+                EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
+            }
+            else if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.ModDefault)
             {
                 EntityManager.RemoveComponent<CustomTrafficLights>(m_SelectedEntity);
             }
@@ -262,7 +266,7 @@ public partial class UISystem : UISystemBase
                 }
                 else
                 {
-                    m_CustomTrafficLights = new CustomTrafficLights(CustomTrafficLights.Patterns.ModDefault);
+                    m_CustomTrafficLights = new CustomTrafficLights(CustomTrafficLights.Patterns.Vanilla);
                 }
             }
             else if (m_MainPanelState != MainPanelState.Hidden)

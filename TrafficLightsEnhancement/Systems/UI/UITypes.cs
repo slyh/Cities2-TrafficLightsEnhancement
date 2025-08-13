@@ -297,6 +297,29 @@ public static class UITypes
         public override int GetHashCode() => (top, left).GetHashCode();
     }
 
+    public struct ToolTooltipMessage : IJsonWritable
+    {
+        public string image;
+
+        public string message;
+
+        public ToolTooltipMessage(string image, string message)
+        {
+            this.image = image;
+            this.message = message;
+        }
+
+        public void Write(IJsonWriter writer)
+        {
+            writer.TypeBegin(typeof(ToolTooltipMessage).FullName);
+            writer.PropertyName("image");
+            writer.Write(image);
+            writer.PropertyName("message");
+            writer.Write(message);
+            writer.TypeEnd();
+        }
+    }
+
     public static ItemRadio MainPanelItemPattern(string label, uint pattern, uint selectedPattern)
     {
         return new ItemRadio{label = label, key = "pattern", value = pattern.ToString(), engineEventName = "C2VM.TLE.CallMainPanelUpdatePattern", isChecked = (selectedPattern & 0xFFFF) == pattern};

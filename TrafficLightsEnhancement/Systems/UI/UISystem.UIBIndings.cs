@@ -30,6 +30,8 @@ public partial class UISystem : UISystemBase
 
     private ValueBinding<int> m_ActiveViewingCustomPhaseIndexBinding;
 
+    internal ValueBinding<UITypes.ToolTooltipMessage[]> m_ToolTooltipMessageBinding;
+
     private void AddUIBindings()
     {
         AddBinding(m_MainPanelBinding = new GetterValueBinding<string>("C2VM.TLE", "GetMainPanel", GetMainPanel));
@@ -39,6 +41,7 @@ public partial class UISystem : UISystemBase
         AddBinding(m_EdgeInfoBinding = new GetterValueBinding<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>("C2VM.TLE", "GetEdgeInfo", GetEdgeInfo, new JsonWriter.EdgeInfoWriter(), new JsonWriter.FalseEqualityComparer<Dictionary<Entity, NativeArray<NodeUtils.EdgeInfo>>>()));
         AddBinding(m_ActiveEditingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveEditingCustomPhaseIndex", -1));
         AddBinding(m_ActiveViewingCustomPhaseIndexBinding = new ValueBinding<int>("C2VM.TLE", "GetActiveViewingCustomPhaseIndex", -1));
+        AddBinding(m_ToolTooltipMessageBinding = new ValueBinding<UITypes.ToolTooltipMessage[]>("C2VM.TLE", "GetToolTooltipMessage", [], new ListWriter<UITypes.ToolTooltipMessage>(new ValueWriter<UITypes.ToolTooltipMessage>())));
 
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdatePattern", CallMainPanelUpdatePattern));
         AddBinding(new CallBinding<string, string>("C2VM.TLE", "CallMainPanelUpdateOption", CallMainPanelUpdateOption));
@@ -81,7 +84,6 @@ public partial class UISystem : UISystemBase
         if (m_MainPanelState == MainPanelState.Main && m_SelectedEntity != Entity.Null)
         {
             menu.items.Add(new UITypes.ItemTitle{title = "TrafficSignal"});
-            menu.items.Add(UITypes.MainPanelItemPattern("ModDefault", (uint)CustomTrafficLights.Patterns.ModDefault, (uint)m_CustomTrafficLights.GetPattern()));
             menu.items.Add(UITypes.MainPanelItemPattern("Vanilla", (uint)CustomTrafficLights.Patterns.Vanilla, (uint)m_CustomTrafficLights.GetPattern()));
             if (PredefinedPatternsProcessor.IsValidPattern(m_EdgeInfoDictionary[m_SelectedEntity], CustomTrafficLights.Patterns.SplitPhasing))
             {
