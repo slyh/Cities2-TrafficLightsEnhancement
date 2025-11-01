@@ -50,8 +50,8 @@ public partial class ToolSystem : NetToolSystem
             m_ToolRaycastSystem.raycastFlags |= Game.Common.RaycastFlags.UIDisable;
         }
         var result = base.OnUpdate(inputDeps);
-        base.applyAction.enabled = !m_Suspended;
-        base.secondaryApplyAction.enabled = !m_Suspended;
+        base.applyAction.shouldBeEnabled = !m_Suspended;
+        base.secondaryApplyAction.shouldBeEnabled = !m_Suspended;
         if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
             if (secondaryApplyAction.WasReleasedThisFrame())

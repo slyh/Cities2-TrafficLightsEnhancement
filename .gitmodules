@@ -1,6 +1,6 @@
 [submodule "CommonLibraries"]
 	path = CommonLibraries
-	url = git@github.com:C2VM/CommonLibraries.git
+	url = https://github.com/C2VM/CommonLibraries.git
 [submodule "TLEFrontend"]
 	path = TLEFrontend
-	url = git@github.com:C2VM/TLEFrontend.git
+	url = https://github.com/C2VM/TLEFrontend.git
