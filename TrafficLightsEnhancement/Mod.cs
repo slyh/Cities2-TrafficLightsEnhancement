@@ -75,6 +75,7 @@ public class Mod : IMod
 
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Initialisation.PatchedTrafficLightInitializationSystem, Game.Net.TrafficLightInitializationSystem>(SystemUpdatePhase.Modification4B);
         updateSystem.UpdateBefore<C2VM.TrafficLightsEnhancement.Systems.TrafficLightSystems.Simulation.PatchedTrafficLightSystem, Game.Simulation.TrafficLightSystem>(SystemUpdatePhase.GameSimulation);
+        updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.TooltipSystem>(SystemUpdatePhase.UITooltip);
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.UI.UISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Tool.ToolSystem>(SystemUpdatePhase.ToolUpdate);
         updateSystem.UpdateAt<C2VM.TrafficLightsEnhancement.Systems.Update.ModificationUpdateSystem>(SystemUpdatePhase.ModificationEnd);

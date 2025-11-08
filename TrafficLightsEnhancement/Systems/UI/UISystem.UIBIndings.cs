@@ -103,7 +103,7 @@ public partial class UISystem : UISystemBase
             menu.items.Add(UITypes.MainPanelItemPattern("CustomPhase", (uint)CustomTrafficLights.Patterns.CustomPhase, (uint)m_CustomTrafficLights.GetPattern()));
             if (m_CustomTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase)
             {
-                menu.items.Add(new UITypes.ItemButton{label = "CustomPhaseEditor", key = "state", value = "3", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
+                menu.items.Add(new UITypes.ItemButton{label = "CustomPhaseEditor", key = "state", value = $"{(int)MainPanelState.CustomPhase}", engineEventName = "C2VM.TLE.CallSetMainPanelState"});
             }
             if (m_CustomTrafficLights.GetPatternOnly() < CustomTrafficLights.Patterns.ModDefault && !NodeUtils.HasTrainTrack(m_EdgeInfoDictionary[m_SelectedEntity]))
             {

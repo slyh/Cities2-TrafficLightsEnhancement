@@ -39,6 +39,8 @@ public class LocalisationUtils
 
     private Dictionary<string, string> m_Dictionary = new Dictionary<string, string>();
 
+    private static Dictionary<string, string> m_ActiveDictionary;
+
     public LocalisationUtils(string locale)
     {
         SetLocale(locale);
@@ -73,6 +75,20 @@ public class LocalisationUtils
             return locale;
         }
         return m_DefaultLocale;
+    }
+
+    public void UpdateActiveDictionary()
+    {
+        m_ActiveDictionary = m_Dictionary;
+    }
+
+    public static string GetActiveString(string key)
+    {
+        if (m_ActiveDictionary != null && m_ActiveDictionary.ContainsKey(key))
+        {
+            return m_ActiveDictionary[key];
+        }
+        return key;
     }
 
     public string GetString(string key)
@@ -126,5 +142,8 @@ public class LocalisationUtils
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ForceNodeUpdate"), this.GetString("ForceAllNodesUpdateWarning"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_SuppressCanaryWarning"), this.GetString("SuppressCanaryWarningDesc"));
         dictionary.Add(Mod.m_Settings.GetOptionWarningLocaleID("m_ResetBindings"), this.GetString("ResetBindingsDesc"));
+        dictionary.Add("C2VM.TLE.Tooltips.Configure", this.GetString("TooltipConfigure"));
+        dictionary.Add("C2VM.TLE.Tooltips.RemoveTLEConfiguration", this.GetString("TooltipRemoveTLEConfiguration"));
+        dictionary.Add("C2VM.TLE.Tooltips.RemoveTrafficLights", this.GetString("TooltipRemoveTrafficLights"));
     }
 }

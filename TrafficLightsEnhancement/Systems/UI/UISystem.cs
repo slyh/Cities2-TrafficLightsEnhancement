@@ -166,6 +166,7 @@ public partial class UISystem : UISystemBase
     {
         LocalisationUtils localisationsHelper = new LocalisationUtils(GetLocaleCode());
         localisationsHelper.AddToDictionary(GameManager.instance.localizationManager.activeDictionary);
+        localisationsHelper.UpdateActiveDictionary();
 
         if (m_LocaleBinding != null)
         {

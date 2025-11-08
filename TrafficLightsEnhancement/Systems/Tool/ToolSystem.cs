@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Reflection;
 using C2VM.TrafficLightsEnhancement.Components;
 using C2VM.TrafficLightsEnhancement.Systems.Overlay;
@@ -6,6 +5,8 @@ using Colossal.Entities;
 using Game.Net;
 using Game.Prefabs;
 using Game.Tools;
+using Game.UI.Localization;
+using Game.UI.Tooltip;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -17,6 +18,8 @@ public partial class ToolSystem : NetToolSystem
     public override string toolID => "C2VMTLE Tool";
 
     private RenderSystem m_RenderSystem;
+
+    private UI.TooltipSystem m_TooltipSystem;
 
     private UI.UISystem m_UISystem;
 
@@ -32,15 +35,41 @@ public partial class ToolSystem : NetToolSystem
 
     private PropertyInfo m_DisplayOverridePropertyInfo;
 
+    private StringTooltip m_ConfigureTooltip;
+
+    private StringTooltip m_RemoveConfigurationTooltip;
+
+    private StringTooltip m_RemoveTrafficLightsTooltip;
+
     protected override void OnCreate()
     {
         base.OnCreate();
         m_RenderSystem = World.GetOrCreateSystemManaged<RenderSystem>();
+        m_TooltipSystem = World.GetOrCreateSystemManaged<UI.TooltipSystem>();
         m_UISystem = World.GetOrCreateSystemManaged<UI.UISystem>();
         m_ParentControlPoints = GetControlPoints(out JobHandle _);
         m_ParentAppliedUpgrade = (NativeReference<AppliedUpgrade>)typeof(NetToolSystem).GetField("m_AppliedUpgrade", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
         m_DisplayOverridePropertyInfo = typeof(Game.Input.ProxyAction).GetProperty("displayOverride");
         m_ToolSystem.EventToolChanged += ToolChanged;
+
+        m_ConfigureTooltip = new StringTooltip
+        {
+            path = "C2VM.TLE.Tooltips.Configure",
+            icon = "Media/Mouse/LMB.svg",
+            value = LocalizedString.Id("C2VM.TLE.Tooltips.Configure"),
+        };
+        m_RemoveConfigurationTooltip = new StringTooltip
+        {
+            path = "C2VM.TLE.Tooltips.RemoveTLEConfiguration",
+            icon = "Media/Mouse/RMB.svg",
+            value = LocalizedString.Id("C2VM.TLE.Tooltips.RemoveTLEConfiguration"),
+        };
+        m_RemoveTrafficLightsTooltip = new StringTooltip
+        {
+            path = "C2VM.TLE.Tooltips.RemoveTrafficLights",
+            icon = "Media/Mouse/RMB.svg",
+            value = LocalizedString.Id("C2VM.TLE.Tooltips.RemoveTrafficLights"),
+        };
     }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -50,8 +79,8 @@ public partial class ToolSystem : NetToolSystem
             m_ToolRaycastSystem.raycastFlags |= Game.Common.RaycastFlags.UIDisable;
         }
         var result = base.OnUpdate(inputDeps);
-        base.applyAction.enabled = !m_Suspended;
-        base.secondaryApplyAction.enabled = !m_Suspended;
+        base.applyAction.shouldBeEnabled = !m_Suspended;
+        base.secondaryApplyAction.shouldBeEnabled = !m_Suspended;
         if ((m_ToolRaycastSystem.raycastFlags & Game.Common.RaycastFlags.UIDisable) == 0)
         {
             if (secondaryApplyAction.WasReleasedThisFrame())
@@ -145,20 +174,19 @@ public partial class ToolSystem : NetToolSystem
 
     private void UpdateTooltip(Entity entity)
     {
-        var list = new List<UI.UITypes.ToolTooltipMessage>(2);
+        m_TooltipSystem.m_TooltipList.Clear();
         if (IsValidEntity(entity))
         {
-            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/LMB.svg", "Configure"));
+            m_TooltipSystem.m_TooltipList.Add(m_ConfigureTooltip);
         }
         if (EntityManager.HasComponent<CustomTrafficLights>(entity))
         {
-            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/RMB.svg", "RemoveTLEConfiguration"));
+            m_TooltipSystem.m_TooltipList.Add(m_RemoveConfigurationTooltip);
         }
         else if (EntityManager.HasComponent<TrafficLights>(entity))
         {
-            list.Add(new UI.UITypes.ToolTooltipMessage("Media/Mouse/RMB.svg", "RemoveTrafficLights"));
+            m_TooltipSystem.m_TooltipList.Add(m_RemoveTrafficLightsTooltip);
         }
-        m_UISystem.m_ToolTooltipMessageBinding.Update(list.ToArray());
     }
 
     private void DisableActionTooltips()
@@ -194,12 +222,16 @@ public partial class ToolSystem : NetToolSystem
             this.underground = m_ToolSystem.activeTool.requireUnderground;
             m_Suspended = false;
             m_ToolSystem.activeTool = this;
+            m_TooltipSystem.m_TooltipList.Clear();
+            m_TooltipSystem.Enabled = true;
         }
     }
 
     public void Suspend()
     {
         m_Suspended = true;
+        m_TooltipSystem.m_TooltipList.Clear();
+        m_TooltipSystem.Enabled = false;
     }
 
     public void Disable()
@@ -207,6 +239,8 @@ public partial class ToolSystem : NetToolSystem
         if (m_ToolSystem.activeTool == this)
         {
             m_ToolSystem.activeTool = m_DefaultToolSystem;
+            m_TooltipSystem.m_TooltipList.Clear();
+            m_TooltipSystem.Enabled = false;
         }
     }
 

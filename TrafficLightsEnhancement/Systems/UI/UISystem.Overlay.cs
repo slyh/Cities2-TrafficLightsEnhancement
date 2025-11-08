@@ -60,7 +60,7 @@ public partial class UISystem : UISystemBase
                         Color color = Color.green;
                         if (EntityManager.TryGetComponent<ExtraLaneSignal>(subLaneEntity, out var extraLaneSignal) && (extraLaneSignal.m_YieldGroupMask & 1 << displayIndex) != 0)
                         {
-                            color = Color.cyan;
+                            color = Color.blue;
                         }
                         if ((laneSignal.m_GroupMask & 1 << displayIndex) != 0)
                         {
