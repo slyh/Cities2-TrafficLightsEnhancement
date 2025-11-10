@@ -138,7 +138,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
 
                 CustomTrafficLights customTrafficLights = i < customTrafficLightsArray.Length ? customTrafficLightsArray[i] : new CustomTrafficLights();
 
-                if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase && i < customPhaseDataBufferAccessor.Length)
+                if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase && i < customPhaseDataBufferAccessor.Length && (trafficLights.m_Flags & TrafficLightFlags.MoveableBridge) == 0)
                 {
                     DynamicBuffer<CustomPhaseData> customPhaseDataBuffer = customPhaseDataBufferAccessor[i];
                     CustomStateMachine.CalculatePriority(this, subLanes, customPhaseDataBuffer);
@@ -601,6 +601,7 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
 
         private bool IsEmpty(NativeList<Entity> laneSignals, int nextSignalGroup)
         {
+            bool result = true;
             if (nextSignalGroup > 0)
             {
                 int num = 1 << nextSignalGroup - 1;
@@ -608,24 +609,32 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                 for (int i = 0; i < laneSignals.Length; i++)
                 {
                     Entity entity = laneSignals[i];
-                    if ((m_LaneSignalData[entity].m_GroupMask & num) == 0)
+                    if ((m_LaneSignalData[entity].m_GroupMask & num) != 0)
                     {
-                        if (m_LaneObjects.TryGetBuffer(entity, out var bufferData) && bufferData.Length != 0)
-                        {
-                            blocker = bufferData[0].m_LaneObject;
-                            break;
-                        }
+                        continue;
+                    }
 
-                        if (m_LaneReservationData.TryGetComponent(entity, out var componentData) && componentData.GetPriority() >= 100)
-                        {
-                            blocker = componentData.m_Blocker;
-                            break;
-                        }
+                    if (m_LaneObjects.TryGetBuffer(entity, out var bufferData) && bufferData.Length != 0)
+                    {
+                        blocker = bufferData[0].m_LaneObject;
+                        result = false;
+                        break;
+                    }
 
-                        if (m_PrefabRefData.TryGetComponent(entity, out var componentData2) && m_PrefabCarLaneData.TryGetComponent(componentData2.m_Prefab, out var componentData3) && (componentData3.m_RoadTypes & RoadTypes.Watercraft) != RoadTypes.None && CheckNextLane(Entity.Null, entity, 0f, 0, out blocker))
+                    if (m_LaneReservationData.TryGetComponent(entity, out var componentData) && componentData.GetPriority() >= 100)
+                    {
+                        blocker = componentData.m_Blocker;
+                        result = false;
+                        if (blocker != Entity.Null)
                         {
                             break;
                         }
+                    }
+
+                    if (m_PrefabRefData.TryGetComponent(entity, out var componentData2) && m_PrefabCarLaneData.TryGetComponent(componentData2.m_Prefab, out var componentData3) && (componentData3.m_RoadTypes & RoadTypes.Watercraft) != RoadTypes.None && CheckNextLane(Entity.Null, entity, 0f, 0, out blocker))
+                    {
+                        result = false;
+                        break;
                     }
                 }
 
@@ -641,12 +650,10 @@ public partial class PatchedTrafficLightSystem : GameSystemBase
                             m_LaneSignalData[entity2] = value;
                         }
                     }
-
-                    return false;
                 }
             }
 
-            return true;
+            return result;
         }
 
         private bool CheckNextLane(Entity prevOwner, Entity lane, float distance, int depth, out Entity blocker)

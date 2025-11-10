@@ -121,7 +121,7 @@ public partial class ToolSystem : NetToolSystem
             {
                 Entity entity = m_ParentAppliedUpgrade.Value.m_Entity;
                 CompositionFlags flags = m_ParentAppliedUpgrade.Value.m_Flags;
-                if (entity != Entity.Null && (flags.m_General & CompositionFlags.General.TrafficLights) != 0)
+                if (entity != Entity.Null && (flags.m_General & CompositionFlags.General.TrafficLights) != 0 && IsValidEntity(entity))
                 {
                     m_UISystem.ChangeSelectedEntity(entity);
                 }
@@ -183,9 +183,12 @@ public partial class ToolSystem : NetToolSystem
         {
             m_TooltipSystem.m_TooltipList.Add(m_RemoveConfigurationTooltip);
         }
-        else if (EntityManager.HasComponent<TrafficLights>(entity))
+        else if (EntityManager.TryGetComponent<TrafficLights>(entity, out var trafficLights))
         {
-            m_TooltipSystem.m_TooltipList.Add(m_RemoveTrafficLightsTooltip);
+            if ((trafficLights.m_Flags & TrafficLightFlags.MoveableBridge) == 0)
+            {
+                m_TooltipSystem.m_TooltipList.Add(m_RemoveTrafficLightsTooltip);
+            }
         }
     }
 
@@ -210,6 +213,13 @@ public partial class ToolSystem : NetToolSystem
         if (EntityManager.HasComponent<Roundabout>(entity))
         {
             return false;
+        }
+        if (EntityManager.TryGetComponent<TrafficLights>(entity, out var trafficLights))
+        {
+            if ((trafficLights.m_Flags & TrafficLightFlags.MoveableBridge) != 0)
+            {
+                return false;
+            }
         }
         return true;
     }

@@ -229,6 +229,11 @@ public partial class PatchedTrafficLightInitializationSystem : Game.GameSystemBa
                 }
                 customTrafficLights.SetPedestrianPhaseGroupMask(0);
 
+                if ((trafficLights.m_Flags & TrafficLightFlags.MoveableBridge) != 0)
+                {
+                    customTrafficLights.SetPattern(CustomTrafficLights.Patterns.Vanilla);
+                }
+
                 PredefinedPatternsProcessor.ResetExtraLaneSignal(ref this, subLanes, ref trafficLights);
                 if (customTrafficLights.GetPatternOnly() == CustomTrafficLights.Patterns.CustomPhase && i < edgeGroupMaskAccessor.Length && i < subLaneGroupMaskAccessor.Length && i < customPhaseDataAccessor.Length)
                 {
