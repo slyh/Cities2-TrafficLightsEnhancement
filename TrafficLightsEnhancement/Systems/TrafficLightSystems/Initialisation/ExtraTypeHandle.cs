@@ -57,7 +57,7 @@ public struct ExtraTypeHandle
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Update(ref SystemState state)
+    public ExtraTypeHandle Update(ref SystemState state)
     {
         m_Entity.Update(ref state);
         m_ConnectedEdge.Update(ref state);
@@ -73,5 +73,6 @@ public struct ExtraTypeHandle
         m_EdgeGroupMask.Update(ref state);
         m_SubLaneGroupMask.Update(ref state);
         m_CustomPhaseData.Update(ref state);
+        return this;
     }
 }
