@@ -57,21 +57,23 @@ public struct ExtraTypeHandle
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Update(ref SystemState state)
-    {
-        m_Entity.Update(ref state);
-        m_ConnectedEdge.Update(ref state);
-        m_Edge.Update(ref state);
-        m_EdgeGeometry.Update(ref state);
-        m_Lane.Update(ref state);
-        m_PedestrianLane.Update(ref state);
-        m_SubLane.Update(ref state);
-        m_TrackLane.Update(ref state);
-        m_TrainTrack.Update(ref state);
-        m_CustomTrafficLights.Update(ref state);
-        m_ExtraLaneSignal.Update(ref state);
-        m_EdgeGroupMask.Update(ref state);
-        m_SubLaneGroupMask.Update(ref state);
-        m_CustomPhaseData.Update(ref state);
+public ExtraTypeHandle Update(ref SystemState state)
+{
+    m_Entity.Update(ref state);
+    m_ConnectedEdge.Update(ref state);
+    m_Edge.Update(ref state);
+    m_EdgeGeometry.Update(ref state);
+    m_Lane.Update(ref state);
+    m_PedestrianLane.Update(ref state);
+    m_SubLane.Update(ref state);
+    m_TrackLane.Update(ref state);
+    m_TrainTrack.Update(ref state);
+    m_CustomTrafficLights.Update(ref state);
+    m_ExtraLaneSignal.Update(ref state);
+    m_EdgeGroupMask.Update(ref state);
+    m_SubLaneGroupMask.Update(ref state);
+    m_CustomPhaseData.Update(ref state);
+
+    return this;
     }
 }
